@@ -1,0 +1,386 @@
+<script lang="ts">
+  import { File } from '../models/file';
+  import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
+  import FullFilePreviewDialog from './FullFilePreviewDialog.svelte';
+  import { Command } from '@tauri-apps/plugin-shell';
+  import { dirname } from '@tauri-apps/api/path';
+  import { exists, stat } from '@tauri-apps/plugin-fs';
+  import { convertFileSrc } from '@tauri-apps/api/core';
+
+  let {
+    file,
+    anchorElement,
+  }: {
+    file: File | null;
+    anchorElement: HTMLElement | null;
+  } = $props();
+
+  let position = $state({ top: 0, left: 0 });
+  let fileStats = $state<{ size: string; modified: string; exists: boolean } | null>(null);
+  let isLoadingContent = $state(false);
+  let isFullPreviewOpen = $state(false);
+  const showPreview = $derived.by(() => file && (isImage(file.Extension) || isPDF(file.Extension)));
+
+  $effect(() => {
+    if (file && anchorElement) {
+      loadFileMetadata();
+      updatePosition();
+    }
+  });
+
+  function isImage(extension: string): boolean {
+    const ext = extension.toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'webp'].includes(ext);
+  }
+
+  function isPDF(extension: string): boolean {
+    return extension.toLowerCase() === 'pdf';
+  }
+
+  function updatePosition() {
+    if (!anchorElement) return;
+
+    const rect = anchorElement.getBoundingClientRect();
+
+    const popoverWidth = 400;
+    const popoverHeight =
+      document.getElementById('file-preview')?.getBoundingClientRect().height ?? 300;
+
+    // Position below and to the right of the anchor
+    let top = rect.height - 2;
+    let left = rect.width / 2 - popoverWidth / 2;
+
+    // Adjust if popover goes off-screen
+    if (left + popoverWidth > window.innerWidth) {
+      left = rect.width - popoverWidth;
+    }
+
+    if (top + popoverHeight > window.innerHeight) {
+      top = rect.height - popoverHeight;
+    }
+
+    position = { top, left };
+  }
+
+  async function loadFileMetadata() {
+    if (!file || !file.Path) {
+      fileStats = null;
+      return;
+    }
+
+    try {
+      const fileExists = await exists(file.Path);
+
+      if (!fileExists) {
+        fileStats = { size: 'N/A', modified: 'N/A', exists: false };
+        return;
+      }
+
+      const stats = await stat(file.Path);
+
+      const size = formatFileSize(Number(stats.size));
+      const modified = stats.mtime ? new Date(stats.mtime).toLocaleString('cs-CZ') : 'N/A';
+
+      fileStats = { size, modified, exists: true };
+    } catch (error) {
+      console.error('Failed to load file metadata:', error);
+      fileStats = { size: 'N/A', modified: 'N/A', exists: false };
+    }
+  }
+
+  function formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  }
+
+  function getFileIcon(extension: string) {
+    const ext = extension.toLowerCase();
+    if (ext === 'pdf') return 'mdiFilePdfBox';
+    if (ext === 'docx' || ext === 'doc') return 'mdiFileDocumentOutline';
+    if (ext === 'txt') return 'mdiFileDocumentOutline';
+    if (ext === 'odg') return 'mdiFileImageOutline';
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(ext)) return 'mdiFileImageOutline';
+    return 'mdiFile';
+  }
+
+  function openFullPreview() {
+    isFullPreviewOpen = true;
+  }
+
+  async function openFile() {
+    if (!file?.Path) return;
+
+    try {
+      const command = Command.create('open', [file.Path]);
+      await command.execute();
+    } catch (error) {
+      console.error('Failed to open file:', error);
+    }
+  }
+
+  async function openFileLocation() {
+    if (!file?.Path) return;
+
+    try {
+      const dirPath = await dirname(file.Path);
+
+      const command = Command.create('open', [dirPath]);
+      await command.execute();
+    } catch (error) {
+      console.error('Failed to open file location:', error);
+    }
+  }
+</script>
+
+{#if file}
+  <div
+    id="file-preview"
+    class="file-preview"
+    style="top: {position.top}px; left: {position.left}px;"
+  >
+    <div class="preview-header">
+      <div class="file-icon">
+        <Icon name={getFileIcon(file.Extension)} size={32} color="#4a90e2" />
+      </div>
+      <div class="file-info">
+        <div class="file-name" title={file.Name}>
+          <span class="extension-badge">{file.Extension.toUpperCase()}</span>
+          {file.Name}
+        </div>
+        <div class="file-path" title={file.Path}>
+          {file.Path}
+        </div>
+      </div>
+    </div>
+
+    {#if fileStats}
+      <!-- File Content Preview -->
+      {#if fileStats.exists && showPreview}
+        <div class="preview-content">
+          {#if isLoadingContent}
+            <div class="content-loading">Načítání náhledu...</div>
+          {:else if isImage(file.Extension)}
+            <img src={convertFileSrc(file.Path)} alt={file.Name} class="image-preview" />
+          {:else if isPDF(file.Extension)}
+            <iframe src={convertFileSrc(file.Path)} title={file.Name} class="pdf-preview"></iframe>
+          {/if}
+        </div>
+      {/if}
+      <div class="preview-body">
+        <div class="stat-row">
+          <span class="stat-label">Status:</span>
+          <span
+            class="stat-value"
+            class:exists={fileStats.exists}
+            class:missing={!fileStats.exists}
+          >
+            {fileStats.exists ? 'Existuje' : 'Soubor nenalezen'}
+          </span>
+        </div>
+        {#if fileStats.exists}
+          <div class="stat-row">
+            <span class="stat-label">Velikost:</span>
+            <span class="stat-value">{fileStats.size}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Změněno:</span>
+            <span class="stat-value">{fileStats.modified}</span>
+          </div>
+        {/if}
+      </div>
+
+      {#if fileStats.exists}
+        <div class="preview-footer">
+          <Button icon="mdiFileEye" onClick={openFullPreview} onlyIcon primary />
+          <div>
+            <Button icon="mdiOpenInNew" onClick={openFile} onlyIcon primary />
+            <Button icon="mdiFolder" onClick={openFileLocation} onlyIcon primary />
+          </div>
+        </div>
+      {/if}
+    {:else}
+      <div class="preview-loading">Načítání...</div>
+    {/if}
+  </div>
+{/if}
+
+<FullFilePreviewDialog {file} bind:isOpen={isFullPreviewOpen} />
+
+<style lang="scss">
+  .file-preview {
+    position: absolute;
+    z-index: 1001;
+    width: 400px;
+    background: white;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.15s ease-out;
+    pointer-events: auto;
+
+    &.preview {
+      border-top-right-radius: 0;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .preview-content {
+    z-index: 1001;
+    height: auto;
+    overflow: hidden;
+    background: #f9fafb;
+    border-bottom: 1px solid #eaecf0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+
+    .content-loading {
+      padding: 24px;
+      text-align: center;
+      color: #667085;
+      font-size: 13px;
+    }
+
+    .image-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .pdf-preview {
+      width: 100%;
+      height: 300px;
+      border: none;
+      border-radius: 4px;
+      background: white;
+    }
+  }
+
+  .preview-header {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #eaecf0;
+
+    .file-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: rgba(74, 144, 226, 0.1);
+      border-radius: 8px;
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .file-name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #101828;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .extension-badge {
+          display: inline-block;
+          padding: 2px 6px;
+          background: #4a90e2;
+          color: white;
+          font-size: 10px;
+          font-weight: 700;
+          border-radius: 3px;
+          text-transform: uppercase;
+          flex-shrink: 0;
+        }
+      }
+
+      .file-path {
+        font-size: 12px;
+        color: #667085;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .preview-body {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+
+      .stat-label {
+        color: #667085;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        color: #101828;
+        font-weight: 400;
+
+        &.exists {
+          color: #16a34a;
+          font-weight: 500;
+        }
+
+        &.missing {
+          color: #dc2626;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .preview-loading {
+    padding: 24px;
+    text-align: center;
+    color: #667085;
+    font-size: 13px;
+  }
+
+  .preview-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 1px solid #eaecf0;
+
+    div {
+      display: flex;
+      gap: 8px;
+    }
+  }
+</style>

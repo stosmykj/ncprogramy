@@ -1,0 +1,23 @@
+{
+  "program": {
+    "id": "Id",
+    "createdAt": "Vytvořeno",
+    "updatedAt": "Upraveno",
+    "programId": "Program",
+    "name": "Název",
+    "orderNumber": "Zakázka",
+    "deadlineAt": "Termín",
+    "arrivedAt": "Dorazilo",
+    "doneAt": "Hotovo",
+    "count": "Ks",
+    "design": "Nákres",
+    "drawing": "Výkres",
+    "clamping": "Upnutí",
+    "preparing": "Přípr.",
+    "programing": "Prog.",
+    "machineWorking": "Obráb.",
+    "extraTime": "Další čas",
+    "note": "Poznámka",
+    "totalTime": "Čas celkem"
+  }
+}

@@ -1,0 +1,16 @@
+import type { ColumnKeys, ColumnType, ColumnWidth, ComputeFunctionName } from './tableColumn';
+
+export interface DbTableColumn {
+  key: ColumnKeys;
+  createdAt: Date;
+  updatedAt: Date;
+  type: ColumnType;
+  position: number;
+  sort: 0 | -1 | 1;
+  sortPosition: number;
+  visible: boolean;
+  width: ColumnWidth;
+  align: string;
+  filter?: string;
+  computeFunctionName?: ComputeFunctionName;
+}
