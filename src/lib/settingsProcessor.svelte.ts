@@ -5,6 +5,7 @@ import type { DbSettings } from '../models/dbSettings';
 export const SETTINGS_VARS = $state({
   menuOpened: false,
   formatterOpened: false,
+  columnManagerOpened: false,
 });
 
 export async function getSettings(): Promise<Array<Settings>> {

@@ -93,6 +93,7 @@
 
 <style lang="scss">
   button {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: start;

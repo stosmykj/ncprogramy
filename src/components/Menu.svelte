@@ -12,6 +12,11 @@
     SETTINGS_VARS.menuOpened = false;
     SETTINGS_VARS.formatterOpened = true;
   }
+
+  function btn_columnManager() {
+    SETTINGS_VARS.menuOpened = false;
+    SETTINGS_VARS.columnManagerOpened = true;
+  }
 </script>
 
 <div class="menu" class:opened={SETTINGS_VARS.menuOpened}>
@@ -23,6 +28,9 @@
   > -->
   <Button onClick={btn_formattingRules} primary icon="mdiAlertCircle" class="full-total"
     ><span>Pravidla formátování</span></Button
+  >
+  <Button onClick={btn_columnManager} primary icon="mdiViewColumn" class="full-total"
+    ><span>Správa sloupců</span></Button
   >
 </div>
 

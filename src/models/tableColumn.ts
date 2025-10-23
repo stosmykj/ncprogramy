@@ -1,10 +1,9 @@
 import type { DbTableColumn } from './dbTableColumn';
 import type { Program } from './program';
 
-export type ComputeFunctionName = 'getTotalTime';
 export type ColumnKeys = keyof Program | 'totalTime' | 'actions';
 export type ColumnWidth = number | 'auto';
-export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file';
+export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'computed';
 
 export class TableColumn {
   private key: ColumnKeys;
@@ -18,7 +17,9 @@ export class TableColumn {
   private width: ColumnWidth = 'auto';
   private align: string = 'left';
   private filter?: string;
-  private computeFunctionName?: ComputeFunctionName;
+  private computeExpression?: string;
+  private archived: boolean = false;
+  private label?: string;
 
   constructor({
     key,
@@ -32,7 +33,9 @@ export class TableColumn {
     width,
     align,
     filter,
-    computeFunctionName,
+    computeExpression,
+    archived,
+    label,
   }: DbTableColumn) {
     this.key = key;
     this.createdAt = createdAt ? new Date(createdAt) : new Date();
@@ -45,7 +48,9 @@ export class TableColumn {
     this.width = width ?? 'auto';
     this.align = align ?? 'left';
     this.filter = filter ?? undefined;
-    this.computeFunctionName = computeFunctionName ?? undefined;
+    this.computeExpression = computeExpression ?? undefined;
+    this.archived = archived ?? false;
+    this.label = label ?? undefined;
   }
 
   get Key(): ColumnKeys {
@@ -136,16 +141,32 @@ export class TableColumn {
     this.filter = value;
   }
 
-  get ComputeFunctionName(): ComputeFunctionName | undefined {
-    return this.computeFunctionName;
+  get ComputeExpression(): string | undefined {
+    return this.computeExpression;
   }
 
-  set ComputeFunctionName(value: ComputeFunctionName | undefined) {
-    this.computeFunctionName = value;
+  set ComputeExpression(value: string | undefined) {
+    this.computeExpression = value;
+  }
+
+  get Archived(): boolean {
+    return this.archived;
+  }
+
+  set Archived(value: boolean) {
+    this.archived = value;
+  }
+
+  get Label(): string | undefined {
+    return this.label;
+  }
+
+  set Label(value: string | undefined) {
+    this.label = value;
   }
 
   toSqlUpdate(): string {
-    return `UPDATE table_columns SET 
+    return `UPDATE table_columns SET
       updatedAt = CURRENT_TIMESTAMP,
       type = $2,
       position = $3,
@@ -155,7 +176,9 @@ export class TableColumn {
       width = $7,
       align = $8,
       filter = $9,
-      computeFunctionName = $10
+      computeExpression = $10,
+      archived = $11,
+      label = $12
     WHERE key=$1;`;
   }
 
@@ -170,7 +193,9 @@ export class TableColumn {
       this.width,
       this.align,
       this.filter,
-      this.computeFunctionName,
+      this.computeExpression,
+      this.archived,
+      this.label,
     ];
   }
 }

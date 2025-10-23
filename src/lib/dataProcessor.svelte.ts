@@ -1,6 +1,5 @@
 import { Program } from '../models/program';
 import type { DbProgram } from '../models/dbProgram';
-import computationService from '../lib/computationService';
 import type { TableColumn } from '../models/tableColumn';
 import { File } from '../models/file';
 import { DatabaseError, handleError } from './errorHandler';
@@ -19,8 +18,6 @@ export const DATA_VARS = $state({
   isEditing: false,
   isImporting: false,
   quickSearch: '',
-  selectedRows: new Set<string>(),
-  bulkSelectMode: false,
 });
 
 export async function getProgramsWithDateRange(
@@ -32,7 +29,6 @@ export async function getProgramsWithDateRange(
     const whereParts: Array<string> = [];
     const params: Array<string> = [];
 
-    // Date range filter
     if (dateRangeStart || dateRangeEnd) {
       if (dateRangeStart && dateRangeEnd) {
         params.push(dateRangeStart.toISOString(), dateRangeEnd.toISOString());
@@ -75,7 +71,7 @@ export async function getPrograms(
 
       if (DATA_VARS.quickSearch) {
         const allColumns = await db.select<Array<{ key: string; type: string; visible: number }>>(
-          'SELECT key, type, visible FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt" ,"actions") AND computeFunctionName IS NULL'
+          'SELECT key, type, visible FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt" ,"actions")'
         );
 
         const quickSearchParts = allColumns.map((col) => {
@@ -97,7 +93,6 @@ export async function getPrograms(
         }
       }
 
-      // Column-specific filters
       const filterColumns = await db.select<Array<{ key: string; filter: string; type: string }>>(
         'SELECT key, filter, type FROM table_columns WHERE filter IS NOT NULL AND filter != ""'
       );
@@ -108,7 +103,6 @@ export async function getPrograms(
             const filter = col.filter;
             const columnName = col.type === 'file' ? `json_extract(${col.key}, '$.name')` : col.key;
 
-            // Parse filter operator and value(s)
             if (filter === 'empty:') {
               return `(${columnName} IS NULL OR ${columnName} = '')`;
             } else if (filter === 'notEmpty:') {
@@ -138,10 +132,8 @@ export async function getPrograms(
               params.push(filter.slice(2));
               return `${columnName} = $${params.length}`;
             } else {
-              // Default: contains (LIKE)
               params.push(`%${filter}%`);
 
-              // Handle different column types for LIKE
               if (col.type === 'number') {
                 return `CAST(${columnName} AS TEXT) LIKE $${params.length}`;
               } else if (col.type === 'date' || col.type === 'datetime') {
@@ -158,12 +150,10 @@ export async function getPrograms(
         whereParts.push(...filterParts);
       }
 
-      // Combine all WHERE conditions
       if (whereParts.length > 0) {
         whereClause = ` WHERE ${whereParts.join(' AND ')}`;
       }
 
-      // Get sorting configuration
       const sortColumns = await db.select<Array<{ key: string; sort: number; type: string }>>(
         'SELECT key, sort, type FROM table_columns WHERE sort != 0 ORDER BY sortPosition ASC'
       );
@@ -172,7 +162,6 @@ export async function getPrograms(
         const sortParts = sortColumns.map((col) => {
           const direction = col.sort === 1 ? 'ASC' : 'DESC';
 
-          // Handle File type columns - sort by JSON property 'name'
           if (col.type === 'file') {
             return `json_extract(${col.key}, '$.name') ${direction}`;
           }
@@ -184,13 +173,40 @@ export async function getPrograms(
       }
     }
 
-    // Update count with filters applied
     DATA_VARS.count = await getProgramsCount(whereClause, params);
     console.warn('Total programs count with filters:', DATA_VARS.count);
-    // Add pagination params
+
+    const allTableColumns = await db.select<
+      Array<{ key: string; type: string; computeExpression: string | null }>
+    >('SELECT key, type, computeExpression FROM table_columns');
+
+    const programsTableInfo = await db.select<Array<{ name: string }>>(
+      'PRAGMA table_info(programs)'
+    );
+    const existingColumnNames = programsTableInfo.map((col) => col.name);
+
+    const uiOnlyColumns = ['actions'];
+
+    const selectParts = allTableColumns
+      .filter((col) => {
+        if (uiOnlyColumns.includes(col.key)) return false;
+
+        if (col.type === 'computed' && col.computeExpression) return true;
+
+        return existingColumnNames.includes(col.key);
+      })
+      .map((col) => {
+        if (col.type === 'computed' && col.computeExpression) {
+          return `(${col.computeExpression}) AS ${col.key}`;
+        }
+        return col.key;
+      });
+
+    const selectClause = selectParts.join(', ');
+
     params.push(pageSize, (page - 1) * pageSize);
 
-    const query = `SELECT * FROM programs${whereClause}${orderByClause} LIMIT $${params.length - 1} OFFSET $${params.length}`;
+    const query = `SELECT ${selectClause} FROM programs${whereClause}${orderByClause} LIMIT $${params.length - 1} OFFSET $${params.length}`;
     return (await db.select<Array<DbProgram>>(query, params)).map(
       (row: DbProgram) => new Program(row)
     );
@@ -236,6 +252,7 @@ export async function addProgram(program: Program): Promise<void> {
     const result = await db.execute(program.toSqlInsert(), program.toArray());
     if (result.rowsAffected > 0) {
       PROGRAMS.splice(0, 0, program);
+      DATA_VARS.reloadData = true;
       DATA_VARS.refresh = {};
       showSuccess('Program byl úspěšně přidán');
     }
@@ -350,86 +367,7 @@ export async function removeProgram(program: Program): Promise<void> {
   }
 }
 
-export async function bulkDeletePrograms(programIds: Array<string>): Promise<void> {
-  try {
-    if (programIds.length === 0) {
-      return;
-    }
-
-    const db = await getDatabase();
-    const placeholders = programIds.map((_, i) => `$${i + 1}`).join(',');
-    const query = `DELETE FROM programs WHERE programId IN (${placeholders})`;
-
-    await db.execute(query, programIds);
-
-    // Remove from local state
-    for (const programId of programIds) {
-      const index = PROGRAMS.findIndex((p) => p.ProgramId === programId);
-      if (index !== -1) {
-        PROGRAMS.splice(index, 1);
-      }
-    }
-
-    // Clear selection
-    DATA_VARS.selectedRows.clear();
-    DATA_VARS.refresh = {};
-    showSuccess(`Úspěšně odstraněno ${programIds.length} záznamů`);
-  } catch (error) {
-    const message = handleError(error);
-    showError(message);
-    throw new DatabaseError('Failed to bulk delete programs', message);
-  }
-}
-
-export async function bulkUpdatePrograms(
-  programIds: Array<string>,
-  updates: Partial<Program>
-): Promise<void> {
-  try {
-    if (programIds.length === 0 || Object.keys(updates).length === 0) {
-      return;
-    }
-
-    const db = await getDatabase();
-    const setClauses: Array<string> = [];
-    const values: Array<string | number | Date | null> = [];
-
-    // Build SET clause
-    for (const [key, value] of Object.entries(updates)) {
-      values.push(value as string | number | Date | null);
-      setClauses.push(`${key} = $${values.length}`);
-    }
-
-    // Add programIds to parameters
-    const placeholders = programIds.map((_, i) => `$${values.length + i + 1}`).join(',');
-    values.push(...programIds);
-
-    const query = `UPDATE programs SET ${setClauses.join(', ')}, updatedAt = datetime('now') WHERE programId IN (${placeholders})`;
-
-    await db.execute(query, values);
-
-    // Update local state
-    for (const program of PROGRAMS) {
-      if (programIds.includes(program.ProgramId)) {
-        Object.assign(program, updates);
-        program.UpdatedAt = new Date();
-      }
-    }
-
-    DATA_VARS.refresh = {};
-    showSuccess(`Úspěšně aktualizováno ${programIds.length} záznamů`);
-  } catch (error) {
-    const message = handleError(error);
-    showError(message);
-    throw new DatabaseError('Failed to bulk update programs', message);
-  }
-}
-
 export function getDisplayValue(program: Program, header: TableColumn) {
-  if (header.Key === 'totalTime') {
-    return computationService[header.ComputeFunctionName!](program).toString();
-  }
-
   if (header.Key === 'actions') {
     return '';
   }
@@ -442,13 +380,9 @@ export function getDisplayValue(program: Program, header: TableColumn) {
     return value.toString();
   }
   if (value instanceof Date) {
-    // Format dates based on column type
     if (header.Type === 'date') {
       return formatDate(value);
-    } else if (header.Type === 'datetime') {
-      return formatDateTime(value);
     }
-    // Fallback for columns without explicit type (like createdAt, updatedAt)
     return formatDateTime(value);
   }
   if (value instanceof File) {

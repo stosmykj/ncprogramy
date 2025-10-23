@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { TableColumn } from '../models/tableColumn';
-  import { program } from '../langs/cs.json';
   import { applyFilter } from '$lib/tableColumnProcessor.svelte';
   import Button from './Button.svelte';
   import DatePicker from './DatePicker.svelte';
@@ -234,11 +233,11 @@
     class="filter-popover"
     style="top: {position.top}px; left: {position.left}px;"
     role="dialog"
-    aria-label="Filtr pro {program[column.Key as keyof typeof program] || column.Key}"
+    aria-label="Filtr pro {column.Label || column.Key}"
   >
     <div class="filter-header">
       <span class="filter-title">
-        {program[column.Key as keyof typeof program] || column.Key}
+        {column.Label || column.Key}
       </span>
       <Button onClick={() => (isOpen = false)} icon="mdiClose" onlyIcon />
     </div>

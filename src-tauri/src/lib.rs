@@ -6,150 +6,60 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 pub fn run() {
     let migrations = vec![
         Migration {
-        version: 1,
-        description: "Initial migration",
-        sql: "CREATE TABLE IF NOT EXISTS programs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                programId TEXT NOT NULL,
-                name TEXT,
-                orderNumber TEXT,
-                deadlineAt DATETIME,
-                arrivedAt DATETIME,
-                doneAt DATETIME,
-                count INTEGER DEFAULT 0,
-                design TEXT,
-                drawing TEXT,
-                clamping TEXT,
-                preparing INTEGER,
-                programing INTEGER,
-                machineWorking INTEGER,
-                extraTime TEXT,
-                note TEXT
-            );
-            CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                key TEXT NOT NULL UNIQUE,
-                type TEXT NOT NULL,
-                value TEXT
-            );
-            CREATE TABLE IF NOT EXISTS table_columns (
-                key TEXT PRIMARY KEY,
-                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                type TEXT NOT NULL DEFAULT 'string',
-                position INTEGER NOT NULL DEFAULT 0,
-                sort INTEGER NOT NULL DEFAULT 0,
-                sortPosition INTEGER NOT NULL DEFAULT 0,
-                visible BIT NOT NULL DEFAULT 1,
-                width TEXT NOT NULL DEFAULT 'auto',
-                align TEXT NOT NULL DEFAULT 'left',
-                filter TEXT,
-                computeFunctionName TEXT
-            );
-            
-            INSERT INTO table_columns (key, type, position, visible, width, align)
-            SELECT 'actions', '', 0, 1, '200', 'center'
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='actions');
-            INSERT INTO table_columns (key, type, position, visible)
-            SELECT 'id', 'number', 1, 0
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='id');
-            INSERT INTO table_columns (key, type, position, visible)
-            SELECT 'createdAt', 'datetime', 2, 0
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='createdAt');
-            INSERT INTO table_columns (key, type, position, visible)
-            SELECT 'updatedAt', 'datetime', 3, 0
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='updatedAt');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'programId', 'string', 4
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='programId');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'name', 'string', 5
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='name');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'orderNumber', 'string', 6
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='orderNumber');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'deadlineAt', 'date', 7
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='deadlineAt');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'arrivedAt', 'date', 8
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='arrivedAt');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'doneAt', 'date', 9
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='doneAt');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'count', 'number', 10
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='count');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'design', 'file', 11
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='design');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'drawing', 'file', 12
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='drawing');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'clamping', 'file', 13
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='clamping');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'preparing', 'number', 14
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='preparing');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'programing', 'number', 15
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='programing');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'machineWorking', 'number', 16
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='machineWorking');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'extraTime', 'string', 17
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='extraTime');
-            INSERT INTO table_columns (key, type, position)
-            SELECT 'note', 'string', 18
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='note');
-            INSERT INTO table_columns (key, type, position, computeFunctionName)
-            SELECT 'totalTime', 'number', 19, 'getTotalTime'
-            WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='totalTime');",
-        kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 2,
-            description: "Add indexes for performance optimization",
+            version: 1,
+            description: "Initial database setup",
             sql: "
-                -- Index for programId (frequently used for searching and filtering by year)
-                CREATE INDEX IF NOT EXISTS idx_programs_programId ON programs(programId);
+                -- Create programs table
+                CREATE TABLE IF NOT EXISTS programs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    programId TEXT NOT NULL,
+                    name TEXT,
+                    orderNumber TEXT,
+                    deadlineAt DATETIME,
+                    arrivedAt DATETIME,
+                    doneAt DATETIME,
+                    count INTEGER DEFAULT 0,
+                    design TEXT,
+                    drawing TEXT,
+                    clamping TEXT,
+                    preparing INTEGER,
+                    programing INTEGER,
+                    machineWorking INTEGER,
+                    extraTime TEXT,
+                    note TEXT
+                );
 
-                -- Index for deadlineAt (frequently sorted and filtered)
-                CREATE INDEX IF NOT EXISTS idx_programs_deadlineAt ON programs(deadlineAt);
+                -- Create settings table
+                CREATE TABLE IF NOT EXISTS settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    key TEXT NOT NULL UNIQUE,
+                    type TEXT NOT NULL,
+                    value TEXT
+                );
 
-                -- Index for arrivedAt (frequently sorted)
-                CREATE INDEX IF NOT EXISTS idx_programs_arrivedAt ON programs(arrivedAt);
+                -- Create table_columns metadata table
+                CREATE TABLE IF NOT EXISTS table_columns (
+                    key TEXT PRIMARY KEY,
+                    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    type TEXT NOT NULL DEFAULT 'string',
+                    position INTEGER NOT NULL DEFAULT 0,
+                    sort INTEGER NOT NULL DEFAULT 0,
+                    sortPosition INTEGER NOT NULL DEFAULT 0,
+                    visible BIT NOT NULL DEFAULT 1,
+                    width TEXT NOT NULL DEFAULT 'auto',
+                    align TEXT NOT NULL DEFAULT 'left',
+                    filter TEXT,
+                    archived BIT NOT NULL DEFAULT 0,
+                    label TEXT,
+                    computeExpression TEXT
+                );
 
-                -- Index for doneAt (frequently sorted and filtered for completed items)
-                CREATE INDEX IF NOT EXISTS idx_programs_doneAt ON programs(doneAt);
-
-                -- Index for createdAt (sorted by creation date)
-                CREATE INDEX IF NOT EXISTS idx_programs_createdAt ON programs(createdAt);
-
-                -- Index for updatedAt (useful for finding recently modified items)
-                CREATE INDEX IF NOT EXISTS idx_programs_updatedAt ON programs(updatedAt);
-
-                -- Composite index for common query pattern: programId + date range
-                CREATE INDEX IF NOT EXISTS idx_programs_programId_deadlineAt ON programs(programId, deadlineAt);
-
-                -- Index for table_columns sort and sortPosition (used in every data load)
-                CREATE INDEX IF NOT EXISTS idx_table_columns_sort ON table_columns(sort, sortPosition);
-
-                -- Index for table_columns position (used for ordering)
-                CREATE INDEX IF NOT EXISTS idx_table_columns_position ON table_columns(position);
-            ",
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 3,
-            description: "Add formatting_rules table with nested condition tree support",
-            sql: "
+                -- Create formatting_rules table
                 CREATE TABLE IF NOT EXISTS formatting_rules (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -165,11 +75,105 @@ pub fn run() {
                     priority INTEGER NOT NULL DEFAULT 0
                 );
 
-                -- Index for enabled rules (used in rendering)
+                -- Create indexes for programs table
+                CREATE INDEX IF NOT EXISTS idx_programs_programId ON programs(programId);
+                CREATE INDEX IF NOT EXISTS idx_programs_deadlineAt ON programs(deadlineAt);
+                CREATE INDEX IF NOT EXISTS idx_programs_arrivedAt ON programs(arrivedAt);
+                CREATE INDEX IF NOT EXISTS idx_programs_doneAt ON programs(doneAt);
+                CREATE INDEX IF NOT EXISTS idx_programs_createdAt ON programs(createdAt);
+                CREATE INDEX IF NOT EXISTS idx_programs_updatedAt ON programs(updatedAt);
+                CREATE INDEX IF NOT EXISTS idx_programs_programId_deadlineAt ON programs(programId, deadlineAt);
+
+                -- Create indexes for table_columns
+                CREATE INDEX IF NOT EXISTS idx_table_columns_sort ON table_columns(sort, sortPosition);
+                CREATE INDEX IF NOT EXISTS idx_table_columns_position ON table_columns(position);
+
+                -- Create index for formatting_rules
                 CREATE INDEX IF NOT EXISTS idx_formatting_rules_enabled ON formatting_rules(enabled, priority);
 
+                -- Insert default column configurations
+                INSERT INTO table_columns (key, type, position, visible, width, align, label)
+                SELECT 'actions', '', 0, 1, '200', 'center', 'Akce'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='actions');
+
+                INSERT INTO table_columns (key, type, position, visible, label)
+                SELECT 'id', 'number', 1, 0, 'ID'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='id');
+
+                INSERT INTO table_columns (key, type, position, visible, label)
+                SELECT 'createdAt', 'datetime', 2, 0, 'Vytvořeno'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='createdAt');
+
+                INSERT INTO table_columns (key, type, position, visible, label)
+                SELECT 'updatedAt', 'datetime', 3, 0, 'Upraveno'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='updatedAt');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'programId', 'string', 4, 'Číslo programu'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='programId');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'name', 'string', 5, 'Název'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='name');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'orderNumber', 'string', 6, 'Číslo zakázky'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='orderNumber');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'deadlineAt', 'date', 7, 'Termín'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='deadlineAt');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'arrivedAt', 'date', 8, 'Přijato'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='arrivedAt');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'doneAt', 'date', 9, 'Dokončeno'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='doneAt');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'count', 'number', 10, 'Počet kusů'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='count');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'design', 'file', 11, 'Design'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='design');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'drawing', 'file', 12, 'Výkres'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='drawing');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'clamping', 'file', 13, 'Upínání'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='clamping');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'preparing', 'number', 14, 'Příprava'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='preparing');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'programing', 'number', 15, 'Programování'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='programing');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'machineWorking', 'number', 16, 'Strojní čas'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='machineWorking');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'extraTime', 'string', 17, 'Extra čas'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='extraTime');
+
+                INSERT INTO table_columns (key, type, position, label)
+                SELECT 'note', 'string', 18, 'Poznámka'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='note');
+
+                -- Insert totalTime as a computed column
+                INSERT INTO table_columns (key, type, position, computeExpression, label)
+                SELECT 'totalTime', 'computed', 19, '(COALESCE(count, 0) * COALESCE(machineWorking, 0)) + COALESCE(programing, 0) + COALESCE(preparing, 0)', 'Celkový čas'
+                WHERE NOT EXISTS (SELECT 1 FROM table_columns WHERE key='totalTime');
+
                 -- Insert default formatting rules
-                -- Note: Completed items rule has higher priority (lower number) so it takes precedence
                 INSERT INTO formatting_rules (name, target, conditionTree, backgroundColor, textColor, enabled, priority)
                 SELECT 'Completed items', 'row', '{\"logic\":\"AND\",\"conditions\":[{\"column\":\"doneAt\",\"operator\":\"notEmpty\"}]}', '#dcfce7', '#166534', 1, 1
                 WHERE NOT EXISTS (SELECT 1 FROM formatting_rules WHERE name='Completed items');

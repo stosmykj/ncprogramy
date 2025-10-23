@@ -3,6 +3,7 @@ import {
   mdiAlertCircle,
   mdiAlert,
   mdiInformation,
+  mdiInformationOutline,
   mdiClose,
   mdiChevronDown,
   mdiChevronUp,
@@ -28,6 +29,16 @@ import {
   mdiFilter,
   mdiFilterOutline,
   mdiFileEye,
+  mdiDragVertical,
+  mdiEye,
+  mdiEyeOff,
+  mdiViewColumn,
+  mdiArchive,
+  mdiArchiveArrowUp,
+  mdiPlus,
+  mdiPencil,
+  mdiCheck,
+  mdiCancel,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -35,6 +46,7 @@ export const iconMap = {
   mdiAlertCircle,
   mdiAlert,
   mdiInformation,
+  mdiInformationOutline,
   mdiClose,
   mdiChevronDown,
   mdiChevronUp,
@@ -60,6 +72,16 @@ export const iconMap = {
   mdiFilter,
   mdiFilterOutline,
   mdiFileEye,
+  mdiDragVertical,
+  mdiEye,
+  mdiEyeOff,
+  mdiViewColumn,
+  mdiArchive,
+  mdiArchiveArrowUp,
+  mdiPlus,
+  mdiPencil,
+  mdiCheck,
+  mdiCancel,
 } as const;
 
 export type IconName = keyof typeof iconMap;

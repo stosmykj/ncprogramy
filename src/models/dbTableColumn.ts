@@ -1,4 +1,4 @@
-import type { ColumnKeys, ColumnType, ColumnWidth, ComputeFunctionName } from './tableColumn';
+import type { ColumnKeys, ColumnType, ColumnWidth } from './tableColumn';
 
 export interface DbTableColumn {
   key: ColumnKeys;
@@ -12,5 +12,7 @@ export interface DbTableColumn {
   width: ColumnWidth;
   align: string;
   filter?: string;
-  computeFunctionName?: ComputeFunctionName;
+  computeExpression?: string;
+  archived?: boolean;
+  label?: string;
 }

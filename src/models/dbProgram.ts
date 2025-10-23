@@ -17,4 +17,5 @@ export interface DbProgram {
   machineWorking?: number;
   extraTime?: string;
   note?: string;
+  totalTime?: number;
 }

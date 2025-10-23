@@ -77,7 +77,6 @@
   });
 
   async function processKeyDown(event: KeyboardEvent) {
-    // Don't handle shortcuts if user is typing in an input/textarea (except when editing cells)
     const target = event.target as HTMLElement;
     const isInputElement = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA';
 
@@ -151,12 +150,9 @@
   onclick={() => (tableBodyContextMenuData.opened = false)}
 />
 
-<table role="grid" aria-label="Tabulka NC programů" aria-rowcount={DATA_VARS.count}>
+<table role="grid">
   <thead>
     <tr>
-      {#if DATA_VARS.bulkSelectMode}
-        <th class="checkbox-header"></th>
-      {/if}
       {#each visibleColumns as header}
         <TableHeader {header} />
       {/each}
@@ -176,15 +172,13 @@
       {/key}
     {:else}
       <tr>
-        <td colspan={visibleColumns.length} role="gridcell" aria-label="Žádná data">
-          Žádné záznamy
-        </td>
+        <td colspan={visibleColumns.length} role="gridcell"> Žádné záznamy </td>
       </tr>
     {/if}
   </tbody>
 </table>
-<div class="table-foot" role="navigation" aria-label="Stránkování tabulky">
-  <div class="pages" role="group" aria-label="Stránky">
+<div class="table-foot" role="navigation">
+  <div class="pages" role="group">
     {#each visiblePages as pageNumber}
       {#if typeof pageNumber !== 'string'}
         <button
@@ -199,7 +193,7 @@
       {/if}
     {/each}
   </div>
-  <div class="info" role="status" aria-live="polite" aria-label="Informace o záznamech">
+  <div class="info" role="status" aria-live="polite">
     Záznamů: {PROGRAMS.length} / {DATA_VARS.count}
   </div>
 </div>
@@ -231,6 +225,7 @@
     border-collapse: separate;
     border-spacing: 0;
     overflow-y: auto;
+    overflow-x: auto;
   }
 
   thead {
@@ -242,6 +237,7 @@
 
     tr {
       display: flex;
+      min-width: max-content;
     }
 
     .checkbox-header {

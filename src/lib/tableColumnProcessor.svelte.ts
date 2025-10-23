@@ -10,9 +10,12 @@ export const TABLECOLUMNS = $state<Array<TableColumn>>([]);
 export async function initTableColumns(): Promise<void> {
   try {
     const db = await getDatabase();
+    TABLECOLUMNS.splice(0, TABLECOLUMNS.length);
     TABLECOLUMNS.push(
       ...(
-        await db.select<Array<DbTableColumn>>('SELECT * FROM table_columns ORDER BY position')
+        await db.select<Array<DbTableColumn>>(
+          'SELECT * FROM table_columns WHERE archived = 0 ORDER BY position'
+        )
       ).map((row: DbTableColumn) => new TableColumn(row))
     );
   } catch (error) {

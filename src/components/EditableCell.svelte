@@ -4,13 +4,12 @@
   import { updateProgram, PROGRAMS } from '$lib/dataProcessor.svelte';
   import { File } from '../models/file';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
-  import FileEditor from './editors/FileEditor.svelte';
-  import TextEditor from './editors/TextEditor.svelte';
-  import NumberEditor from './editors/NumberEditor.svelte';
-  import DateEditor from './editors/DateEditor.svelte';
-  import DateTimeEditor from './editors/DateTimeEditor.svelte';
-  import TextAreaEditor from './editors/TextAreaEditor.svelte';
-  import { format } from 'date-fns';
+  import FileEditor from './Editors/FileEditor.svelte';
+  import TextEditor from './Editors/TextEditor.svelte';
+  import NumberEditor from './Editors/NumberEditor.svelte';
+  import DateEditor from './Editors/DateEditor.svelte';
+  import DateTimeEditor from './Editors/DateTimeEditor.svelte';
+  import TextAreaEditor from './Editors/TextAreaEditor.svelte';
 
   const { program, header }: { program: Program; header: TableColumn } = $props();
 

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { TableColumn } from '../models/tableColumn';
-  import { program } from '../langs/cs.json';
   import { toggleSort, updateTableColumn } from '$lib/tableColumnProcessor.svelte';
   import Icon from './Icon.svelte';
   import FilterPopover from './FilterPopover.svelte';
@@ -132,6 +131,7 @@
       const db = await getDatabase();
 
       for (let i = 0; i < TABLECOLUMNS.length; i++) {
+        TABLECOLUMNS[i].Position = i;
         await db.execute('UPDATE table_columns SET position = $1 WHERE key = $2', [
           i,
           TABLECOLUMNS[i].Key,
@@ -169,7 +169,7 @@
     style="width: {header.Width === 'auto' ? 'auto' : `${newWidth ?? header.Width}px`}"
     role="columnheader"
     scope="col"
-    aria-label={program[header.Key as keyof typeof program] || header.Key}
+    aria-label={header.Label || header.Key}
     aria-sort={header.Sort === 1 ? 'ascending' : header.Sort === -1 ? 'descending' : 'none'}
     draggable="true"
     ondragstart={handleDragStart}
@@ -182,7 +182,7 @@
   >
     <div class="header-content">
       <div class="title-row">
-        <span class="title">{program[header.Key as keyof typeof program] || header.Key}</span>
+        <span class="title">{header.Label || header.Key}</span>
       </div>
       <div class="actions-row">
         <Button
@@ -200,7 +200,7 @@
           color="#fff"
           style="background: {header.Sort !== 0
             ? '#22aa44'
-            : 'none'}; padding: 6px; border: none; height: 22px;"
+            : 'none'}; padding: 3px; border: none; height: 22px;"
         >
           {#if header.SortPosition > 0}<span class="sort-number">{header.SortPosition}</span>{/if}
         </Button>
@@ -324,7 +324,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
     }
 
     .resize-handle {

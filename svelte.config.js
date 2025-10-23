@@ -9,6 +9,10 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
+    alias: {
+      '$models': './src/models',
+      '$components': './src/components',
+    }
   },
 };
 

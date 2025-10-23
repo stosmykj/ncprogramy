@@ -4,6 +4,7 @@
   import TopBar from '../components/TopBar.svelte';
   import Menu from '../components/Menu.svelte';
   import FormattingRulesEditor from '../components/FormattingRulesEditor.svelte';
+  import ColumnManagerDialog from '../components/ColumnManager/ColumnManagerDialog.svelte';
 
   const preventedKeys = ['ArrowUp', 'ArrowDown'];
 
@@ -32,6 +33,7 @@
 </main>
 <Import />
 <FormattingRulesEditor />
+<ColumnManagerDialog />
 
 <style lang="scss">
   .table-container {

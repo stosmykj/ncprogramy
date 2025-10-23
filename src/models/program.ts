@@ -21,6 +21,7 @@ export class Program {
   private machineWorking?: number;
   private extraTime?: string;
   private note?: string;
+  private totalTime?: number;
 
   constructor({
     id,
@@ -41,6 +42,7 @@ export class Program {
     machineWorking,
     extraTime,
     note,
+    totalTime,
   }: DbProgram) {
     this.id = id;
     this.createdAt = createdAt ? new Date(createdAt) : new Date();
@@ -60,6 +62,7 @@ export class Program {
     this.machineWorking = machineWorking;
     this.extraTime = extraTime;
     this.note = note;
+    this.totalTime = totalTime;
   }
 
   get Id(): number | undefined {
@@ -204,6 +207,10 @@ export class Program {
 
   set Note(value: string | undefined) {
     this.note = value;
+  }
+
+  get TotalTime(): number | undefined {
+    return this.totalTime;
   }
 
   toSqlInsert(): string {
