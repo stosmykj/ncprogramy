@@ -18,6 +18,18 @@
       "identifier": "fs:allow-read",
       "allow": [{ "path": "**" }]
     },
+    {
+      "identifier": "fs:allow-write",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-copy-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "**" }]
+    },
     "fs:default",
     "sql:default",
     "sql:allow-execute",
