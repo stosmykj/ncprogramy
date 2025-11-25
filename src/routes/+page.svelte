@@ -1,12 +1,30 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Table from '../components/Table.svelte';
   import TopBar from '../components/TopBar.svelte';
   import Menu from '../components/Menu.svelte';
   import FormattingRulesEditor from '../components/FormattingRulesEditor.svelte';
   import ColumnManagerDialog from '../components/ColumnManager/ColumnManagerDialog.svelte';
   import BackupManager from '../components/BackupManager.svelte';
+  import InitialSetup from '../components/InitialSetup.svelte';
+  import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
+  import { SETTINGS_VARS, checkAppInitialized } from '$lib/settingsProcessor.svelte';
 
   const preventedKeys = ['ArrowUp', 'ArrowDown'];
+  let isLoading = $state(true);
+
+  onMount(async () => {
+    await checkAppInitialized();
+    await initTableColumns();
+    isLoading = false;
+  });
+
+  // Watch for column manager close to refresh column state
+  $effect(() => {
+    if (!SETTINGS_VARS.columnManagerOpened && !isLoading) {
+      initTableColumns();
+    }
+  });
 
   function preventScrolling(e: KeyboardEvent) {
     const target = e.target as HTMLElement;
@@ -14,6 +32,10 @@
     if (['BODY', 'TD'].includes(target.tagName) && preventedKeys.includes(e.key)) {
       e.preventDefault();
     }
+  }
+
+  function handleSetupComplete() {
+    initTableColumns();
   }
 </script>
 
@@ -27,9 +49,15 @@
     <TopBar />
     <Menu />
   </div>
-  <div class="table-container">
-    <Table />
-  </div>
+  {#if isLoading}
+    <div class="loading">Načítání...</div>
+  {:else if !SETTINGS_VARS.isAppInitialized}
+    <InitialSetup onComplete={handleSetupComplete} />
+  {:else}
+    <div class="table-container">
+      <Table />
+    </div>
+  {/if}
 </main>
 <FormattingRulesEditor />
 <ColumnManagerDialog />
@@ -40,5 +68,14 @@
     max-width: 100%;
     background: #fff;
     overflow-x: auto;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 7rem);
+    font-size: 1.25rem;
+    color: #667085;
   }
 </style>

@@ -7,7 +7,30 @@ export const SETTINGS_VARS = $state({
   formatterOpened: false,
   columnManagerOpened: false,
   backupManagerOpened: false,
+  isAppInitialized: false,
 });
+
+const APP_INITIALIZED_KEY = 'app_initialized';
+
+export async function checkAppInitialized(): Promise<boolean> {
+  const db = await Database.load('sqlite:data.db');
+  const result = await db.select<Array<{ value: string }>>(
+    'SELECT value FROM settings WHERE key = ?',
+    [APP_INITIALIZED_KEY]
+  );
+  const isInitialized = result.length > 0 && result[0].value === 'true';
+  SETTINGS_VARS.isAppInitialized = isInitialized;
+  return isInitialized;
+}
+
+export async function markAppAsInitialized(): Promise<void> {
+  const db = await Database.load('sqlite:data.db');
+  await db.execute(
+    'INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)',
+    [APP_INITIALIZED_KEY, 'boolean', 'true']
+  );
+  SETTINGS_VARS.isAppInitialized = true;
+}
 
 export async function getSettings(): Promise<Array<Settings>> {
   const db = await Database.load('sqlite:data.db');

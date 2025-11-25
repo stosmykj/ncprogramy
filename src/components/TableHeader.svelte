@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { TableColumn } from '../models/tableColumn';
   import { toggleSort, updateTableColumn } from '$lib/tableColumnProcessor.svelte';
-  import Icon from './Icon.svelte';
   import FilterPopover from './FilterPopover.svelte';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
   import Button from './Button.svelte';
@@ -138,7 +137,7 @@
         ]);
       }
 
-      DATA_VARS.reloadData = true;
+      DATA_VARS.refresh = true;
     } catch (error) {
       console.error('Failed to save column order:', error);
     }
@@ -316,7 +315,6 @@
         font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
       }
     }
 

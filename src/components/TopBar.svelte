@@ -1,20 +1,51 @@
 <script lang="ts">
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import { UPDATE_STATE, checkForUpdates, initializeUpdater } from '$lib/updater.svelte';
+  import { getTotalBackupSize, formatFileSize } from '$lib/backupProcessor';
   import Button from './Button.svelte';
-  import Dashboard from './Dashboard.svelte';
   import KeyboardShortcuts from './KeyboardShortcuts.svelte';
   import QuickSearch from './QuickSearch.svelte';
   import UpdateDialog from './UpdateDialog.svelte';
+  import Icon from './Icon.svelte';
+
+  let backupSize = $state(0);
+
+  // Size thresholds in bytes
+  const SIZE_THRESHOLD_YELLOW = 10 * 1024 * 1024; // 10 MB
+  const SIZE_THRESHOLD_RED = 50 * 1024 * 1024; // 50 MB
+
+  let backupColor = $derived(
+    backupSize >= SIZE_THRESHOLD_RED
+      ? '#ef4444' // red
+      : backupSize >= SIZE_THRESHOLD_YELLOW
+        ? '#f59e0b' // yellow/orange
+        : '#10b981' // green
+  );
 
   // Initialize updater on component mount
   $effect(() => {
     initializeUpdater();
+    loadBackupSize();
   });
+
+  async function loadBackupSize() {
+    backupSize = await getTotalBackupSize();
+  }
+
+  function openBackupManager() {
+    SETTINGS_VARS.backupManagerOpened = true;
+  }
 
   function handleUpdateCheck() {
     UPDATE_STATE.showDialog = true;
   }
+
+  // Refresh backup size when backup manager closes
+  $effect(() => {
+    if (!SETTINGS_VARS.backupManagerOpened) {
+      loadBackupSize();
+    }
+  });
 </script>
 
 <div class="top-bar">
@@ -29,8 +60,11 @@
     <QuickSearch />
   </div>
   <div class="section">
-    <Dashboard />
     <KeyboardShortcuts />
+    <button class="backup-indicator" onclick={openBackupManager} title="Správa záloh">
+      <Icon name="mdiBackupRestore" size={18} color={backupColor} />
+      <span class="backup-size" style="color: {backupColor}">{formatFileSize(backupSize)}</span>
+    </button>
     <Button
       onClick={handleUpdateCheck}
       icon="mdiDownloadCircleOutline"
@@ -70,6 +104,28 @@
         justify-content: end;
         padding: 0 16px;
       }
+    }
+  }
+
+  .backup-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .backup-size {
+      font-size: 12px;
+      color: #a0aec0;
+      font-weight: 500;
     }
   }
 

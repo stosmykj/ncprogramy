@@ -11,6 +11,7 @@
   import { initFormattingRules } from '$lib/formattingProcessor.svelte';
   import { Program } from '../models/program';
   import KeyboardShortcut from './KeyboardShortcut.svelte';
+  import { TableColumn } from '$models/tableColumn';
 
   let page: number = $state(1);
   let pageSize: number = $state(50);
@@ -43,7 +44,26 @@
     ];
   });
 
-  const visibleColumns = $derived(TABLECOLUMNS.filter((header) => header.Visible));
+  const visibleColumns = $derived.by(() => {
+    return [new TableColumn({
+        key: 'actions',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        type: 'string',
+        position: 0,
+        sort: 0,
+        sortPosition: 0,
+        visible: true,
+        width: 60,
+        filter: undefined,
+        computeExpression: undefined,
+        archived: false,
+        label: '',
+        align: 'center'
+      }), 
+      ...TABLECOLUMNS.filter((header) => header.Visible)
+    ];
+  });
 
   async function pageChange(pageNumber: number) {
     page = pageNumber;
@@ -56,7 +76,7 @@
     DATA_VARS.refresh = {};
   }
 
-  $effect(() => {
+  $effect(() => {    
     if (DATA_VARS.reloadData) {
       DATA_VARS.reloadData = false;
       refreshData();
@@ -66,7 +86,7 @@
   onMount(async () => {
     PROGRAMS.splice(0, PROGRAMS.length);
     PROGRAMS.push(...(await getPrograms(page, pageSize)));
-
+    console.log('init');
     await initTableColumns();
     await initFormattingRules();
   });

@@ -7,6 +7,7 @@ import {
   mdiClose,
   mdiChevronDown,
   mdiChevronUp,
+  mdiChevronRight,
   mdiImport,
   mdiExport,
   mdiMenu,
@@ -41,6 +42,7 @@ import {
   mdiPencil,
   mdiCheck,
   mdiCancel,
+  mdiTableLarge,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -52,6 +54,7 @@ export const iconMap = {
   mdiClose,
   mdiChevronDown,
   mdiChevronUp,
+  mdiChevronRight,
   mdiImport,
   mdiExport,
   mdiMenu,
@@ -86,6 +89,7 @@ export const iconMap = {
   mdiPencil,
   mdiCheck,
   mdiCancel,
+  mdiTableLarge,
 } as const;
 
 export type IconName = keyof typeof iconMap;

@@ -6,6 +6,7 @@ import {
   remove,
   exists,
   mkdir,
+  stat,
   BaseDirectory,
 } from '@tauri-apps/plugin-fs';
 import { getProgramsWithDateRange, DATA_VARS } from './dataProcessor.svelte';
@@ -15,9 +16,17 @@ import { File } from '../models/file';
 import { getDatabase } from './database';
 import { initTableColumns } from './tableColumnProcessor.svelte';
 import { initFormattingRules } from './formattingProcessor.svelte';
+import { markAppAsInitialized } from './settingsProcessor.svelte';
 
 const BACKUP_FOLDER = 'backups';
-const BACKUP_RETENTION_DAYS = 3;
+
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
 
 async function ensureBackupDirectoryExists(): Promise<void> {
   const dirExists = await exists(BACKUP_FOLDER, { baseDir: BaseDirectory.AppData });
@@ -49,35 +58,74 @@ export interface BackupInfo {
   filename: string;
   createdAt: Date | null;
   programCount: number | null;
+  size: number;
 }
 
 export async function getBackupList(): Promise<BackupInfo[]> {
   await ensureBackupDirectoryExists();
   const files = await getBackupFiles();
-  const backups: BackupInfo[] = [];
 
-  for (const filename of files) {
-    const date = parseBackupDate(filename);
-    let programCount: number | null = null;
+  // Process all files in parallel - only get stats, not content
+  const backups = await Promise.all(
+    files.map(async (filename) => {
+      const date = parseBackupDate(filename);
+      let size = 0;
 
-    try {
-      const content = await readTextFile(`${BACKUP_FOLDER}/${filename}`, {
-        baseDir: BaseDirectory.AppData,
-      });
-      const data = JSON.parse(content);
-      programCount = data.programCount ?? data.programs?.length ?? null;
-    } catch {
-      // Ignore parse errors
-    }
+      try {
+        const stats = await stat(`${BACKUP_FOLDER}/${filename}`, {
+          baseDir: BaseDirectory.AppData,
+        });
+        size = Number(stats.size);
+      } catch {
+        // Ignore stat errors
+      }
 
-    backups.push({
-      filename,
-      createdAt: date,
-      programCount,
-    });
-  }
+      return {
+        filename,
+        createdAt: date,
+        programCount: null, // Loaded lazily via getBackupProgramCount
+        size,
+      };
+    })
+  );
 
   return backups;
+}
+
+export async function getBackupProgramCount(filename: string): Promise<number | null> {
+  try {
+    const content = await readTextFile(`${BACKUP_FOLDER}/${filename}`, {
+      baseDir: BaseDirectory.AppData,
+    });
+    const data = JSON.parse(content);
+    return data.programCount ?? data.programs?.length ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTotalBackupSize(): Promise<number> {
+  try {
+    await ensureBackupDirectoryExists();
+    const files = await getBackupFiles();
+
+    const sizes = await Promise.all(
+      files.map(async (filename) => {
+        try {
+          const stats = await stat(`${BACKUP_FOLDER}/${filename}`, {
+            baseDir: BaseDirectory.AppData,
+          });
+          return Number(stats.size);
+        } catch {
+          return 0;
+        }
+      })
+    );
+
+    return sizes.reduce((sum, size) => sum + size, 0);
+  } catch {
+    return 0;
+  }
 }
 
 async function getAllTableColumns(): Promise<BackupTableColumn[]> {
@@ -284,6 +332,7 @@ export async function restoreBackup(filename: string): Promise<boolean> {
     DATA_VARS.isImporting = false;
     DATA_VARS.reloadData = true;
 
+    await markAppAsInitialized();
     showSuccess(`Záloha obnovena (${backupData.programs?.length || 0} záznamů)`);
     return true;
   } catch (error) {
@@ -306,6 +355,57 @@ export async function deleteBackup(filename: string): Promise<boolean> {
   }
 }
 
+export async function clearAllBackups(): Promise<boolean> {
+  try {
+    const files = await getBackupFiles();
+    for (const file of files) {
+      await remove(`${BACKUP_FOLDER}/${file}`, { baseDir: BaseDirectory.AppData });
+    }
+    showSuccess(`Smazáno ${files.length} záloh`);
+    return true;
+  } catch (error) {
+    console.error('Failed to clear all backups:', error);
+    showError('Nepodařilo se smazat všechny zálohy');
+    return false;
+  }
+}
+
+export async function clearDuplicateBackups(): Promise<boolean> {
+  try {
+    const files = await getBackupFiles(); // Already sorted, most recent first
+    const keepFiles = new Set<string>();
+    const seenDays = new Set<string>();
+
+    // Group by day, keep only the most recent (first) backup for each day
+    for (const file of files) {
+      const date = parseBackupDate(file);
+      if (date) {
+        const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        if (!seenDays.has(dayKey)) {
+          seenDays.add(dayKey);
+          keepFiles.add(file);
+        }
+      }
+    }
+
+    // Delete files not in keepFiles
+    let deletedCount = 0;
+    for (const file of files) {
+      if (!keepFiles.has(file)) {
+        await remove(`${BACKUP_FOLDER}/${file}`, { baseDir: BaseDirectory.AppData });
+        deletedCount++;
+      }
+    }
+
+    showSuccess(`Smazáno ${deletedCount} duplicitních záloh`);
+    return true;
+  } catch (error) {
+    console.error('Failed to clear duplicate backups:', error);
+    showError('Nepodařilo se smazat duplicitní zálohy');
+    return false;
+  }
+}
+
 function parseBackupDate(filename: string): Date | null {
   // Format: backup_YYYY-MM-DDTHH-MM-SS.json
   const match = filename.match(/backup_(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})\.json/);
@@ -320,20 +420,6 @@ function parseBackupDate(filename: string): Date | null {
     parseInt(minute),
     parseInt(second)
   );
-}
-
-async function cleanOldBackups(): Promise<void> {
-  const backupFiles = await getBackupFiles();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - BACKUP_RETENTION_DAYS);
-
-  for (const file of backupFiles) {
-    const backupDate = parseBackupDate(file);
-    if (backupDate && backupDate < cutoffDate) {
-      await remove(`${BACKUP_FOLDER}/${file}`, { baseDir: BaseDirectory.AppData });
-      console.log(`Deleted old backup: ${file}`);
-    }
-  }
 }
 
 async function createBackupData(): Promise<BackupData> {
@@ -364,7 +450,6 @@ export async function createBackup(silent: boolean = false): Promise<boolean> {
     await writeTextFile(filePath, JSON.stringify(backupData, null, 2), {
       baseDir: BaseDirectory.AppData,
     });
-    await cleanOldBackups();
 
     if (!silent) {
       showSuccess(`Záloha vytvořena: ${filename}`);
@@ -485,6 +570,7 @@ export async function importBackup(): Promise<void> {
     DATA_VARS.isImporting = false;
     DATA_VARS.reloadData = true;
 
+    await markAppAsInitialized();
     showSuccess(`Importováno ${backupData.programs?.length || 0} záznamů ze zálohy`);
   } catch (error) {
     console.error('Failed to import backup:', error);

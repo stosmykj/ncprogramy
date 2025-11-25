@@ -3,8 +3,8 @@
 
   let {
     expression = $bindable(''),
-    columnId: columnKey,
-  }: { expression: string; columnId: string } = $props();
+    columnKey,
+  }: { expression?: string; columnKey?: string } = $props();
 
   type ExpressionPart = {
     type: 'column' | 'operator' | 'constant' | 'function';

@@ -8,6 +8,81 @@ import { getDatabase } from './database';
 import { formatDate, formatDateTime } from './dateFormatter.svelte';
 import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
 
+// Extract column references from a computed expression
+function extractColumnReferences(expression: string): string[] {
+  const sqlKeywords = [
+    'COALESCE', 'AS', 'AND', 'OR', 'NOT', 'NULL', 'TRUE', 'FALSE',
+    'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'CAST', 'TEXT', 'INTEGER', 'REAL'
+  ];
+
+  const refs: string[] = [];
+  const identifiers = expression.match(/\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g) || [];
+
+  for (const id of identifiers) {
+    if (sqlKeywords.includes(id.toUpperCase())) continue;
+    if (!refs.includes(id)) {
+      refs.push(id);
+    }
+  }
+
+  return refs;
+}
+
+// Build a set of valid column references (physical columns + valid computed columns)
+// Also returns a map of computed column keys to their fully expanded expressions
+function buildValidColumnSet(
+  physicalColumns: string[],
+  computedColumns: Array<{ key: string; computeExpression: string | null }>
+): { validColumns: Set<string>; expandedExpressions: Map<string, string> } {
+  const validColumns = new Set<string>(physicalColumns);
+  const expandedExpressions = new Map<string, string>();
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const col of computedColumns) {
+      if (validColumns.has(col.key)) continue; // Already validated
+      if (!col.computeExpression) continue;
+
+      const refs = extractColumnReferences(col.computeExpression);
+      const allRefsValid = refs.every(ref => validColumns.has(ref));
+
+      if (allRefsValid) {
+        // Expand any computed column references in this expression
+        let expandedExpr = col.computeExpression;
+        for (const ref of refs) {
+          if (expandedExpressions.has(ref)) {
+            // Replace references to other computed columns with their expressions
+            const refExpr = expandedExpressions.get(ref)!;
+            // Use word boundary replacement to avoid partial matches
+            expandedExpr = expandedExpr.replace(
+              new RegExp(`\\b${ref}\\b`, 'g'),
+              `(${refExpr})`
+            );
+          }
+        }
+        expandedExpressions.set(col.key, expandedExpr);
+        validColumns.add(col.key);
+        changed = true;
+      }
+    }
+  }
+  return { validColumns, expandedExpressions };
+}
+
+// Validate that all column references in a computed expression exist
+function isComputeExpressionValid(
+  expression: string | null | undefined,
+  validColumns: Set<string> | string[]
+): boolean {
+  if (!expression) return false;
+
+  const validSet = validColumns instanceof Set ? validColumns : new Set(validColumns);
+  const refs = extractColumnReferences(expression);
+
+  return refs.every(ref => validSet.has(ref));
+}
+
 export const PROGRAMS = $state<Array<Program>>([]);
 export const DATA_VARS = $state({
   refresh: {},
@@ -94,34 +169,59 @@ export async function getPrograms(
     let orderByClause = '';
     const params: Array<string | number> = [];
 
+    // Get actual columns from programs table
+    const programsTableInfoEarly = await db.select<Array<{ name: string }>>(
+      'PRAGMA table_info(programs)'
+    );
+    const physicalColumns = programsTableInfoEarly.map((col) => col.name);
+
+    // Get all computed columns to build valid column set
+    const computedColumnsForValidation = await db.select<
+      Array<{ key: string; computeExpression: string | null }>
+    >('SELECT key, computeExpression FROM table_columns WHERE type = "computed"');
+
+    // Build set of valid columns (physical + valid computed) and expanded expressions
+    const { validColumns: validColumnSet, expandedExpressions } = buildValidColumnSet(
+      physicalColumns,
+      computedColumnsForValidation
+    );
+    
     if (!DATA_VARS.isImporting) {
       const whereParts: Array<string> = [];
 
       if (DATA_VARS.quickSearch) {
-        const allColumns = await db.select<Array<{ key: string; type: string; visible: number }>>(
-          'SELECT key, type, visible FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt", "actions")'
+        const allColumns = await db.select<
+          Array<{ key: string; type: string; visible: number; computeExpression: string | null }>
+        >(
+          'SELECT key, type, visible, computeExpression FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt", "actions")'
         );
-
-        // Get actual columns from programs table
-        const programsTableInfo = await db.select<Array<{ name: string }>>(
-          'PRAGMA table_info(programs)'
-        );
-        const existingColumnNames = programsTableInfo.map((col) => col.name);
 
         const quickSearchParts = allColumns
-          .filter((col) => col.type === 'computed' || existingColumnNames.includes(col.key))
+          .filter((col) => {
+            // Skip computed columns without valid expression
+            if (col.type === 'computed') {
+              return isComputeExpressionValid(col.computeExpression, validColumnSet);
+            }
+            return physicalColumns.includes(col.key);
+          })
           .map((col) => {
             params.push(`%${DATA_VARS.quickSearch}%`);
 
+            // For computed columns, use the expanded expression
+            const columnRef =
+              col.type === 'computed' && col.computeExpression
+                ? `(${expandedExpressions.get(col.key) || col.computeExpression})`
+                : col.key;
+
             if (col.type === 'file') {
               return `json_extract(${col.key}, '$.name') LIKE $${params.length}`;
-            } else if (col.type === 'number') {
-              return `CAST(${col.key} AS TEXT) LIKE $${params.length}`;
+            } else if (col.type === 'number' || col.type === 'computed') {
+              return `CAST(${columnRef} AS TEXT) LIKE $${params.length}`;
             } else if (col.type === 'date' || col.type === 'datetime') {
-              return `date(${col.key}) LIKE $${params.length}`;
+              return `date(${columnRef}) LIKE $${params.length}`;
             }
 
-            return `${col.key} LIKE $${params.length}`;
+            return `${columnRef} LIKE $${params.length}`;
           });
 
         if (quickSearchParts.length > 0) {
@@ -129,15 +229,30 @@ export async function getPrograms(
         }
       }
 
-      const filterColumns = await db.select<Array<{ key: string; filter: string; type: string }>>(
-        'SELECT key, filter, type FROM table_columns WHERE filter IS NOT NULL AND filter != ""'
+      const filterColumns = await db.select<
+        Array<{ key: string; filter: string; type: string; computeExpression: string | null }>
+      >(
+        'SELECT key, filter, type, computeExpression FROM table_columns WHERE filter IS NOT NULL AND filter != ""'
       );
 
       if (filterColumns.length > 0) {
         const filterParts = filterColumns
+          .filter((col) => {
+            if (col.type === 'computed') {
+              return isComputeExpressionValid(col.computeExpression, validColumnSet);
+            }
+            return true;
+          })
           .map((col) => {
             const filter = col.filter;
-            const columnName = col.type === 'file' ? `json_extract(${col.key}, '$.name')` : col.key;
+            let columnName: string;
+            if (col.type === 'computed' && col.computeExpression) {
+              columnName = `(${expandedExpressions.get(col.key) || col.computeExpression})`;
+            } else if (col.type === 'file') {
+              columnName = `json_extract(${col.key}, '$.name')`;
+            } else {
+              columnName = col.key;
+            }
 
             if (filter === 'empty:') {
               return `(${columnName} IS NULL OR ${columnName} = '')`;
@@ -190,36 +305,47 @@ export async function getPrograms(
         whereClause = ` WHERE ${whereParts.join(' AND ')}`;
       }
 
-      const sortColumns = await db.select<Array<{ key: string; sort: number; type: string }>>(
-        'SELECT key, sort, type FROM table_columns WHERE sort != 0 ORDER BY sortPosition ASC'
+      const sortColumns = await db.select<
+        Array<{ key: string; sort: number; type: string; computeExpression: string | null }>
+      >(
+        'SELECT key, sort, type, computeExpression FROM table_columns WHERE sort != 0 ORDER BY sortPosition ASC'
       );
 
       if (sortColumns.length > 0) {
-        const sortParts = sortColumns.map((col) => {
-          const direction = col.sort === 1 ? 'ASC' : 'DESC';
+        const sortParts = sortColumns
+          .filter((col) => {
+            // Skip computed columns without valid expression - they can't be sorted
+            if (col.type === 'computed') {
+              return isComputeExpressionValid(col.computeExpression, validColumnSet);
+            }
+            return true;
+          })
+          .map((col) => {
+            const direction = col.sort === 1 ? 'ASC' : 'DESC';
 
-          if (col.type === 'file') {
-            return `json_extract(${col.key}, '$.name') ${direction}`;
-          }
+            if (col.type === 'file') {
+              return `json_extract(${col.key}, '$.name') ${direction}`;
+            }
 
-          return `${col.key} ${direction}`;
-        });
+            // For computed columns, use the expanded expression
+            if (col.type === 'computed' && col.computeExpression) {
+              return `(${expandedExpressions.get(col.key) || col.computeExpression}) ${direction}`;
+            }
 
-        orderByClause = ` ORDER BY ${sortParts.join(', ')}`;
+            return `${col.key} ${direction}`;
+          });
+
+        if (sortParts.length > 0) {
+          orderByClause = ` ORDER BY ${sortParts.join(', ')}`;
+        }
       }
     }
 
     DATA_VARS.count = await getProgramsCount(whereClause, params);
-    console.warn('Total programs count with filters:', DATA_VARS.count);
 
     const allTableColumns = await db.select<
       Array<{ key: string; type: string; computeExpression: string | null }>
     >('SELECT key, type, computeExpression FROM table_columns');
-
-    const programsTableInfo = await db.select<Array<{ name: string }>>(
-      'PRAGMA table_info(programs)'
-    );
-    const existingColumnNames = programsTableInfo.map((col) => col.name);
 
     const uiOnlyColumns = ['actions'];
 
@@ -230,14 +356,19 @@ export async function getPrograms(
       if (selectParts.includes(col.key)) continue;
 
       if (col.type === 'computed' && col.computeExpression) {
-        selectParts.push(`(${col.computeExpression}) AS ${col.key}`);
-      } else if (existingColumnNames.includes(col.key)) {
+        // Only include computed columns if their expression references valid columns
+        if (isComputeExpressionValid(col.computeExpression, validColumnSet)) {
+          // Use expanded expression (with computed column references replaced)
+          const expandedExpr = expandedExpressions.get(col.key) || col.computeExpression;
+          selectParts.push(`(${expandedExpr}) AS ${col.key}`);
+        }
+      } else if (physicalColumns.includes(col.key)) {
         selectParts.push(col.key);
       }
     }
 
     const selectClause = selectParts.join(', ');
-
+    
     params.push(pageSize, (page - 1) * pageSize);
 
     const query = `SELECT ${selectClause} FROM programs${whereClause}${orderByClause} LIMIT $${params.length - 1} OFFSET $${params.length}`;

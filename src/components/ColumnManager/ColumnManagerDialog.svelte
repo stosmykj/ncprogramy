@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
+  import { SETTINGS_VARS, markAppAsInitialized } from '$lib/settingsProcessor.svelte';
   import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
   import { TableColumn, type ColumnType } from '$models/tableColumn';
   import type { DbTableColumn } from '$models/dbTableColumn';
@@ -29,6 +29,7 @@
   });
   let isCreatingNew = $state(false);
   let refreshColumns = $state({});
+  let pendingNewColumns = $state<Set<string>>(new Set());
 
   const protectedColumns = ['createdAt', 'updatedAt', 'actions', 'id'];
 
@@ -50,6 +51,7 @@
       : 'SELECT * FROM table_columns WHERE archived = 0 ORDER BY position ASC';
     const rows = await db.select<Array<DbTableColumn>>(query);
     columns = rows.map((row) => new TableColumn(row));
+    pendingNewColumns = new Set();
   }
 
   function closeDialog() {
@@ -66,12 +68,48 @@
       }
 
       for (const col of columns) {
-        await db.execute(
-          'UPDATE table_columns SET visible = $1, position = $2, archived = $3, label = $4 WHERE key = $5',
-          [col.Visible ? 1 : 0, col.Position, col.Archived ? 1 : 0, col.Label || null, col.Key]
-        );
+        if (pendingNewColumns.has(col.Key)) {
+          // Insert new column
+          await db.execute(
+            `INSERT INTO table_columns (key, type, position, sort, sortPosition, visible, width, align, archived, label, computeExpression)
+             VALUES ($1, $2, $3, 0, 0, $4, 'auto', 'left', 0, $5, $6)`,
+            [
+              col.Key,
+              col.Type,
+              col.Position,
+              col.Visible ? 1 : 0,
+              col.Label || null,
+              col.ComputeExpression || null,
+            ]
+          );
+
+          // Add column to programs table if not computed
+          if (col.Type !== 'computed') {
+            let sqlType = 'TEXT';
+            if (col.Type === 'number') {
+              sqlType = 'REAL';
+            }
+
+            await db.execute(`ALTER TABLE programs ADD COLUMN ${col.Key} ${sqlType}`);
+          }
+        } else {
+          // Update existing column
+          await db.execute(
+            'UPDATE table_columns SET visible = $1, position = $2, archived = $3, label = $4, computeExpression = $5 WHERE key = $6',
+            [
+              col.Visible ? 1 : 0,
+              col.Position,
+              col.Archived ? 1 : 0,
+              col.Label || null,
+              col.ComputeExpression || null,
+              col.Key,
+            ]
+          );
+        }
       }
 
+      pendingNewColumns = new Set();
+      await markAppAsInitialized();
       await initTableColumns();
       DATA_VARS.reloadData = true;
       closeDialog();
@@ -125,62 +163,46 @@
     isCreatingNew = false;
   }
 
-  async function saveEdit() {
-    try {
-      const db = await getDatabase();
-
-      if (editingIndex !== null) {
-        const col = columns[editingIndex];
-        col.Label = editFormData.label || undefined;
-        col.ComputeExpression = editFormData.computeExpression || undefined;
-
-        await db.execute(
-          'UPDATE table_columns SET label = $1, computeExpression = $2 WHERE key = $3',
-          [editFormData.label || null, editFormData.computeExpression || null, editFormData.key]
-        );
-      } else if (isCreatingNew && editFormData.key) {
-        const existing = await db.select<Array<DbTableColumn>>(
-          'SELECT * FROM table_columns WHERE key = $1',
-          [editFormData.key]
-        );
-
-        if (existing.length > 0) {
-          alert('Sloupec s tímto klíčem již existuje');
-          return;
-        }
-
-        const maxPosition = columns.length > 0 ? Math.max(...columns.map((c) => c.Position)) : 0;
-
-        await db.execute(
-          `INSERT INTO table_columns (key, type, position, sort, sortPosition, visible, width, align, archived, label, computeExpression)
-           VALUES ($1, $2, $3, 0, 0, 1, 'auto', 'left', 0, $4, $5)`,
-          [
-            editFormData.key,
-            editFormData.type,
-            maxPosition + 1,
-            editFormData.label || null,
-            editFormData.computeExpression || null,
-          ]
-        );
-
-        if (editFormData.type !== 'computed') {
-          let sqlType = 'TEXT';
-          if (editFormData.type === 'number') {
-            sqlType = 'REAL';
-          } else if (editFormData.type === 'date' || editFormData.type === 'datetime') {
-            sqlType = 'TEXT';
-          }
-
-          await db.execute(`ALTER TABLE programs ADD COLUMN ${editFormData.key} ${sqlType}`);
-        }
+  function saveEdit() {
+    if (editingIndex !== null) {
+      // Update existing column in local state
+      const col = columns[editingIndex];
+      col.Label = editFormData.label || undefined;
+      col.ComputeExpression = editFormData.computeExpression || undefined;
+      refreshColumns = {};
+    } else if (isCreatingNew && editFormData.key) {
+      // Check if key already exists in local columns
+      const existing = columns.find((c) => c.Key === editFormData.key);
+      if (existing) {
+        alert('Sloupec s tímto klíčem již existuje');
+        return;
       }
 
-      await loadColumns();
-      cancelEdit();
-    } catch (error) {
-      console.error('Failed to save column:', error);
-      alert('Chyba při ukládání sloupce');
+      const maxPosition = columns.length > 0 ? Math.max(...columns.map((c) => c.Position)) : 0;
+
+      // Create new column in local state
+      const now = new Date();
+      const newColumn = new TableColumn({
+        key: editFormData.key,
+        type: editFormData.type,
+        position: maxPosition + 1,
+        sort: 0,
+        sortPosition: 0,
+        visible: true,
+        width: 'auto',
+        align: 'left',
+        archived: false,
+        label: editFormData.label || undefined,
+        computeExpression: editFormData.computeExpression || undefined,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      columns = [...columns, newColumn];
+      pendingNewColumns = new Set([...pendingNewColumns, editFormData.key]);
     }
+
+    cancelEdit();
   }
 
   function handleDragStart(event: DragEvent, index: number) {
