@@ -161,6 +161,7 @@
     align-items: center;
     white-space: nowrap;
     border-right: 1px solid $border-color;
+    overflow: hidden;
 
     &:first-of-type {
       padding: 0;

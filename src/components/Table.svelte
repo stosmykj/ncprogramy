@@ -20,6 +20,7 @@
 
   let page: number = $state(1);
   let pageSize: number = $state(50);
+  let tableRef: HTMLTableElement | null = $state(null);
 
   let tableBodyContextMenuData: BodyContextMenuData = $state({
     opened: false,
@@ -95,6 +96,11 @@
       return;
     }
 
+    const isArrowKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key);
+    if (!isArrowKey) {
+      return;
+    }
+
     switch (key) {
       case 'ArrowUp':
         DATA_VARS.rowPosition -= DATA_VARS.rowPosition > 0 ? 1 : 0;
@@ -108,6 +114,49 @@
       case 'ArrowRight':
         DATA_VARS.columnPosition += DATA_VARS.columnPosition < visibleColumns.length - 1 ? 1 : 0;
         break;
+    }
+
+    // Scroll when cell is near the edge of visible area
+    requestAnimationFrame(() => {
+      scrollCellIntoViewIfNeeded();
+    });
+  }
+
+  function scrollCellIntoViewIfNeeded() {
+    if (!tableRef) return;
+
+    const cell = document.getElementById(
+      `cell_${DATA_VARS.rowPosition}_${DATA_VARS.columnPosition}`
+    );
+    if (!cell) return;
+
+    const edgeThreshold = 50; // pixels from edge to trigger scroll
+    const tableRect = tableRef.getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+
+    // Get thead height to account for sticky header
+    const thead = tableRef.querySelector('thead');
+    const theadHeight = thead ? thead.getBoundingClientRect().height : 0;
+
+    // Vertical scrolling
+    const visibleTop = tableRect.top + theadHeight;
+    const visibleBottom = tableRect.bottom;
+
+    if (cellRect.top < visibleTop + edgeThreshold) {
+      // Cell is near or above the top edge
+      tableRef.scrollTop -= visibleTop + edgeThreshold - cellRect.top;
+    } else if (cellRect.bottom > visibleBottom - edgeThreshold) {
+      // Cell is near or below the bottom edge
+      tableRef.scrollTop += cellRect.bottom - (visibleBottom - edgeThreshold);
+    }
+
+    // Horizontal scrolling
+    if (cellRect.left < tableRect.left + edgeThreshold) {
+      // Cell is near or past the left edge
+      tableRef.scrollLeft -= tableRect.left + edgeThreshold - cellRect.left;
+    } else if (cellRect.right > tableRect.right - edgeThreshold) {
+      // Cell is near or past the right edge
+      tableRef.scrollLeft += cellRect.right - (tableRect.right - edgeThreshold);
     }
   }
 
@@ -150,7 +199,7 @@
   onclick={() => (tableBodyContextMenuData.opened = false)}
 />
 
-<table role="grid">
+<table role="grid" bind:this={tableRef}>
   <thead>
     <tr>
       {#each visibleColumns as header}
