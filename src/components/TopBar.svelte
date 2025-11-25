@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
-  import { UPDATE_STATE, checkForUpdates, initializeUpdater } from '$lib/updater.svelte';
+  import { UPDATE_STATE, initializeUpdater } from '$lib/updater.svelte';
   import { getTotalBackupSize, formatFileSize } from '$lib/backupProcessor';
   import Button from './Button.svelte';
   import KeyboardShortcuts from './KeyboardShortcuts.svelte';
@@ -11,8 +11,8 @@
   let backupSize = $state(0);
 
   // Size thresholds in bytes
-  const SIZE_THRESHOLD_YELLOW = 10 * 1024 * 1024; // 10 MB
-  const SIZE_THRESHOLD_RED = 50 * 1024 * 1024; // 50 MB
+  const SIZE_THRESHOLD_YELLOW = 100 * 1024 * 1024; // 100 MB
+  const SIZE_THRESHOLD_RED = 500 * 1024 * 1024; // 500 MB
 
   let backupColor = $derived(
     backupSize >= SIZE_THRESHOLD_RED
