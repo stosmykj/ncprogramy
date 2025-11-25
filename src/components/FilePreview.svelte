@@ -8,6 +8,7 @@
   import { dirname } from '@tauri-apps/api/path';
   import { exists, stat } from '@tauri-apps/plugin-fs';
   import { convertFileSrc } from '@tauri-apps/api/core';
+  import { logger } from '$lib/logger';
 
   let {
     file,
@@ -85,7 +86,7 @@
 
       fileStats = { size, modified, exists: true };
     } catch (error) {
-      console.error('Failed to load file metadata:', error);
+      logger.error('Failed to load file metadata', error);
       fileStats = { size: 'N/A', modified: 'N/A', exists: false };
     }
   }
@@ -119,7 +120,7 @@
       const command = Command.create('open', [file.Path]);
       await command.execute();
     } catch (error) {
-      console.error('Failed to open file:', error);
+      logger.error('Failed to open file', error);
     }
   }
 
@@ -132,7 +133,7 @@
       const command = Command.create('open', [dirPath]);
       await command.execute();
     } catch (error) {
-      console.error('Failed to open file location:', error);
+      logger.error('Failed to open file location', error);
     }
   }
 </script>
@@ -165,9 +166,7 @@
           {#if isLoadingContent}
             <div class="content-loading">Načítání náhledu...</div>
           {:else if isImage(file.Extension)}
-            {@const assetUrl = convertFileSrc(file.Path)}
-            {console.log('Asset URL:', assetUrl, 'Path:', file.Path)}
-            <img src={assetUrl} alt={file.Name} class="image-preview" />
+            <img src={convertFileSrc(file.Path)} alt={file.Name} class="image-preview" />
           {:else if isPDF(file.Extension)}
             <iframe src={convertFileSrc(file.Path)} title={file.Name} class="pdf-preview"></iframe>
           {/if}

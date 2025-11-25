@@ -6,6 +6,7 @@
   import FormattingRulesEditor from '../components/FormattingRulesEditor.svelte';
   import ColumnManagerDialog from '../components/ColumnManager/ColumnManagerDialog.svelte';
   import BackupManager from '../components/BackupManager.svelte';
+  import LogManager from '../components/LogManager.svelte';
   import InitialSetup from '../components/InitialSetup.svelte';
   import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
   import { SETTINGS_VARS, checkAppInitialized } from '$lib/settingsProcessor.svelte';
@@ -62,6 +63,7 @@
 <FormattingRulesEditor />
 <ColumnManagerDialog />
 <BackupManager />
+<LogManager />
 
 <style lang="scss">
   .container {

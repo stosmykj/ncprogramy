@@ -8,6 +8,7 @@
   import Button from '$components/Button.svelte';
   import Icon from '$components/Icon.svelte';
   import ComputeExpressionBuilder from './ComputeExpressionBuilder.svelte';
+  import { logger } from '$lib/logger';
 
   let dialog = $state<HTMLDialogElement | null>(null);
   let columns = $state<Array<TableColumn>>([]);
@@ -114,7 +115,7 @@
       DATA_VARS.reloadData = true;
       closeDialog();
     } catch (error) {
-      console.error('Failed to save column changes:', error);
+      logger.error('Failed to save column changes', error);
       alert('Chyba při ukládání změn sloupců');
     }
   }

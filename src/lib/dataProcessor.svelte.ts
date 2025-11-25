@@ -7,12 +7,28 @@ import { showError, showSuccess } from './toast.svelte';
 import { getDatabase } from './database';
 import { formatDate, formatDateTime } from './dateFormatter.svelte';
 import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
+import { logger } from './logger';
 
 // Extract column references from a computed expression
 function extractColumnReferences(expression: string): string[] {
   const sqlKeywords = [
-    'COALESCE', 'AS', 'AND', 'OR', 'NOT', 'NULL', 'TRUE', 'FALSE',
-    'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'CAST', 'TEXT', 'INTEGER', 'REAL'
+    'COALESCE',
+    'AS',
+    'AND',
+    'OR',
+    'NOT',
+    'NULL',
+    'TRUE',
+    'FALSE',
+    'CASE',
+    'WHEN',
+    'THEN',
+    'ELSE',
+    'END',
+    'CAST',
+    'TEXT',
+    'INTEGER',
+    'REAL',
   ];
 
   const refs: string[] = [];
@@ -45,7 +61,7 @@ function buildValidColumnSet(
       if (!col.computeExpression) continue;
 
       const refs = extractColumnReferences(col.computeExpression);
-      const allRefsValid = refs.every(ref => validColumns.has(ref));
+      const allRefsValid = refs.every((ref) => validColumns.has(ref));
 
       if (allRefsValid) {
         // Expand any computed column references in this expression
@@ -55,10 +71,7 @@ function buildValidColumnSet(
             // Replace references to other computed columns with their expressions
             const refExpr = expandedExpressions.get(ref)!;
             // Use word boundary replacement to avoid partial matches
-            expandedExpr = expandedExpr.replace(
-              new RegExp(`\\b${ref}\\b`, 'g'),
-              `(${refExpr})`
-            );
+            expandedExpr = expandedExpr.replace(new RegExp(`\\b${ref}\\b`, 'g'), `(${refExpr})`);
           }
         }
         expandedExpressions.set(col.key, expandedExpr);
@@ -80,7 +93,7 @@ function isComputeExpressionValid(
   const validSet = validColumns instanceof Set ? validColumns : new Set(validColumns);
   const refs = extractColumnReferences(expression);
 
-  return refs.every(ref => validSet.has(ref));
+  return refs.every((ref) => validSet.has(ref));
 }
 
 export const PROGRAMS = $state<Array<Program>>([]);
@@ -185,7 +198,7 @@ export async function getPrograms(
       physicalColumns,
       computedColumnsForValidation
     );
-    
+
     if (!DATA_VARS.isImporting) {
       const whereParts: Array<string> = [];
 
@@ -368,7 +381,7 @@ export async function getPrograms(
     }
 
     const selectClause = selectParts.join(', ');
-    
+
     params.push(pageSize, (page - 1) * pageSize);
 
     const query = `SELECT ${selectClause} FROM programs${whereClause}${orderByClause} LIMIT $${params.length - 1} OFFSET $${params.length}`;
@@ -392,7 +405,7 @@ export async function getProgramsCount(
     const result = await db.select<Array<{ count: number }>>(query, params);
     return result[0].count;
   } catch (error) {
-    console.error('Failed to get programs count:', error);
+    logger.error('Failed to get programs count', error);
     return 0;
   }
 }
@@ -466,7 +479,7 @@ export async function addPrograms(programs: Array<Program>): Promise<void> {
       await db.execute(sql, values);
 
       processedCount += sliced.length;
-      console.warn(`Imported ${processedCount}/${totalCount} programs`);
+      logger.info(`Imported ${processedCount}/${totalCount} programs`);
     }
 
     DATA_VARS.reloadData = true;
@@ -594,7 +607,7 @@ export async function findCurrentYearLastItem(columnKey: string): Promise<Progra
 
     return new Program(result[0]);
   } catch (error) {
-    console.error('Failed to find current year last item:', error);
+    logger.error('Failed to find current year last item', error);
     return null;
   }
 }

@@ -4,6 +4,7 @@
   import FilterPopover from './FilterPopover.svelte';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
   import Button from './Button.svelte';
+  import { logger } from '$lib/logger';
 
   const { header = $bindable() }: { header: TableColumn } = $props();
 
@@ -77,7 +78,7 @@
       try {
         await updateTableColumn(header);
       } catch (error) {
-        console.error('Failed to save column width:', error);
+        logger.error('Failed to save column width', error);
       } finally {
         newWidth = null;
       }
@@ -139,7 +140,7 @@
 
       DATA_VARS.refresh = true;
     } catch (error) {
-      console.error('Failed to save column order:', error);
+      logger.error('Failed to save column order', error);
     }
   }
 

@@ -1,6 +1,7 @@
 import { exists, copyFile, mkdir } from '@tauri-apps/plugin-fs';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { File } from '../models/file';
+import { logger } from './logger';
 
 export async function getStoragePath(): Promise<string> {
   const appData = await appDataDir();
@@ -14,7 +15,7 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
       await mkdir(path, { recursive: true });
     }
   } catch (error) {
-    console.error(`Failed to create directory ${path}:`, error);
+    logger.error(`Failed to create directory ${path}`, error);
   }
 }
 
@@ -22,7 +23,7 @@ export async function copyFileToStorage(sourceFile: File): Promise<File | null> 
   try {
     const sourceExists = await exists(sourceFile.Path);
     if (!sourceExists) {
-      console.warn(`Source file does not exist: ${sourceFile.Path}`);
+      logger.warn(`Source file does not exist: ${sourceFile.Path}`);
       return sourceFile;
     }
 
@@ -40,7 +41,7 @@ export async function copyFileToStorage(sourceFile: File): Promise<File | null> 
       path: destPath,
     });
   } catch (error) {
-    console.error(`Failed to copy file ${sourceFile.Path}:`, error);
+    logger.error(`Failed to copy file ${sourceFile.Path}`, error);
     return sourceFile;
   }
 }

@@ -2,6 +2,8 @@
  * Centralized error handling service
  */
 
+import { logger } from './logger';
+
 export class AppError extends Error {
   constructor(
     message: string,
@@ -38,7 +40,7 @@ export class FileError extends AppError {
  * Error handler that logs errors and provides user-friendly messages
  */
 export function handleError(error: unknown): string {
-  console.error('Application error:', error);
+  logger.error('Application error', error);
 
   if (error instanceof AppError) {
     return error.userMessage;
@@ -46,7 +48,7 @@ export function handleError(error: unknown): string {
 
   if (error instanceof Error) {
     // Log technical error for debugging
-    console.error('Stack trace:', error.stack);
+    logger.error('Stack trace', { stack: error.stack });
     return 'Došlo k neočekávané chybě. Zkuste to prosím znovu.';
   }
 

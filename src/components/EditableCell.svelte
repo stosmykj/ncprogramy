@@ -9,6 +9,7 @@
   import NumberEditor from './Editors/NumberEditor.svelte';
   import DateEditor from './Editors/DateEditor.svelte';
   import DateTimeEditor from './Editors/DateTimeEditor.svelte';
+  import { logger } from '$lib/logger';
 
   const { program, header }: { program: Program; header: TableColumn } = $props();
 
@@ -83,7 +84,7 @@
       }
       await updateProgram(program);
     } catch (error) {
-      console.error('Failed to save edit:', error);
+      logger.error('Failed to save edit', error);
     } finally {
       DATA_VARS.isEditing = false;
     }

@@ -6,6 +6,7 @@ import { initTableColumns } from './tableColumnProcessor.svelte';
 import { initFormattingRules } from './formattingProcessor.svelte';
 import { DATA_VARS } from './dataProcessor.svelte';
 import { markAppAsInitialized } from './settingsProcessor.svelte';
+import { logger } from './logger';
 
 // Legacy file type definitions
 interface LegacyFile {
@@ -245,7 +246,7 @@ export async function importLegacyData(): Promise<boolean> {
     showSuccess(`Importováno ${legacyData.items.length} záznamů ze staré aplikace`);
     return true;
   } catch (error) {
-    console.error('Failed to import legacy data:', error);
+    logger.error('Failed to import legacy data', error);
     DATA_VARS.isImporting = false;
     showError('Nepodařilo se importovat data ze staré aplikace');
     return false;
@@ -395,6 +396,6 @@ export async function importProgramsFromLegacy(
     await db.execute(sql, values);
 
     processedCount += batch.length;
-    console.warn(`Imported ${processedCount}/${totalCount} programs from legacy`);
+    logger.info(`Imported ${processedCount}/${totalCount} programs from legacy`);
   }
 }

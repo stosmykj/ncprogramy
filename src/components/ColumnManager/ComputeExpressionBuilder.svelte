@@ -1,10 +1,9 @@
 <script lang="ts">
   import { TABLECOLUMNS } from '$lib/tableColumnProcessor.svelte';
+  import { logger } from '$lib/logger';
 
-  let {
-    expression = $bindable(''),
-    columnKey,
-  }: { expression?: string; columnKey?: string } = $props();
+  let { expression = $bindable(''), columnKey }: { expression?: string; columnKey?: string } =
+    $props();
 
   type ExpressionPart = {
     type: 'column' | 'operator' | 'constant' | 'function';
@@ -256,7 +255,7 @@
       parts = parsed;
       parseError = null;
     } catch (error) {
-      console.error('Failed to parse expression:', error);
+      logger.error('Failed to parse expression', error);
       parseError = error instanceof Error ? error.message : 'Nepodařilo se analyzovat výraz';
       parts = [];
     }

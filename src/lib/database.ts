@@ -5,6 +5,7 @@
 
 import Database from '@tauri-apps/plugin-sql';
 import { DatabaseError } from './errorHandler';
+import { logger } from './logger';
 
 let dbInstance: Database | null = null;
 let initPromise: Promise<Database> | null = null;
@@ -28,12 +29,12 @@ export async function getDatabase(): Promise<Database> {
     .then((db) => {
       dbInstance = db;
       initPromise = null;
-      console.warn('Database connection established');
+      logger.info('Database connection established');
       return db;
     })
     .catch((error) => {
       initPromise = null;
-      console.error('Failed to initialize database:', error);
+      logger.error('Failed to initialize database', error);
       throw new DatabaseError(
         'Failed to establish database connection',
         'Nepodařilo se připojit k databázi'
@@ -51,9 +52,9 @@ export async function closeDatabase(): Promise<void> {
     try {
       await dbInstance.close();
       dbInstance = null;
-      console.warn('Database connection closed');
+      logger.info('Database connection closed');
     } catch (error) {
-      console.error('Error closing database:', error);
+      logger.error('Error closing database', error);
     }
   }
 }

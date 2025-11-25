@@ -3,6 +3,7 @@
   import Button from './Button.svelte';
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { exists } from '@tauri-apps/plugin-fs';
+  import { logger } from '$lib/logger';
 
   let {
     file,
@@ -76,7 +77,7 @@
       const assetUrl = convertFileSrc(file.Path);
       fileContent = assetUrl;
     } catch (error) {
-      console.error('Failed to load file content:', error);
+      logger.error('Failed to load file content', error);
       fileContent = null;
     } finally {
       isLoadingContent = false;

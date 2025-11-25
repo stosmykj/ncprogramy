@@ -3,6 +3,7 @@ import type { DbFormattingRule } from '../models/dbFormattingRule';
 import { getDatabase } from './database';
 import type { Program } from '../models/program';
 import { DATA_VARS } from './dataProcessor.svelte';
+import { logger } from './logger';
 
 export const FORMATTING_RULES = $state<Array<FormattingRule>>([]);
 
@@ -15,7 +16,7 @@ export async function initFormattingRules(): Promise<void> {
     FORMATTING_RULES.splice(0, FORMATTING_RULES.length, ...rules.map((r) => new FormattingRule(r)));
     DATA_VARS.refresh = {};
   } catch (error) {
-    console.error('Failed to load formatting rules:', error);
+    logger.error('Failed to load formatting rules', error);
   }
 }
 

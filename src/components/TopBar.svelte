@@ -2,6 +2,7 @@
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import { UPDATE_STATE, initializeUpdater } from '$lib/updater.svelte';
   import { getTotalBackupSize, formatFileSize } from '$lib/backupProcessor';
+  import { getTotalLogSize } from '$lib/logger';
   import Button from './Button.svelte';
   import KeyboardShortcuts from './KeyboardShortcuts.svelte';
   import QuickSearch from './QuickSearch.svelte';
@@ -9,10 +10,12 @@
   import Icon from './Icon.svelte';
 
   let backupSize = $state(0);
+  let logSize = $state(0);
 
   // Size thresholds in bytes
   const SIZE_THRESHOLD_YELLOW = 100 * 1024 * 1024; // 100 MB
   const SIZE_THRESHOLD_RED = 500 * 1024 * 1024; // 500 MB
+  const LOG_SHOW_THRESHOLD = 100 * 1024 * 1024; // 100 MB
 
   let backupColor = $derived(
     backupSize >= SIZE_THRESHOLD_RED
@@ -22,18 +25,37 @@
         : '#10b981' // green
   );
 
+  let logColor = $derived(
+    logSize >= SIZE_THRESHOLD_RED
+      ? '#ef4444' // red
+      : logSize >= SIZE_THRESHOLD_YELLOW
+        ? '#f59e0b' // yellow/orange
+        : '#10b981' // green
+  );
+
+  let showLogIndicator = $derived(logSize >= LOG_SHOW_THRESHOLD);
+
   // Initialize updater on component mount
   $effect(() => {
     initializeUpdater();
     loadBackupSize();
+    loadLogSize();
   });
 
   async function loadBackupSize() {
     backupSize = await getTotalBackupSize();
   }
 
+  async function loadLogSize() {
+    logSize = await getTotalLogSize();
+  }
+
   function openBackupManager() {
     SETTINGS_VARS.backupManagerOpened = true;
+  }
+
+  function openLogManager() {
+    SETTINGS_VARS.logManagerOpened = true;
   }
 
   function handleUpdateCheck() {
@@ -44,6 +66,13 @@
   $effect(() => {
     if (!SETTINGS_VARS.backupManagerOpened) {
       loadBackupSize();
+    }
+  });
+
+  // Refresh log size when log manager closes
+  $effect(() => {
+    if (!SETTINGS_VARS.logManagerOpened) {
+      loadLogSize();
     }
   });
 </script>
@@ -61,6 +90,12 @@
   </div>
   <div class="section">
     <KeyboardShortcuts />
+    {#if showLogIndicator}
+      <button class="log-indicator" onclick={openLogManager} title="Správa logů">
+        <Icon name="mdiTextBoxOutline" size={18} color={logColor} />
+        <span class="log-size" style="color: {logColor}">{formatFileSize(logSize)}</span>
+      </button>
+    {/if}
     <button class="backup-indicator" onclick={openBackupManager} title="Správa záloh">
       <Icon name="mdiBackupRestore" size={18} color={backupColor} />
       <span class="backup-size" style="color: {backupColor}">{formatFileSize(backupSize)}</span>
@@ -107,7 +142,8 @@
     }
   }
 
-  .backup-indicator {
+  .backup-indicator,
+  .log-indicator {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -122,7 +158,8 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
-    .backup-size {
+    .backup-size,
+    .log-size {
       font-size: 12px;
       color: #a0aec0;
       font-weight: 500;

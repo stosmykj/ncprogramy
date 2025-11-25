@@ -45,7 +45,8 @@
   });
 
   const visibleColumns = $derived.by(() => {
-    return [new TableColumn({
+    return [
+      new TableColumn({
         key: 'actions',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -59,9 +60,9 @@
         computeExpression: undefined,
         archived: false,
         label: '',
-        align: 'center'
-      }), 
-      ...TABLECOLUMNS.filter((header) => header.Visible)
+        align: 'center',
+      }),
+      ...TABLECOLUMNS.filter((header) => header.Visible),
     ];
   });
 
@@ -76,7 +77,7 @@
     DATA_VARS.refresh = {};
   }
 
-  $effect(() => {    
+  $effect(() => {
     if (DATA_VARS.reloadData) {
       DATA_VARS.reloadData = false;
       refreshData();
@@ -86,7 +87,6 @@
   onMount(async () => {
     PROGRAMS.splice(0, PROGRAMS.length);
     PROGRAMS.push(...(await getPrograms(page, pageSize)));
-    console.log('init');
     await initTableColumns();
     await initFormattingRules();
   });

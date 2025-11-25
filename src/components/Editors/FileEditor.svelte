@@ -6,6 +6,7 @@
   import { showError, showWarning } from '$lib/toast.svelte';
   import Button from '../Button.svelte';
   import KeyboardShortcut from '../KeyboardShortcut.svelte';
+  import { logger } from '$lib/logger';
 
   let {
     value = $bindable(),
@@ -118,7 +119,7 @@
         });
       }
     } catch (error) {
-      console.error('Failed to select file:', error);
+      logger.error('Failed to select file', error);
       showError('Chyba při výběru souboru');
     }
   }

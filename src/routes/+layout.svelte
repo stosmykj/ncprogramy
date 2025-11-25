@@ -3,11 +3,15 @@
   import Toast from '../components/Toast.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { startPeriodicBackup, stopPeriodicBackup, createExitBackup } from '$lib/backupProcessor';
+  import { initLogger, shutdownLogger } from '$lib/logger';
   import { getCurrentWindow } from '@tauri-apps/api/window';
 
   let { children } = $props();
 
   onMount(async () => {
+    // Initialize logger
+    await initLogger();
+
     // Start periodic backup every 60 minutes
     startPeriodicBackup(60);
 
@@ -15,6 +19,7 @@
     const appWindow = getCurrentWindow();
     await appWindow.onCloseRequested(async (event) => {
       event.preventDefault();
+      await shutdownLogger();
       await createExitBackup();
       await appWindow.destroy();
     });

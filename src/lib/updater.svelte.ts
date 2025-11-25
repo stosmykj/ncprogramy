@@ -1,6 +1,7 @@
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { showError, showInfo, showSuccess } from './toast.svelte';
+import { logger } from './logger';
 
 export interface UpdateState {
   checking: boolean;
@@ -37,19 +38,19 @@ export async function checkForUpdates(silent: boolean = false): Promise<boolean>
       showInfo('Kontroluji aktualizace...');
     }
 
-    console.warn('[Updater] Checking for updates...');
-    console.warn('[Updater] Current version:', UPDATE_STATE.currentVersion);
+    logger.info('[Updater] Checking for updates...');
+    logger.info('[Updater] Current version: ' + UPDATE_STATE.currentVersion);
 
     const update = await check();
 
-    console.warn('[Updater] Check result:', update);
+    logger.info('[Updater] Check result', update);
 
     if (update) {
       UPDATE_STATE.available = true;
       UPDATE_STATE.latestVersion = update.version;
       UPDATE_STATE.update = update;
 
-      console.warn('[Updater] Update available:', update);
+      logger.info('[Updater] Update available', update);
 
       if (!silent) {
         showSuccess(`Nová verze ${update.version} je k dispozici!`, 5000);
@@ -59,7 +60,7 @@ export async function checkForUpdates(silent: boolean = false): Promise<boolean>
     } else {
       UPDATE_STATE.available = false;
 
-      console.warn('[Updater] No updates available');
+      logger.info('[Updater] No updates available');
 
       if (!silent) {
         showInfo('Používáte nejnovější verzi aplikace');
@@ -71,8 +72,8 @@ export async function checkForUpdates(silent: boolean = false): Promise<boolean>
     const errorMessage = error instanceof Error ? error.message : 'Neznámá chyba';
     UPDATE_STATE.error = errorMessage;
 
-    console.error('[Updater] Update check failed:', error);
-    console.error('[Updater] Error details:', {
+    logger.error('[Updater] Update check failed', error);
+    logger.error('[Updater] Error details', {
       message: errorMessage,
       error: error,
     });
@@ -106,17 +107,17 @@ export async function downloadAndInstall(): Promise<void> {
       switch (event.event) {
         case 'Started':
           contentLength = event.data.contentLength || 0;
-          console.log(`Started downloading ${contentLength} bytes`);
+          logger.info(`Started downloading ${contentLength} bytes`);
           break;
         case 'Progress': {
           downloaded += event.data.chunkLength;
           const progress = contentLength > 0 ? (downloaded / contentLength) * 100 : 0;
           UPDATE_STATE.progress = progress;
-          console.log(`Download progress: ${progress.toFixed(1)}%`);
+          logger.debug(`Download progress: ${progress.toFixed(1)}%`);
           break;
         }
         case 'Finished':
-          console.log('Download finished');
+          logger.info('Download finished');
           break;
       }
     });
@@ -136,7 +137,7 @@ export async function downloadAndInstall(): Promise<void> {
     UPDATE_STATE.installing = false;
 
     showError(`Chyba při instalaci aktualizace: ${errorMessage}`, 8000);
-    console.error('Update installation failed:', error);
+    logger.error('Update installation failed', error);
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from '@tauri-apps/plugin-fs';
 import { getProgramsWithDateRange, DATA_VARS } from './dataProcessor.svelte';
 import { showSuccess, showError } from './toast.svelte';
+import { logger } from './logger';
 import { Program } from '../models/program';
 import { File } from '../models/file';
 import { getDatabase } from './database';
@@ -235,14 +236,18 @@ async function restoreSettings(settings: BackupSetting[]): Promise<void> {
   const db = await getDatabase();
 
   for (const setting of settings) {
-    await db.execute(
-      `INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)`,
-      [setting.key, setting.type ?? 'string', setting.value]
-    );
+    await db.execute(`INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)`, [
+      setting.key,
+      setting.type ?? 'string',
+      setting.value,
+    ]);
   }
 }
 
-async function restorePrograms(programs: BackupProgram[], columns: BackupTableColumn[]): Promise<void> {
+async function restorePrograms(
+  programs: BackupProgram[],
+  columns: BackupTableColumn[]
+): Promise<void> {
   if (!programs || programs.length === 0) return;
 
   const db = await getDatabase();
@@ -298,7 +303,7 @@ async function restorePrograms(programs: BackupProgram[], columns: BackupTableCo
     await db.execute(sql, values);
 
     processedCount += batch.length;
-    console.warn(`Restored ${processedCount}/${totalCount} programs`);
+    logger.info(`Restored ${processedCount}/${totalCount} programs`);
   }
 }
 
@@ -336,7 +341,7 @@ export async function restoreBackup(filename: string): Promise<boolean> {
     showSuccess(`Záloha obnovena (${backupData.programs?.length || 0} záznamů)`);
     return true;
   } catch (error) {
-    console.error('Failed to restore backup:', error);
+    logger.error('Failed to restore backup', error);
     DATA_VARS.isImporting = false;
     showError('Nepodařilo se obnovit zálohu');
     return false;
@@ -349,7 +354,7 @@ export async function deleteBackup(filename: string): Promise<boolean> {
     showSuccess('Záloha byla smazána');
     return true;
   } catch (error) {
-    console.error('Failed to delete backup:', error);
+    logger.error('Failed to delete backup', error);
     showError('Nepodařilo se smazat zálohu');
     return false;
   }
@@ -364,7 +369,7 @@ export async function clearAllBackups(): Promise<boolean> {
     showSuccess(`Smazáno ${files.length} záloh`);
     return true;
   } catch (error) {
-    console.error('Failed to clear all backups:', error);
+    logger.error('Failed to clear all backups', error);
     showError('Nepodařilo se smazat všechny zálohy');
     return false;
   }
@@ -400,7 +405,7 @@ export async function clearDuplicateBackups(): Promise<boolean> {
     showSuccess(`Smazáno ${deletedCount} duplicitních záloh`);
     return true;
   } catch (error) {
-    console.error('Failed to clear duplicate backups:', error);
+    logger.error('Failed to clear duplicate backups', error);
     showError('Nepodařilo se smazat duplicitní zálohy');
     return false;
   }
@@ -454,10 +459,10 @@ export async function createBackup(silent: boolean = false): Promise<boolean> {
     if (!silent) {
       showSuccess(`Záloha vytvořena: ${filename}`);
     }
-    console.log(`Backup created: ${filePath}`);
+    logger.info(`Backup created: ${filePath}`);
     return true;
   } catch (error) {
-    console.error('Failed to create backup:', error);
+    logger.error('Failed to create backup', error);
     if (!silent) {
       showError('Nepodařilo se vytvořit zálohu');
     }
@@ -480,7 +485,7 @@ export async function exportBackup(): Promise<void> {
       showSuccess('Záloha byla úspěšně exportována');
     }
   } catch (error) {
-    console.error('Failed to export backup:', error);
+    logger.error('Failed to export backup', error);
     showError('Nepodařilo se exportovat zálohu');
   }
 }
@@ -573,42 +578,54 @@ export async function importBackup(): Promise<void> {
     await markAppAsInitialized();
     showSuccess(`Importováno ${backupData.programs?.length || 0} záznamů ze zálohy`);
   } catch (error) {
-    console.error('Failed to import backup:', error);
+    logger.error('Failed to import backup', error);
     DATA_VARS.isImporting = false;
     showError('Nepodařilo se importovat zálohu');
   }
 }
 
-let backupInterval: ReturnType<typeof setInterval> | null = null;
+// Use window to persist state across HMR
+declare global {
+  interface Window {
+    __backupSystemInitialized?: boolean;
+    __backupInterval?: ReturnType<typeof setInterval> | null;
+  }
+}
 
 export function startPeriodicBackup(intervalMinutes: number = 60): void {
-  if (backupInterval) {
-    clearInterval(backupInterval);
+  // Prevent multiple initializations during HMR
+  if (window.__backupSystemInitialized) return;
+  window.__backupSystemInitialized = true;
+
+  if (window.__backupInterval) {
+    clearInterval(window.__backupInterval);
   }
 
   // Create initial backup
   createBackup(true);
 
   // Set up periodic backup
-  backupInterval = setInterval(
+  window.__backupInterval = setInterval(
     () => {
       createBackup(true);
     },
     intervalMinutes * 60 * 1000
   );
 
-  console.log(`Periodic backup started (every ${intervalMinutes} minutes)`);
+  logger.info(`Periodic backup started (every ${intervalMinutes} minutes)`);
 }
 
 export function stopPeriodicBackup(): void {
-  if (backupInterval) {
-    clearInterval(backupInterval);
-    backupInterval = null;
-    console.log('Periodic backup stopped');
+  if (window.__backupInterval) {
+    clearInterval(window.__backupInterval);
+    window.__backupInterval = null;
+    // Don't reset flag - during HMR this prevents re-initialization
+    // On real app restart, window is fresh so flag will be undefined
+    logger.info('Periodic backup stopped');
   }
 }
 
 export async function createExitBackup(): Promise<void> {
-  console.log('Creating exit backup...');
+  logger.info('Creating exit backup...');
   await createBackup(true);
 }

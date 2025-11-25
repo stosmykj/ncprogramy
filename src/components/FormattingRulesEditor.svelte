@@ -14,6 +14,7 @@
   import Button from './Button.svelte';
   import { FormattingRule } from '../models/formattingRule';
   import ColorPicker from 'svelte-awesome-color-picker';
+  import { logger } from '$lib/logger';
 
   let {
     onClose,
@@ -96,7 +97,7 @@
       );
       rules = result.map((r) => new FormattingRule(r));
     } catch (error) {
-      console.error('Failed to load formatting rules:', error);
+      logger.error('Failed to load formatting rules', error);
       showError('Nepodařilo se načíst pravidla formátování');
     }
   }
@@ -140,7 +141,7 @@
       isCreating = false;
       isEditing = true;
     } catch (error) {
-      console.error('Failed to parse condition tree:', error);
+      logger.error('Failed to parse condition tree', error);
       showError('Nepodařilo se načíst podmínky pravidla');
     }
   }
@@ -202,7 +203,7 @@
 
       showSuccess('Pravidlo formátování bylo uloženo');
     } catch (error) {
-      console.error('Failed to save formatting rule:', error);
+      logger.error('Failed to save formatting rule', error);
       showError('Nepodařilo se uložit pravidlo formátování');
     }
   }
@@ -220,7 +221,7 @@
 
       showSuccess('Pravidlo formátování bylo smazáno');
     } catch (error) {
-      console.error('Failed to delete formatting rule:', error);
+      logger.error('Failed to delete formatting rule', error);
       showError('Nepodařilo se smazat pravidlo formátování');
     }
   }
@@ -235,7 +236,7 @@
       await loadRules();
       await reloadFormattingRules();
     } catch (error) {
-      console.error('Failed to toggle rule:', error);
+      logger.error('Failed to toggle rule', error);
     }
   }
 
@@ -262,7 +263,7 @@
       await loadRules();
       await reloadFormattingRules();
     } catch (error) {
-      console.error('Failed to change priority:', error);
+      logger.error('Failed to change priority', error);
     }
   }
 </script>
