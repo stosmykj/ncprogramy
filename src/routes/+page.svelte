@@ -64,17 +64,25 @@
 <BackupManager />
 
 <style lang="scss">
+  .container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
   .table-container {
+    flex: 1;
     max-width: 100%;
     background: #fff;
-    overflow-x: auto;
+    overflow: auto;
   }
 
   .loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(100vh - 7rem);
+    flex: 1;
     font-size: 1.25rem;
     color: #667085;
   }

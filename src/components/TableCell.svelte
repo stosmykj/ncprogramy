@@ -27,8 +27,7 @@
   let columnWidth = $state(document.querySelector(`#header_${header.Key}`)?.clientWidth);
   // Not editable: actions, system columns, computed columns
   const editable =
-    !['actions', 'id', 'createdAt', 'updatedAt'].includes(header.Key) &&
-    header.Type !== 'computed';
+    !['actions', 'id', 'createdAt', 'updatedAt'].includes(header.Key) && header.Type !== 'computed';
   let showFilePreview = $state(false);
   let cellElement: HTMLElement | null = $state(null);
   let hoverTimeout: number | null = $state(null);
@@ -143,7 +142,6 @@
   function handleMouseEnter() {
     if (isFileColumn && fileValue && !DATA_VARS.isEditing) {
       hoverTimeout = window.setTimeout(() => {
-        console.log('mouse enter');
         showFilePreview = true;
       }, 500);
     }
@@ -151,7 +149,6 @@
 
   function handleMouseLeave() {
     if (hoverTimeout) {
-      console.log('mouse leave');
       clearTimeout(hoverTimeout);
       hoverTimeout = null;
     }

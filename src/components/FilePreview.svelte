@@ -165,7 +165,9 @@
           {#if isLoadingContent}
             <div class="content-loading">Načítání náhledu...</div>
           {:else if isImage(file.Extension)}
-            <img src={convertFileSrc(file.Path)} alt={file.Name} class="image-preview" />
+            {@const assetUrl = convertFileSrc(file.Path)}
+            {console.log('Asset URL:', assetUrl, 'Path:', file.Path)}
+            <img src={assetUrl} alt={file.Name} class="image-preview" />
           {:else if isPDF(file.Extension)}
             <iframe src={convertFileSrc(file.Path)} title={file.Name} class="pdf-preview"></iframe>
           {/if}

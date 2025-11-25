@@ -49,17 +49,6 @@
 </div>
 
 <style lang="scss">
-  .toast-container {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-width: 400px;
-  }
-
   .toast {
     display: flex;
     align-items: center;
