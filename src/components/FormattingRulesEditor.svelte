@@ -49,7 +49,6 @@
     { key: 'note', label: 'Poznámka', type: 'text' },
   ];
 
-  // Edit form state
   let editForm = $state({
     id: 0,
     name: '',

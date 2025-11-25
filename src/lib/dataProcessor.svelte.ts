@@ -5,7 +5,6 @@ import { File } from '../models/file';
 import { DatabaseError, handleError } from './errorHandler';
 import { showError, showSuccess } from './toast.svelte';
 import { getDatabase } from './database';
-import { validateProgram } from './validation/programValidator';
 import { formatDate, formatDateTime } from './dateFormatter.svelte';
 import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
 
@@ -21,6 +20,36 @@ export const DATA_VARS = $state({
   quickSearch: '',
 });
 
+// Get saveable columns from table_columns (excludes computed, actions, and system columns)
+async function getSaveableColumns(): Promise<Array<{ key: string; type: string }>> {
+  const db = await getDatabase();
+  const columns = await db.select<Array<{ key: string; type: string }>>(
+    `SELECT key, type FROM table_columns
+     WHERE type != 'computed'
+     AND key NOT IN ('id', 'createdAt', 'updatedAt', 'actions')
+     ORDER BY position`
+  );
+  return columns;
+}
+
+// Copy file values to storage if needed
+async function processFileColumns(
+  program: Program,
+  columns: Array<{ key: string; type: string }>
+): Promise<void> {
+  for (const col of columns) {
+    if (col.type === 'file') {
+      const value = program.get(col.key);
+      if (value instanceof File) {
+        const processed = await copyFileToStorageIfNeeded(value);
+        if (processed) {
+          program.set(col.key, processed);
+        }
+      }
+    }
+  }
+}
+
 export async function getProgramsWithDateRange(
   dateRangeStart?: Date | null,
   dateRangeEnd?: Date | null
@@ -33,15 +62,13 @@ export async function getProgramsWithDateRange(
     if (dateRangeStart || dateRangeEnd) {
       if (dateRangeStart && dateRangeEnd) {
         params.push(dateRangeStart.toISOString(), dateRangeEnd.toISOString());
-        whereParts.push(
-          `COALESCE(createdAt, doneAt, arrivedAt, deadlineAt) BETWEEN $${params.length - 1} AND $${params.length}`
-        );
+        whereParts.push(`createdAt BETWEEN $${params.length - 1} AND $${params.length}`);
       } else if (dateRangeStart) {
         params.push(dateRangeStart.toISOString());
-        whereParts.push(`COALESCE(createdAt, doneAt, arrivedAt, deadlineAt) >= $${params.length}`);
+        whereParts.push(`createdAt >= $${params.length}`);
       } else if (dateRangeEnd) {
         params.push(dateRangeEnd.toISOString());
-        whereParts.push(`COALESCE(createdAt, doneAt, arrivedAt, deadlineAt) <= $${params.length}`);
+        whereParts.push(`createdAt <= $${params.length}`);
       }
     }
 
@@ -72,22 +99,30 @@ export async function getPrograms(
 
       if (DATA_VARS.quickSearch) {
         const allColumns = await db.select<Array<{ key: string; type: string; visible: number }>>(
-          'SELECT key, type, visible FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt" ,"actions")'
+          'SELECT key, type, visible FROM table_columns WHERE visible = 1 AND key NOT IN ("id", "createdAt", "updatedAt", "actions")'
         );
 
-        const quickSearchParts = allColumns.map((col) => {
-          params.push(`%${DATA_VARS.quickSearch}%`);
+        // Get actual columns from programs table
+        const programsTableInfo = await db.select<Array<{ name: string }>>(
+          'PRAGMA table_info(programs)'
+        );
+        const existingColumnNames = programsTableInfo.map((col) => col.name);
 
-          if (col.type === 'file') {
-            return `json_extract(${col.key}, '$.name') LIKE $${params.length}`;
-          } else if (col.type === 'number') {
-            return `CAST(${col.key} AS TEXT) LIKE $${params.length}`;
-          } else if (col.type === 'date' || col.type === 'datetime') {
-            return `date(${col.key}) LIKE $${params.length}`;
-          }
+        const quickSearchParts = allColumns
+          .filter((col) => col.type === 'computed' || existingColumnNames.includes(col.key))
+          .map((col) => {
+            params.push(`%${DATA_VARS.quickSearch}%`);
 
-          return `${col.key} LIKE $${params.length}`;
-        });
+            if (col.type === 'file') {
+              return `json_extract(${col.key}, '$.name') LIKE $${params.length}`;
+            } else if (col.type === 'number') {
+              return `CAST(${col.key} AS TEXT) LIKE $${params.length}`;
+            } else if (col.type === 'date' || col.type === 'datetime') {
+              return `date(${col.key}) LIKE $${params.length}`;
+            }
+
+            return `${col.key} LIKE $${params.length}`;
+          });
 
         if (quickSearchParts.length > 0) {
           whereParts.push(`(${quickSearchParts.join(' OR ')})`);
@@ -188,20 +223,18 @@ export async function getPrograms(
 
     const uiOnlyColumns = ['actions'];
 
-    const selectParts = allTableColumns
-      .filter((col) => {
-        if (uiOnlyColumns.includes(col.key)) return false;
+    const selectParts = ['id', 'createdAt', 'updatedAt'];
 
-        if (col.type === 'computed' && col.computeExpression) return true;
+    for (const col of allTableColumns) {
+      if (uiOnlyColumns.includes(col.key)) continue;
+      if (selectParts.includes(col.key)) continue;
 
-        return existingColumnNames.includes(col.key);
-      })
-      .map((col) => {
-        if (col.type === 'computed' && col.computeExpression) {
-          return `(${col.computeExpression}) AS ${col.key}`;
-        }
-        return col.key;
-      });
+      if (col.type === 'computed' && col.computeExpression) {
+        selectParts.push(`(${col.computeExpression}) AS ${col.key}`);
+      } else if (existingColumnNames.includes(col.key)) {
+        selectParts.push(col.key);
+      }
+    }
 
     const selectClause = selectParts.join(', ');
 
@@ -247,14 +280,20 @@ export async function getProgramById(id: number): Promise<Program | null> {
 
 export async function addProgram(program: Program): Promise<void> {
   try {
-    validateProgram(program);
-
-    program.Design = await copyFileToStorageIfNeeded(program.Design);
-    program.Drawing = await copyFileToStorageIfNeeded(program.Drawing);
-    program.Clamping = await copyFileToStorageIfNeeded(program.Clamping);
-
     const db = await getDatabase();
-    const result = await db.execute(program.toSqlInsert(), program.toArray());
+    const columns = await getSaveableColumns();
+
+    // Process file columns
+    await processFileColumns(program, columns);
+
+    // Build dynamic INSERT
+    const columnNames = columns.map((c) => c.key);
+    const placeholders = columns.map((_, i) => `$${i + 1}`);
+    const values = program.toValues(columnNames);
+
+    const sql = `INSERT INTO programs (${columnNames.join(', ')}) VALUES (${placeholders.join(', ')})`;
+    const result = await db.execute(sql, values);
+
     if (result.rowsAffected > 0) {
       PROGRAMS.splice(0, 0, program);
       DATA_VARS.reloadData = true;
@@ -271,43 +310,28 @@ export async function addProgram(program: Program): Promise<void> {
 export async function addPrograms(programs: Array<Program>): Promise<void> {
   try {
     const db = await getDatabase();
+    const columns = await getSaveableColumns();
+    const columnNames = columns.map((c) => c.key);
+
     const totalCount = programs.length;
     let processedCount = 0;
 
     while (programs.length !== 0) {
       const sliced = programs.splice(0, 50);
-      let sql = `INSERT INTO programs (
-        createdAt,
-        updatedAt,
-        programId,
-        name,
-        orderNumber,
-        deadlineAt,
-        arrivedAt,
-        doneAt,
-        count,
-        design,
-        drawing,
-        clamping,
-        preparing,
-        programing,
-        machineWorking,
-        extraTime,
-        note
-      ) VALUES `;
-      const values: Array<string | number | Date | undefined> = [];
+
+      // Build placeholders for batch insert
+      const valuePlaceholders: string[] = [];
+      const values: Array<string | number | null> = [];
+
       for (const program of sliced) {
-        const importValues = program.toArrayImport();
-        let itemSql = '(';
-        for (let i = 0; i < importValues.length; i++) {
-          itemSql += `$${values.length + i + 1},`;
-        }
-        itemSql = itemSql.substring(0, itemSql.length - 1);
-        itemSql += '),';
-        sql += itemSql;
-        values.push(...importValues);
+        const programValues = program.toValues(columnNames);
+        const startIndex = values.length;
+        const placeholders = programValues.map((_, i) => `$${startIndex + i + 1}`);
+        valuePlaceholders.push(`(${placeholders.join(', ')})`);
+        values.push(...programValues);
       }
-      sql = sql.substring(0, sql.length - 1);
+
+      const sql = `INSERT INTO programs (${columnNames.join(', ')}) VALUES ${valuePlaceholders.join(', ')}`;
       await db.execute(sql, values);
 
       processedCount += sliced.length;
@@ -330,14 +354,19 @@ export async function updateProgram(program: Program): Promise<void> {
   }
 
   try {
-    validateProgram(program);
-
-    program.Design = await copyFileToStorageIfNeeded(program.Design);
-    program.Drawing = await copyFileToStorageIfNeeded(program.Drawing);
-    program.Clamping = await copyFileToStorageIfNeeded(program.Clamping);
-
     const db = await getDatabase();
-    const result = await db.execute(program.toSqlUpdate(), [...program.toArray(), program.Id]);
+    const columns = await getSaveableColumns();
+
+    // Process file columns
+    await processFileColumns(program, columns);
+
+    // Build dynamic UPDATE
+    const setClauses = columns.map((c, i) => `${c.key} = $${i + 1}`);
+    const values = program.toValues(columns.map((c) => c.key));
+    values.push(program.Id);
+
+    const sql = `UPDATE programs SET updatedAt = CURRENT_TIMESTAMP, ${setClauses.join(', ')} WHERE id = $${values.length}`;
+    const result = await db.execute(sql, values);
 
     if (result.rowsAffected > 0) {
       const item = await getProgramById(program.Id);
@@ -377,12 +406,13 @@ export async function removeProgram(program: Program): Promise<void> {
   }
 }
 
-export function getDisplayValue(program: Program, header: TableColumn) {
+export function getDisplayValue(program: Program, header: TableColumn): string {
   if (header.Key === 'actions') {
     return '';
   }
 
-  const value = program[header.Key as keyof Program];
+  const value = program.get(header.Key);
+
   if (typeof value === 'number') {
     if (!Number.isInteger(value)) {
       return value.toFixed(2);
@@ -401,19 +431,30 @@ export function getDisplayValue(program: Program, header: TableColumn) {
   if (typeof value === 'string') {
     return value;
   }
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return '';
   }
-  return '';
+  return String(value);
 }
 
-export async function findCurrentYearLastItem(): Promise<Program | null> {
+export async function findCurrentYearLastItem(columnKey: string): Promise<Program | null> {
   try {
     const currentYear = new Date().getFullYear().toString().substring(2, 4);
 
     const db = await getDatabase();
+
+    // Check if the column exists
+    const programsTableInfo = await db.select<Array<{ name: string }>>(
+      'PRAGMA table_info(programs)'
+    );
+    const existingColumnNames = programsTableInfo.map((col) => col.name);
+
+    if (!existingColumnNames.includes(columnKey)) {
+      return null;
+    }
+
     const result = await db.select<Array<DbProgram>>(
-      "SELECT * FROM programs WHERE programId LIKE $1 || '___' ORDER BY programId DESC LIMIT 1",
+      `SELECT * FROM programs WHERE ${columnKey} LIKE $1 || '___' ORDER BY ${columnKey} DESC LIMIT 1`,
       [currentYear]
     );
     if (result.length === 0) {

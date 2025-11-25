@@ -121,29 +121,33 @@
 
   const stats = $derived.by(() => {
     const total = filteredPrograms.length;
-    const done = filteredPrograms.filter((p) => p.DoneAt).length;
+    const done = filteredPrograms.filter((p) => p.get('doneAt')).length;
     const pending = total - done;
     const avgTotalTime =
       filteredPrograms.length > 0
         ? filteredPrograms.reduce(
             (sum, p) =>
               sum +
-              (p.Preparing ?? 0) / 60 +
-              (p.Programing ?? 0) / 60 +
-              ((p.MachineWorking ?? 0) * (p.Count ?? 0)) / 60,
+              ((p.get('preparing') as number) ?? 0) / 60 +
+              ((p.get('programing') as number) ?? 0) / 60 +
+              (((p.get('machineWorking') as number) ?? 0) * ((p.get('count') as number) ?? 0)) / 60,
             0
           ) / filteredPrograms.length
         : 0;
 
     const upcoming = filteredPrograms.filter((p) => {
-      if (!p.DeadlineAt || p.DoneAt) return false;
-      const diff = p.DeadlineAt.getTime() - Date.now();
+      const deadlineAt = p.get('deadlineAt') as Date | undefined;
+      const doneAt = p.get('doneAt');
+      if (!deadlineAt || doneAt) return false;
+      const diff = deadlineAt.getTime() - Date.now();
       return diff > 0 && diff <= 7 * 24 * 60 * 60 * 1000; // Next 7 days
     }).length;
 
     const overdue = filteredPrograms.filter((p) => {
-      if (!p.DeadlineAt || p.DoneAt) return false;
-      return p.DeadlineAt.getTime() < Date.now();
+      const deadlineAt = p.get('deadlineAt') as Date | undefined;
+      const doneAt = p.get('doneAt');
+      if (!deadlineAt || doneAt) return false;
+      return deadlineAt.getTime() < Date.now();
     }).length;
 
     return { total, done, pending, avgTotalTime, upcoming, overdue };
@@ -194,9 +198,9 @@
       }
 
       const data = monthlyData.get(monthKey)!;
-      data.preparing += (program.Preparing ?? 0) / 60;
-      data.programing += (program.Programing ?? 0) / 60;
-      data.machining += ((program.MachineWorking ?? 0) * (program.Count ?? 0)) / 60;
+      data.preparing += ((program.get('preparing') as number) ?? 0) / 60;
+      data.programing += ((program.get('programing') as number) ?? 0) / 60;
+      data.machining += (((program.get('machineWorking') as number) ?? 0) * ((program.get('count') as number) ?? 0)) / 60;
     }
 
     const sortedMonths = Array.from(monthlyData.keys()).sort().slice(-6);

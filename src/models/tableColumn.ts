@@ -1,12 +1,10 @@
 import type { DbTableColumn } from './dbTableColumn';
-import type { Program } from './program';
 
-export type ColumnKeys = keyof Program | 'totalTime' | 'actions';
 export type ColumnWidth = number | 'auto';
 export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'computed';
 
 export class TableColumn {
-  private key: ColumnKeys;
+  private key: string;
   private createdAt: Date;
   private updatedAt: Date;
   private type: ColumnType;
@@ -53,11 +51,11 @@ export class TableColumn {
     this.label = label ?? undefined;
   }
 
-  get Key(): ColumnKeys {
+  get Key(): string {
     return this.key;
   }
 
-  set Key(value: ColumnKeys) {
+  set Key(value: string) {
     this.key = value;
   }
 

@@ -1,6 +1,5 @@
 <script lang="ts">
   import Table from '../components/Table.svelte';
-  import Import from '../components/Import.svelte';
   import TopBar from '../components/TopBar.svelte';
   import Menu from '../components/Menu.svelte';
   import FormattingRulesEditor from '../components/FormattingRulesEditor.svelte';
@@ -32,7 +31,6 @@
     <Table />
   </div>
 </main>
-<Import />
 <FormattingRulesEditor />
 <ColumnManagerDialog />
 <BackupManager />

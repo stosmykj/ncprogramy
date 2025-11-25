@@ -9,7 +9,6 @@
   import NumberEditor from './Editors/NumberEditor.svelte';
   import DateEditor from './Editors/DateEditor.svelte';
   import DateTimeEditor from './Editors/DateTimeEditor.svelte';
-  import TextAreaEditor from './Editors/TextAreaEditor.svelte';
 
   const { program, header }: { program: Program; header: TableColumn } = $props();
 
@@ -18,7 +17,7 @@
   let suggestions = $state<string[]>([]);
 
   $effect(() => {
-    const currentValue = program[header.Key as keyof Program];
+    const currentValue = program.get(header.Key);
     if (currentValue instanceof File) {
       fileValue = currentValue;
     } else if (typeof currentValue === 'number') {
@@ -36,11 +35,11 @@
   });
 
   function prepareSuggestions() {
-    const key = header.Key as keyof Program;
+    const key = header.Key;
     const uniqueValues = new Set<string>();
 
     for (const p of PROGRAMS) {
-      const value = p[key];
+      const value = p.get(key);
       if (typeof value === 'string' && value) {
         uniqueValues.add(value);
       }
@@ -49,21 +48,14 @@
     suggestions = Array.from(uniqueValues).slice(0, 10);
   }
 
-  // Validation rules based on database schema
-  const requiredFields = ['programId'];
-  const nonNegativeFields = ['count', 'preparing', 'programing', 'machineWorking'];
-
-  const isRequired = requiredFields.includes(String(header.Key));
-  const isNonNegative = nonNegativeFields.includes(String(header.Key));
-
   async function handleSave(value?: string | number | Date | File | null) {
     if (!DATA_VARS.isEditing) return;
 
     try {
-      const key = header.Key as keyof Program;
+      const key = header.Key;
 
-      if (!value) {
-        program[key] = undefined;
+      if (value === undefined || value === null || value === '') {
+        program.set(key, undefined);
         await updateProgram(program);
         return;
       }
@@ -71,13 +63,13 @@
       if (header.Type === 'number') {
         const numValue = parseFloat(value as string);
         if (!isNaN(numValue)) {
-          program[key] = numValue;
+          program.set(key, numValue);
         }
       } else if (header.Type === 'date' || header.Type === 'datetime') {
         if (value && value instanceof Date) {
-          program[key] = new Date(value);
+          program.set(key, new Date(value));
         } else {
-          program[key] = undefined;
+          program.set(key, undefined);
         }
       } else if (header.Type === 'file' && value instanceof File) {
         const currentFile = new File({
@@ -85,9 +77,9 @@
           name: value.Name,
           path: value.Path,
         });
-        program[key] = currentFile;
+        program.set(key, currentFile);
       } else if (header.Type === 'string') {
-        program[key] = value;
+        program.set(key, value);
       }
       await updateProgram(program);
     } catch (error) {
@@ -111,29 +103,16 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="editable-cell" class:file={header.Type === 'file'} onkeydown={handleKeyDown}>
-  {#if header.Type === 'string' && String(header.Key) === 'note' && (typeof editValue === 'string' || editValue === null)}
-    <TextAreaEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
-  {:else if header.Type === 'number' && (typeof editValue === 'number' || editValue === null)}
-    <NumberEditor
-      bind:value={editValue}
-      onSave={handleSave}
-      onCancel={handleCancel}
-      min={isNonNegative ? 0 : undefined}
-    />
+  {#if header.Type === 'number' && (typeof editValue === 'string' || editValue === null)}
+    <NumberEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'date' && (editValue instanceof Date || editValue === null)}
     <DateEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'datetime' && (editValue instanceof Date || editValue === null)}
     <DateTimeEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
-  {:else if header.Type === 'file' && (editValue instanceof File || editValue === null)}
+  {:else if header.Type === 'file' && (fileValue instanceof File || fileValue === null)}
     <FileEditor bind:value={fileValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if typeof editValue === 'string' || editValue === null}
-    <TextEditor
-      bind:value={editValue}
-      {suggestions}
-      onSave={handleSave}
-      onCancel={handleCancel}
-      required={isRequired}
-    />
+    <TextEditor bind:value={editValue} {suggestions} onSave={handleSave} onCancel={handleCancel} />
   {/if}
 </div>
 

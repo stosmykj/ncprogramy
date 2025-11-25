@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { IMPORT_VARS } from '$lib/importProcessor.svelte';
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
-  import { exportBackup } from '$lib/backupProcessor';
+  import { exportBackup, importBackup } from '$lib/backupProcessor';
   import Button from './Button.svelte';
 
-  function btn_import() {
-    IMPORT_VARS.dialog = true;
+  async function btn_import() {
     SETTINGS_VARS.menuOpened = false;
+    await importBackup();
   }
 
   async function btn_export() {

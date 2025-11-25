@@ -19,51 +19,42 @@ export async function initFormattingRules(): Promise<void> {
   }
 }
 
-/**
- * Get styles for a row based on formatting rules
- */
 export function getRowStyles(program: Program): Partial<CSSStyleDeclaration> {
   const styles: Record<string, string> = {};
+  const programRecord = program.toRecord();
 
-  // Apply row-level rules
   const rowRules = FORMATTING_RULES.filter((rule) => rule.Target === 'row' && rule.Enabled);
 
   for (const rule of rowRules) {
-    if (rule.matches(program as unknown as Record<string, unknown>)) {
+    if (rule.matches(programRecord)) {
       const ruleStyles = rule.getStyles();
       Object.assign(styles, ruleStyles);
-      break; // Apply only the first matching rule (highest priority)
+      break;
     }
   }
 
   return styles;
 }
 
-/**
- * Get styles for a cell based on formatting rules
- */
 export function getCellStyles(program: Program, columnKey: string): Partial<CSSStyleDeclaration> {
   const styles: Record<string, string> = {};
+  const programRecord = program.toRecord();
 
-  // Apply cell-level rules for this column
   const cellRules = FORMATTING_RULES.filter(
     (rule) => rule.Target === 'cell' && rule.ColumnKey === columnKey && rule.Enabled
   );
 
   for (const rule of cellRules) {
-    if (rule.matches(program as unknown as Record<string, unknown>)) {
+    if (rule.matches(programRecord)) {
       const ruleStyles = rule.getStyles();
       Object.assign(styles, ruleStyles);
-      break; // Apply only the first matching rule (highest priority)
+      break;
     }
   }
 
   return styles;
 }
 
-/**
- * Reload formatting rules from database
- */
 export async function reloadFormattingRules(): Promise<void> {
   await initFormattingRules();
 }
@@ -71,7 +62,6 @@ export async function reloadFormattingRules(): Promise<void> {
 export function buildStyleString(styles: Partial<CSSStyleDeclaration>): string {
   return Object.entries(styles)
     .map(([key, value]) => {
-      // Convert camelCase to kebab-case
       const cssKey = key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
       return `${cssKey}: ${value}`;
     })

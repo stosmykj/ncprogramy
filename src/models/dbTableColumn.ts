@@ -1,7 +1,7 @@
-import type { ColumnKeys, ColumnType, ColumnWidth } from './tableColumn';
+import type { ColumnType, ColumnWidth } from './tableColumn';
 
 export interface DbTableColumn {
-  key: ColumnKeys;
+  key: string;
   createdAt: Date;
   updatedAt: Date;
   type: ColumnType;

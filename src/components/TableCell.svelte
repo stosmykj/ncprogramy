@@ -25,7 +25,10 @@
   } = $props();
 
   let columnWidth = $state(document.querySelector(`#header_${header.Key}`)?.clientWidth);
-  const editable = !['actions', 'id', 'createdAt', 'editedAt', 'totalTime'].includes(header.Key);
+  // Not editable: actions, system columns, computed columns
+  const editable =
+    !['actions', 'id', 'createdAt', 'updatedAt'].includes(header.Key) &&
+    header.Type !== 'computed';
   let showFilePreview = $state(false);
   let cellElement: HTMLElement | null = $state(null);
   let hoverTimeout: number | null = $state(null);
@@ -33,11 +36,11 @@
 
   const cellStyles = getCellStyles(program, header.Key);
   const isFileColumn = $derived(header.Type === 'file');
-  const fileValue = $derived(
-    isFileColumn && program[header.Key as keyof Program] instanceof File
-      ? (program[header.Key as keyof Program] as File)
-      : null
-  );
+  const fileValue = $derived.by((): File | null => {
+    if (!isFileColumn) return null;
+    const value = program.get(header.Key);
+    return value instanceof File ? value : null;
+  });
 
   $effect(() => {
     if (focused && !editable && DATA_VARS.isEditing) {
@@ -128,8 +131,8 @@
   }
 
   async function tryDeleteItem() {
-    const result = await confirm('Opravdu smazat program?', {
-      title: `Smazání programu č. ${program.ProgramId}`,
+    const result = await confirm('Opravdu smazat záznam?', {
+      title: `Smazání záznamu #${program.Id}`,
       kind: 'warning',
     });
     if (result) {

@@ -1,13 +1,7 @@
 <script lang="ts">
   import TableRow from './TableRow.svelte';
   import { onMount } from 'svelte';
-  import {
-    getPrograms,
-    PROGRAMS,
-    DATA_VARS,
-    findCurrentYearLastItem,
-    addProgram,
-  } from '$lib/dataProcessor.svelte';
+  import { getPrograms, PROGRAMS, DATA_VARS, addProgram } from '$lib/dataProcessor.svelte';
   import TableHeader from './TableHeader.svelte';
   import { writeText as clipWrite } from '@tauri-apps/plugin-clipboard-manager';
   import type { BodyContextMenuData } from '../interfaces/BodyContextMenuData';
@@ -186,11 +180,8 @@
       return;
     }
 
-    const yy = new Date().getFullYear().toString().substring(2, 4);
-    const lastItem = await findCurrentYearLastItem();
-
-    const programId = lastItem !== null ? (Number(lastItem.ProgramId) + 1).toString() : yy + '001';
-    addProgram(new Program({ programId: programId }));
+    // Create a new empty program - user will fill in the values
+    await addProgram(new Program());
   }
 </script>
 
