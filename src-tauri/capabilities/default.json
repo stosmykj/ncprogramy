@@ -30,6 +30,20 @@
       "identifier": "fs:allow-mkdir",
       "allow": [{ "path": "**" }]
     },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "**" }]
+    },
+    "fs:allow-appdata-read",
+    "fs:allow-appdata-write",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-appdata-meta",
+    "fs:allow-appdata-meta-recursive",
+    "fs:allow-write-text-file",
     "fs:default",
     "sql:default",
     "sql:allow-execute",
