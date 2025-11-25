@@ -8,6 +8,7 @@
     suggestions = [],
     autoFocus = true,
     placeholder = '',
+    required = false,
   }: {
     value: string | null;
     onSave: (value: string | null) => void;
@@ -15,12 +16,26 @@
     suggestions?: string[];
     autoFocus?: boolean;
     placeholder?: string;
+    required?: boolean;
   } = $props();
 
   let inputRef: HTMLInputElement | undefined = $state();
   let showSuggestions = $state(false);
   let selectedSuggestionIndex = $state(-1);
   let filteredSuggestions = $state<string[]>([]);
+  let hasError = $state(false);
+  let errorMessage = $state('');
+
+  function validate(): boolean {
+    if (required && (!value || value.trim() === '')) {
+      hasError = true;
+      errorMessage = 'Toto pole je povinné';
+      return false;
+    }
+    hasError = false;
+    errorMessage = '';
+    return true;
+  }
 
   $effect(() => {
     if (autoFocus && inputRef) {
@@ -70,7 +85,9 @@
 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSave(value);
+      if (validate()) {
+        onSave(value);
+      }
     } else if (e.key === 'Escape') {
       e.preventDefault();
       if (showSuggestions) {
@@ -82,7 +99,7 @@
   }
 </script>
 
-<div class="text-editor">
+<div class="text-editor" class:has-error={hasError}>
   <input
     bind:this={inputRef}
     type="text"
@@ -92,7 +109,11 @@
     {placeholder}
     autocomplete="off"
     aria-label="Textová hodnota"
+    aria-invalid={hasError}
   />
+  {#if hasError && errorMessage}
+    <div class="error-message">{errorMessage}</div>
+  {/if}
   {#if showSuggestions && filteredSuggestions.length > 0}
     <div class="suggestions-dropdown">
       {#each filteredSuggestions as suggestion, index}
@@ -116,6 +137,13 @@
     width: 100%;
     height: 100%;
 
+    &.has-error {
+      input {
+        background: #fef2f2;
+        color: #991b1b;
+      }
+    }
+
     input {
       width: 100%;
       height: 100%;
@@ -129,6 +157,15 @@
       &:focus {
         outline: none;
       }
+    }
+
+    .error-message {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      font-size: 11px;
+      color: #dc2626;
+      white-space: nowrap;
     }
 
     .suggestions-dropdown {

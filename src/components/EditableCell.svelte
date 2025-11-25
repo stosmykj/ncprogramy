@@ -49,6 +49,13 @@
     suggestions = Array.from(uniqueValues).slice(0, 10);
   }
 
+  // Validation rules based on database schema
+  const requiredFields = ['programId'];
+  const nonNegativeFields = ['count', 'preparing', 'programing', 'machineWorking'];
+
+  const isRequired = requiredFields.includes(String(header.Key));
+  const isNonNegative = nonNegativeFields.includes(String(header.Key));
+
   async function handleSave(value?: string | number | Date | File | null) {
     if (!DATA_VARS.isEditing) return;
 
@@ -93,13 +100,26 @@
   function handleCancel() {
     DATA_VARS.isEditing = false;
   }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    // Prevent Tab except for date/datetime editors where it's needed for navigation
+    if (e.key === 'Tab' && header.Type !== 'date' && header.Type !== 'datetime') {
+      e.preventDefault();
+    }
+  }
 </script>
 
-<div class="editable-cell" class:file={header.Type === 'file'}>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="editable-cell" class:file={header.Type === 'file'} onkeydown={handleKeyDown}>
   {#if header.Type === 'string' && String(header.Key) === 'note' && (typeof editValue === 'string' || editValue === null)}
     <TextAreaEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'number' && (typeof editValue === 'number' || editValue === null)}
-    <NumberEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
+    <NumberEditor
+      bind:value={editValue}
+      onSave={handleSave}
+      onCancel={handleCancel}
+      min={isNonNegative ? 0 : undefined}
+    />
   {:else if header.Type === 'date' && (editValue instanceof Date || editValue === null)}
     <DateEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'datetime' && (editValue instanceof Date || editValue === null)}
@@ -107,17 +127,24 @@
   {:else if header.Type === 'file' && (editValue instanceof File || editValue === null)}
     <FileEditor bind:value={fileValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if typeof editValue === 'string' || editValue === null}
-    <TextEditor bind:value={editValue} {suggestions} onSave={handleSave} onCancel={handleCancel} />
+    <TextEditor
+      bind:value={editValue}
+      {suggestions}
+      onSave={handleSave}
+      onCancel={handleCancel}
+      required={isRequired}
+    />
   {/if}
 </div>
 
 <style lang="scss">
   .editable-cell {
     position: absolute;
-    top: -6px;
-    left: -15px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: calc(100% + 30px);
-    height: calc(100% + 12px);
+    min-height: calc(100% + 12px);
     background: #fff;
     border: 2px solid #285597;
     border-radius: 4px;
@@ -125,10 +152,9 @@
     z-index: 10;
 
     &.file {
-      top: -20px;
-      left: -35px;
-      width: calc(100% + 70px);
-      height: calc(100% + 40px);
+      left: 50%;
+      width: 375px;
+      min-height: calc(100% + 40px);
     }
   }
 </style>

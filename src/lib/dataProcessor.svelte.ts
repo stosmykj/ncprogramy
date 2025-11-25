@@ -7,6 +7,7 @@ import { showError, showSuccess } from './toast.svelte';
 import { getDatabase } from './database';
 import { validateProgram } from './validation/programValidator';
 import { formatDate, formatDateTime } from './dateFormatter.svelte';
+import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
 
 export const PROGRAMS = $state<Array<Program>>([]);
 export const DATA_VARS = $state({
@@ -248,6 +249,10 @@ export async function addProgram(program: Program): Promise<void> {
   try {
     validateProgram(program);
 
+    program.Design = await copyFileToStorageIfNeeded(program.Design);
+    program.Drawing = await copyFileToStorageIfNeeded(program.Drawing);
+    program.Clamping = await copyFileToStorageIfNeeded(program.Clamping);
+
     const db = await getDatabase();
     const result = await db.execute(program.toSqlInsert(), program.toArray());
     if (result.rowsAffected > 0) {
@@ -292,14 +297,15 @@ export async function addPrograms(programs: Array<Program>): Promise<void> {
       ) VALUES `;
       const values: Array<string | number | Date | undefined> = [];
       for (const program of sliced) {
+        const importValues = program.toArrayImport();
         let itemSql = '(';
-        for (let i = 0; i < Object.keys(program).filter((v) => v !== 'id').length; i++) {
+        for (let i = 0; i < importValues.length; i++) {
           itemSql += `$${values.length + i + 1},`;
         }
         itemSql = itemSql.substring(0, itemSql.length - 1);
         itemSql += '),';
         sql += itemSql;
-        values.push(...program.toArrayImport());
+        values.push(...importValues);
       }
       sql = sql.substring(0, sql.length - 1);
       await db.execute(sql, values);
@@ -308,7 +314,7 @@ export async function addPrograms(programs: Array<Program>): Promise<void> {
       console.warn(`Imported ${processedCount}/${totalCount} programs`);
     }
 
-    DATA_VARS.refresh = {};
+    DATA_VARS.reloadData = true;
     showSuccess(`Úspěšně importováno ${totalCount} programů`);
   } catch (error) {
     const message = handleError(error);
@@ -325,6 +331,10 @@ export async function updateProgram(program: Program): Promise<void> {
 
   try {
     validateProgram(program);
+
+    program.Design = await copyFileToStorageIfNeeded(program.Design);
+    program.Drawing = await copyFileToStorageIfNeeded(program.Drawing);
+    program.Clamping = await copyFileToStorageIfNeeded(program.Clamping);
 
     const db = await getDatabase();
     const result = await db.execute(program.toSqlUpdate(), [...program.toArray(), program.Id]);

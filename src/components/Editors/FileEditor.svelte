@@ -5,6 +5,7 @@
   import type { FileExtension } from '../../models/file';
   import { showError, showWarning } from '$lib/toast.svelte';
   import Button from '../Button.svelte';
+  import KeyboardShortcut from '../KeyboardShortcut.svelte';
 
   let {
     value = $bindable(),
@@ -142,15 +143,24 @@
     switch (e.key) {
       case 'Enter':
         e.preventDefault();
-        if (e.ctrlKey) {
-          handleFileSelect();
-        } else {
-          handleSave();
-        }
+        handleSave();
         break;
       case 'Escape':
         e.preventDefault();
         onCancel();
+        break;
+      case 'o':
+      case 'O':
+        if (e.ctrlKey) {
+          e.preventDefault();
+          handleFileSelect();
+        }
+        break;
+      case 'Delete':
+        if (e.ctrlKey && selectedFile) {
+          e.preventDefault();
+          handleRemove();
+        }
         break;
     }
   }
@@ -194,9 +204,13 @@
   </div>
   <div class="file-actions">
     {#if selectedFile}
-      <Button onClick={handleRemove} icon="mdiClose" iconSize={24} primary onlyIcon />
+      <Button onClick={handleRemove} icon="mdiClose" iconSize={24} primary onlyIcon>
+        <KeyboardShortcut keys="Ctrl+Del" />
+      </Button>
     {/if}
-    <Button onClick={handleFileSelect} icon="mdiFileUpload" iconSize={24} primary onlyIcon />
+    <Button onClick={handleFileSelect} icon="mdiFileUpload" iconSize={24} primary onlyIcon>
+      <KeyboardShortcut keys="Ctrl+O" />
+    </Button>
   </div>
 </div>
 
@@ -215,7 +229,7 @@
     border-radius: 4px;
     transition: 0.15s ease;
     width: 100%;
-    max-width: calc(100% - 30px);
+    max-width: calc(100% - 95px);
     min-height: 50px;
     align-items: center;
   }
@@ -276,6 +290,8 @@
   }
 
   .file-actions {
-    width: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 </style>
