@@ -29,6 +29,7 @@
   let showFilePreview = $state(false);
   let cellElement: HTMLElement | null = $state(null);
   let hoverTimeout: number | null = $state(null);
+  let filePreviewRef: FilePreview | null = $state(null);
 
   const cellStyles = getCellStyles(program, header.Key);
   const isFileColumn = $derived(header.Type === 'file');
@@ -49,6 +50,46 @@
       columnWidth = document.querySelector(`#header_${header.Key}`)?.clientWidth;
     }
   });
+
+  // Close file preview when cell loses focus
+  $effect(() => {
+    if (!focused && showFilePreview) {
+      showFilePreview = false;
+    }
+  });
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (!focused || DATA_VARS.isEditing) return;
+
+    // Space toggles file preview for file columns
+    if (event.key === ' ' && isFileColumn && fileValue) {
+      event.preventDefault();
+      showFilePreview = !showFilePreview;
+      return;
+    }
+
+    // Keyboard shortcuts when file preview is open
+    if (showFilePreview && filePreviewRef) {
+      switch (event.key.toLowerCase()) {
+        case 'p':
+          event.preventDefault();
+          filePreviewRef.openFullPreview();
+          break;
+        case 'o':
+          event.preventDefault();
+          filePreviewRef.openFile();
+          break;
+        case 'f':
+          event.preventDefault();
+          filePreviewRef.openFileLocation();
+          break;
+        case 'escape':
+          event.preventDefault();
+          showFilePreview = false;
+          break;
+      }
+    }
+  }
 
   function changeFocus() {
     if (header.Key === 'actions' || DATA_VARS.isEditing) {
@@ -143,9 +184,11 @@
     <EditableCell {program} {header} />
   {/if}
   {#if showFilePreview && fileValue}
-    <FilePreview file={fileValue} anchorElement={cellElement} />
+    <FilePreview file={fileValue} anchorElement={cellElement} bind:this={filePreviewRef} />
   {/if}
 </td>
+
+<svelte:window onkeydown={handleKeyDown} />
 
 <style lang="scss">
   $primary-color: #4a90e2;
@@ -161,7 +204,6 @@
     align-items: center;
     white-space: nowrap;
     border-right: 1px solid $border-color;
-    overflow: hidden;
 
     &:first-of-type {
       padding: 0;

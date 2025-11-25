@@ -2,6 +2,7 @@
   import { File } from '../models/file';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import KeyboardShortcut from './KeyboardShortcut.svelte';
   import FullFilePreviewDialog from './FullFilePreviewDialog.svelte';
   import { Command } from '@tauri-apps/plugin-shell';
   import { dirname } from '@tauri-apps/api/path';
@@ -107,11 +108,11 @@
     return 'mdiFile';
   }
 
-  function openFullPreview() {
+  export function openFullPreview() {
     isFullPreviewOpen = true;
   }
 
-  async function openFile() {
+  export async function openFile() {
     if (!file?.Path) return;
 
     try {
@@ -122,7 +123,7 @@
     }
   }
 
-  async function openFileLocation() {
+  export async function openFileLocation() {
     if (!file?.Path) return;
 
     try {
@@ -195,10 +196,19 @@
 
       {#if fileStats.exists}
         <div class="preview-footer">
-          <Button icon="mdiFileEye" onClick={openFullPreview} onlyIcon primary />
-          <div>
-            <Button icon="mdiOpenInNew" onClick={openFile} onlyIcon primary />
-            <Button icon="mdiFolder" onClick={openFileLocation} onlyIcon primary />
+          <div class="footer-button">
+            <Button icon="mdiFileEye" onClick={openFullPreview} onlyIcon primary />
+            <KeyboardShortcut keys="P" class="shortcut-hint" />
+          </div>
+          <div class="footer-buttons-right">
+            <div class="footer-button">
+              <Button icon="mdiOpenInNew" onClick={openFile} onlyIcon primary />
+              <KeyboardShortcut keys="O" class="shortcut-hint" />
+            </div>
+            <div class="footer-button">
+              <Button icon="mdiFolder" onClick={openFileLocation} onlyIcon primary />
+              <KeyboardShortcut keys="F" class="shortcut-hint" />
+            </div>
           </div>
         </div>
       {/if}
@@ -378,9 +388,23 @@
     padding: 12px 16px;
     border-top: 1px solid #eaecf0;
 
-    div {
+    .footer-button {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footer-buttons-right {
       display: flex;
       gap: 8px;
+    }
+
+    :global(.shortcut-hint) {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+      color: #374151;
+      font-size: 10px;
+      padding: 2px 4px;
     }
   }
 </style>
