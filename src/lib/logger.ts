@@ -244,6 +244,9 @@ export async function exportLogs(): Promise<string | null> {
 
 // Initialize logger - clean old logs on startup
 export async function initLogger(): Promise<void> {
+  // Skip during SSR
+  if (typeof window === 'undefined') return;
+
   if (window.__loggerInitialized) return;
   window.__loggerInitialized = true;
 

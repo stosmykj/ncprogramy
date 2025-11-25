@@ -593,6 +593,9 @@ declare global {
 }
 
 export function startPeriodicBackup(intervalMinutes: number = 60): void {
+  // Skip during SSR
+  if (typeof window === 'undefined') return;
+
   // Prevent multiple initializations during HMR
   if (window.__backupSystemInitialized) return;
   window.__backupSystemInitialized = true;
@@ -616,6 +619,9 @@ export function startPeriodicBackup(intervalMinutes: number = 60): void {
 }
 
 export function stopPeriodicBackup(): void {
+  // Skip during SSR
+  if (typeof window === 'undefined') return;
+
   if (window.__backupInterval) {
     clearInterval(window.__backupInterval);
     window.__backupInterval = null;
