@@ -18,8 +18,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "tauri": "tauri",
-    "prepare": "husky"
+    "tauri": "tauri"
   },
   "license": "MIT",
   "dependencies": {
@@ -57,7 +56,6 @@
     "eslint-plugin-svelte": "^3.12.4",
     "globals": "^16.4.0",
     "happy-dom": "^20.0.1",
-    "husky": "^9.1.7",
     "jsdom": "^27.0.0",
     "lint-staged": "^16.2.4",
     "prettier": "^3.6.2",
