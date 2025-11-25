@@ -5,6 +5,7 @@
   import Menu from '../components/Menu.svelte';
   import FormattingRulesEditor from '../components/FormattingRulesEditor.svelte';
   import ColumnManagerDialog from '../components/ColumnManager/ColumnManagerDialog.svelte';
+  import BackupManager from '../components/BackupManager.svelte';
 
   const preventedKeys = ['ArrowUp', 'ArrowDown'];
 
@@ -34,6 +35,7 @@
 <Import />
 <FormattingRulesEditor />
 <ColumnManagerDialog />
+<BackupManager />
 
 <style lang="scss">
   .table-container {

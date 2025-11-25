@@ -2,6 +2,7 @@ import { FormattingRule } from '../models/formattingRule';
 import type { DbFormattingRule } from '../models/dbFormattingRule';
 import { getDatabase } from './database';
 import type { Program } from '../models/program';
+import { DATA_VARS } from './dataProcessor.svelte';
 
 export const FORMATTING_RULES = $state<Array<FormattingRule>>([]);
 
@@ -12,6 +13,7 @@ export async function initFormattingRules(): Promise<void> {
       'SELECT * FROM formatting_rules WHERE enabled = 1 ORDER BY priority ASC'
     );
     FORMATTING_RULES.splice(0, FORMATTING_RULES.length, ...rules.map((r) => new FormattingRule(r)));
+    DATA_VARS.refresh = {};
   } catch (error) {
     console.error('Failed to load formatting rules:', error);
   }

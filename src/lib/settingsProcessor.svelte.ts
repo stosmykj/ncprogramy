@@ -6,6 +6,7 @@ export const SETTINGS_VARS = $state({
   menuOpened: false,
   formatterOpened: false,
   columnManagerOpened: false,
+  backupManagerOpened: false,
 });
 
 export async function getSettings(): Promise<Array<Settings>> {

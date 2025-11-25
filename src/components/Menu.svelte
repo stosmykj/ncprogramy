@@ -1,7 +1,7 @@
 <script lang="ts">
   import { IMPORT_VARS } from '$lib/importProcessor.svelte';
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
-  import { exportBackup, createBackup } from '$lib/backupProcessor';
+  import { exportBackup } from '$lib/backupProcessor';
   import Button from './Button.svelte';
 
   function btn_import() {
@@ -14,9 +14,9 @@
     await exportBackup();
   }
 
-  async function btn_backup() {
+  function btn_backupManager() {
     SETTINGS_VARS.menuOpened = false;
-    await createBackup();
+    SETTINGS_VARS.backupManagerOpened = true;
   }
 
   function btn_formattingRules() {
@@ -37,8 +37,8 @@
   <Button onClick={btn_export} primary icon="mdiExport" class="full-total"
     ><span>Export</span></Button
   >
-  <Button onClick={btn_backup} primary icon="mdiBackupRestore" class="full-total"
-    ><span>Vytvořit zálohu</span></Button
+  <Button onClick={btn_backupManager} primary icon="mdiBackupRestore" class="full-total"
+    ><span>Správa záloh</span></Button
   >
   <Button onClick={btn_formattingRules} primary icon="mdiAlertCircle" class="full-total"
     ><span>Pravidla formátování</span></Button

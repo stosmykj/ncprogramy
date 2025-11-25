@@ -28,6 +28,7 @@
     computeExpression: undefined,
   });
   let isCreatingNew = $state(false);
+  let refreshColumns = $state({});
 
   const protectedColumns = ['createdAt', 'updatedAt', 'actions', 'id'];
 
@@ -82,7 +83,7 @@
 
   function toggleVisibility(index: number) {
     columns[index].Visible = !columns[index].Visible;
-    columns = [...columns];
+    refreshColumns = {};
   }
 
   async function toggleArchived(index: number) {
@@ -90,7 +91,7 @@
     if (columns[index].Archived) {
       columns[index].Visible = false;
     }
-    columns = [...columns];
+    refreshColumns = {};
   }
 
   function toggleShowArchived() {
@@ -329,113 +330,115 @@
       <span>Přetáhněte sloupce pro změnu pořadí. Klikněte na ikony pro úpravy.</span>
     </div>
 
-    <div class="columns-list" role="list">
-      {#each columns as column, index}
-        {#if editingIndex === index}
-          <div class="edit-form-inline">
-            <div class="form-header">
-              <strong>{column.Key}</strong>
-              {#if isComputed(column)}
-                <span class="computed-badge">Vypočítaný</span>
-              {/if}
-            </div>
-            <div class="form-row">
-              <label>
-                Název sloupce (label):
-                <input type="text" bind:value={editFormData.label} placeholder={column.Key} />
-              </label>
-            </div>
-            {#if isComputed(column)}
-              <ComputeExpressionBuilder bind:expression={editFormData.computeExpression} />
-            {/if}
-            <div class="form-row">
-              <small><strong>Typ:</strong> {column.Type} (nelze změnit po vytvoření)</small>
-            </div>
-            <div class="form-actions">
-              <Button icon="mdiCancel" onClick={cancelEdit} onlyIcon />
-              <Button icon="mdiCheck" onClick={saveEdit} success onlyIcon />
-            </div>
-          </div>
-        {:else}
-          <div
-            class="column-item"
-            class:dragging={draggedIndex === index}
-            class:drop-target={dropTargetIndex === index && dropPosition === 'before'}
-            class:drop-target-after={dropTargetIndex === index && dropPosition === 'after'}
-            class:hidden={!column.Visible}
-            class:archived={column.Archived}
-            class:locked={isProtected(column.Key)}
-            class:computed={isComputed(column)}
-            role="listitem"
-            draggable="true"
-            ondragstart={(e) => handleDragStart(e, index)}
-            ondragover={(e) => handleDragOver(e, index)}
-            ondragleave={handleDragLeave}
-            ondrop={(e) => handleDrop(e, index)}
-            ondragend={handleDragEnd}
-          >
-            <div class="drag-handle">
-              {#if !isProtected(column.Key) && !column.Archived}
-                <Icon name="mdiDragVertical" size={20} color="#666" />
-              {:else}
-                <div style="width: 20px;"></div>
-              {/if}
-            </div>
-
-            <div class="column-info">
-              <div class="column-name-row">
-                <span class="column-name">{getColumnLabel(column)}</span>
+    {#key refreshColumns}
+      <div class="columns-list" role="list">
+        {#each columns as column, index}
+          {#if editingIndex === index}
+            <div class="edit-form-inline">
+              <div class="form-header">
+                <strong>{column.Key}</strong>
                 {#if isComputed(column)}
                   <span class="computed-badge">Vypočítaný</span>
                 {/if}
               </div>
-              <span class="column-key">{column.Key} ({column.Type})</span>
-            </div>
-
-            <div class="column-actions">
-              {#if !isProtected(column.Key) && !column.Archived}
-                <button
-                  class="action-button"
-                  onclick={() => startEdit(index)}
-                  title="Upravit sloupec"
-                >
-                  <Icon name="mdiPencil" size={20} color="#285597" />
-                </button>
+              <div class="form-row">
+                <label>
+                  Název sloupce (label):
+                  <input type="text" bind:value={editFormData.label} placeholder={column.Key} />
+                </label>
+              </div>
+              {#if isComputed(column)}
+                <ComputeExpressionBuilder bind:expression={editFormData.computeExpression} />
               {/if}
+              <div class="form-row">
+                <small><strong>Typ:</strong> {column.Type} (nelze změnit po vytvoření)</small>
+              </div>
+              <div class="form-actions">
+                <Button icon="mdiCancel" onClick={cancelEdit} onlyIcon />
+                <Button icon="mdiCheck" onClick={saveEdit} success onlyIcon />
+              </div>
+            </div>
+          {:else}
+            <div
+              class="column-item"
+              class:dragging={draggedIndex === index}
+              class:drop-target={dropTargetIndex === index && dropPosition === 'before'}
+              class:drop-target-after={dropTargetIndex === index && dropPosition === 'after'}
+              class:hidden={!column.Visible}
+              class:archived={column.Archived}
+              class:locked={isProtected(column.Key)}
+              class:computed={isComputed(column)}
+              role="listitem"
+              draggable="true"
+              ondragstart={(e) => handleDragStart(e, index)}
+              ondragover={(e) => handleDragOver(e, index)}
+              ondragleave={handleDragLeave}
+              ondrop={(e) => handleDrop(e, index)}
+              ondragend={handleDragEnd}
+            >
+              <div class="drag-handle">
+                {#if !isProtected(column.Key) && !column.Archived}
+                  <Icon name="mdiDragVertical" size={20} color="#666" />
+                {:else}
+                  <div style="width: 20px;"></div>
+                {/if}
+              </div>
 
-              <button
-                class="visibility-toggle"
-                class:visible={column.Visible}
-                onclick={() => toggleVisibility(index)}
-                disabled={isProtected(column.Key) || column.Archived}
-                title={column.Visible ? 'Skrýt sloupec' : 'Zobrazit sloupec'}
-              >
-                <Icon
-                  name={column.Visible ? 'mdiEye' : 'mdiEyeOff'}
-                  size={20}
-                  color={column.Visible ? '#22aa44' : '#999'}
-                />
-              </button>
+              <div class="column-info">
+                <div class="column-name-row">
+                  <span class="column-name">{getColumnLabel(column)}</span>
+                  {#if isComputed(column)}
+                    <span class="computed-badge">Vypočítaný</span>
+                  {/if}
+                </div>
+                <span class="column-key">{column.Key} ({column.Type})</span>
+              </div>
 
-              {#if !isProtected(column.Key)}
+              <div class="column-actions">
+                {#if !isProtected(column.Key) && !column.Archived}
+                  <button
+                    class="action-button"
+                    onclick={() => startEdit(index)}
+                    title="Upravit sloupec"
+                  >
+                    <Icon name="mdiPencil" size={20} color="#285597" />
+                  </button>
+                {/if}
+
                 <button
-                  class="archive-toggle"
-                  class:archived={column.Archived}
-                  onclick={() => toggleArchived(index)}
-                  title={column.Archived ? 'Obnovit z archivu' : 'Archivovat'}
+                  class="visibility-toggle"
+                  class:visible={column.Visible}
+                  onclick={() => toggleVisibility(index)}
+                  disabled={isProtected(column.Key) || column.Archived}
+                  title={column.Visible ? 'Skrýt sloupec' : 'Zobrazit sloupec'}
                 >
                   <Icon
-                    name={column.Archived ? 'mdiArchiveArrowUp' : 'mdiArchive'}
+                    name={column.Visible ? 'mdiEye' : 'mdiEyeOff'}
                     size={20}
-                    color={column.Archived ? '#ff9800' : '#666'}
+                    color={column.Visible ? '#22aa44' : '#999'}
                   />
                 </button>
-              {/if}
+
+                {#if !isProtected(column.Key)}
+                  <button
+                    class="archive-toggle"
+                    class:archived={column.Archived}
+                    onclick={() => toggleArchived(index)}
+                    title={column.Archived ? 'Obnovit z archivu' : 'Archivovat'}
+                  >
+                    <Icon
+                      name={column.Archived ? 'mdiArchiveArrowUp' : 'mdiArchive'}
+                      size={20}
+                      color={column.Archived ? '#ff9800' : '#666'}
+                    />
+                  </button>
+                {/if}
+              </div>
             </div>
-          </div>
-        {/if}
-      {/each}
-    </div>
+          {/if}
+        {/each}
+      </div>
+    {/key}
   </div>
 
   <div class="dialog-footer">

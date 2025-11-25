@@ -53,7 +53,7 @@
 
   // Close file preview when cell loses focus
   $effect(() => {
-    if (!focused && showFilePreview) {
+    if (!focused && !hoverTimeout && showFilePreview) {
       showFilePreview = false;
     }
   });
@@ -140,13 +140,15 @@
   function handleMouseEnter() {
     if (isFileColumn && fileValue && !DATA_VARS.isEditing) {
       hoverTimeout = window.setTimeout(() => {
+        console.log('mouse enter');
         showFilePreview = true;
-      }, 500); // Show preview after 500ms hover
+      }, 500);
     }
   }
 
   function handleMouseLeave() {
     if (hoverTimeout) {
+      console.log('mouse leave');
       clearTimeout(hoverTimeout);
       hoverTimeout = null;
     }
@@ -160,6 +162,7 @@
   class:focused
   class:editable
   class:editing={DATA_VARS.isEditing && focused}
+  class:preview={showFilePreview}
   data-name={header.Key}
   style="width: {columnWidth}px; {buildStyleString(cellStyles)}"
   onclick={changeFocus}
@@ -204,9 +207,14 @@
     align-items: center;
     white-space: nowrap;
     border-right: 1px solid $border-color;
+    overflow: hidden;
 
     &:first-of-type {
       padding: 0;
+    }
+
+    &.preview {
+      overflow: unset;
     }
 
     &.focused {
