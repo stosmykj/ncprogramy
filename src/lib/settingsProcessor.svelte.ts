@@ -1,6 +1,7 @@
 import Database, { type QueryResult } from '@tauri-apps/plugin-sql';
 import { Settings } from '../models/settings';
 import type { DbSettings } from '../models/dbSettings';
+import type { File } from '../models/file';
 
 export const SETTINGS_VARS = $state({
   menuOpened: false,
@@ -8,6 +9,10 @@ export const SETTINGS_VARS = $state({
   columnManagerOpened: false,
   backupManagerOpened: false,
   logManagerOpened: false,
+  gcodeEditorOpened: false,
+  gcodeEditorFile: null as File | null,
+  gcodeEditorProgramId: null as number | null,
+  gcodeEditorColumnKey: null as string | null,
   isAppInitialized: false,
 });
 

@@ -2,6 +2,7 @@
   import type { Program } from '../models/program';
   import type { TableColumn } from '../models/tableColumn';
   import { DATA_VARS, getDisplayValue, removeProgram } from '$lib/dataProcessor.svelte';
+  import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import type { BodyContextMenuData } from '../interfaces/BodyContextMenuData';
   import EditableCell from './EditableCell.svelte';
   import FilePreview from './FilePreview.svelte';
@@ -35,11 +36,21 @@
 
   const cellStyles = getCellStyles(program, header.Key);
   const isFileColumn = $derived(header.Type === 'file');
+  const isGcodeColumn = $derived(header.Type === 'gcode');
   const fileValue = $derived.by((): File | null => {
-    if (!isFileColumn) return null;
+    if (!isFileColumn && !isGcodeColumn) return null;
     const value = program.get(header.Key);
     return value instanceof File ? value : null;
   });
+
+  function openGcodeEditor() {
+    if (!isGcodeColumn || !fileValue) return;
+
+    SETTINGS_VARS.gcodeEditorFile = fileValue;
+    SETTINGS_VARS.gcodeEditorProgramId = program.Id ?? null;
+    SETTINGS_VARS.gcodeEditorColumnKey = header.Key;
+    SETTINGS_VARS.gcodeEditorOpened = true;
+  }
 
   $effect(() => {
     if (focused && !editable && DATA_VARS.isEditing) {
@@ -61,12 +72,21 @@
   });
 
   function handleKeyDown(event: KeyboardEvent) {
+    // Don't handle keys when G-code editor dialog is open
+    if (SETTINGS_VARS.gcodeEditorOpened) return;
     if (!focused || DATA_VARS.isEditing) return;
 
     // Space toggles file preview for file columns
     if (event.key === ' ' && isFileColumn && fileValue) {
       event.preventDefault();
       showFilePreview = !showFilePreview;
+      return;
+    }
+
+    // Enter opens G-code editor for gcode columns with a file
+    if ((event.key === 'Enter' || event.key === ' ') && isGcodeColumn && fileValue) {
+      event.preventDefault();
+      openGcodeEditor();
       return;
     }
 
@@ -115,6 +135,12 @@
   }
 
   function handleDoubleClick() {
+    // For gcode columns with a file, open the G-code editor
+    if (isGcodeColumn && fileValue) {
+      openGcodeEditor();
+      return;
+    }
+
     if (editable) {
       // If editing a different cell, close it first by updating focus
       if (DATA_VARS.isEditing && !focused) {

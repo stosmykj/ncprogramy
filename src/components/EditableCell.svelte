@@ -5,6 +5,7 @@
   import { File } from '../models/file';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
   import FileEditor from './Editors/FileEditor.svelte';
+  import GCodeFileEditor from './Editors/GCodeFileEditor.svelte';
   import TextEditor from './Editors/TextEditor.svelte';
   import NumberEditor from './Editors/NumberEditor.svelte';
   import DateEditor from './Editors/DateEditor.svelte';
@@ -72,7 +73,7 @@
         } else {
           program.set(key, undefined);
         }
-      } else if (header.Type === 'file' && value instanceof File) {
+      } else if ((header.Type === 'file' || header.Type === 'gcode') && value instanceof File) {
         const currentFile = new File({
           extension: value.Extension,
           name: value.Name,
@@ -103,7 +104,7 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="editable-cell" class:file={header.Type === 'file'} onkeydown={handleKeyDown}>
+<div class="editable-cell" class:file={header.Type === 'file' || header.Type === 'gcode'} onkeydown={handleKeyDown}>
   {#if header.Type === 'number' && (typeof editValue === 'string' || editValue === null)}
     <NumberEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'date' && (editValue instanceof Date || editValue === null)}
@@ -112,6 +113,8 @@
     <DateTimeEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'file' && (fileValue instanceof File || fileValue === null)}
     <FileEditor bind:value={fileValue} onSave={handleSave} onCancel={handleCancel} />
+  {:else if header.Type === 'gcode' && (fileValue instanceof File || fileValue === null)}
+    <GCodeFileEditor bind:value={fileValue} programId={program.Id} columnKey={header.Key} onSave={handleSave} onCancel={handleCancel} />
   {:else if typeof editValue === 'string' || editValue === null}
     <TextEditor bind:value={editValue} {suggestions} onSave={handleSave} onCancel={handleCancel} />
   {/if}

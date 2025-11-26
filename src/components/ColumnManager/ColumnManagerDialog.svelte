@@ -331,6 +331,7 @@
               <option value="date">Datum</option>
               <option value="datetime">Datum a čas</option>
               <option value="file">Soubor</option>
+              <option value="gcode">G-code soubor</option>
               <option value="computed">Vypočítaný</option>
             </select>
           </label>

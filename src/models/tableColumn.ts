@@ -1,7 +1,7 @@
 import type { DbTableColumn } from './dbTableColumn';
 
 export type ColumnWidth = number | 'auto';
-export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'computed';
+export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'gcode' | 'computed';
 
 export class TableColumn {
   private key: string;

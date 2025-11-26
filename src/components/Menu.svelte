@@ -27,6 +27,11 @@
     SETTINGS_VARS.menuOpened = false;
     SETTINGS_VARS.columnManagerOpened = true;
   }
+
+  function btn_gcodeEditor() {
+    SETTINGS_VARS.menuOpened = false;
+    SETTINGS_VARS.gcodeEditorOpened = true;
+  }
 </script>
 
 <div class="menu" class:opened={SETTINGS_VARS.menuOpened}>
@@ -44,6 +49,9 @@
   >
   <Button onClick={btn_columnManager} primary icon="mdiViewColumn" class="full-total"
     ><span>Správa sloupců</span></Button
+  >
+  <Button onClick={btn_gcodeEditor} primary icon="mdiFileCodeOutline" class="full-total"
+    ><span>G-code Editor</span></Button
   >
 </div>
 

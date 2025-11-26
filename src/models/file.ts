@@ -42,7 +42,17 @@ export type FileExtension =
   | 'XLS'
   | 'xls'
   | 'CSV'
-  | 'csv';
+  | 'csv'
+  | 'NC'
+  | 'nc'
+  | 'CNC'
+  | 'cnc'
+  | 'GCODE'
+  | 'gcode'
+  | 'NGC'
+  | 'ngc'
+  | 'TAP'
+  | 'tap';
 
 export class File {
   private extension: FileExtension;

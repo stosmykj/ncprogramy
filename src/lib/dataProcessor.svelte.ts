@@ -126,7 +126,7 @@ async function processFileColumns(
   columns: Array<{ key: string; type: string }>
 ): Promise<void> {
   for (const col of columns) {
-    if (col.type === 'file') {
+    if (col.type === 'file' || col.type === 'gcode') {
       const value = program.get(col.key);
       if (value instanceof File) {
         const processed = await copyFileToStorageIfNeeded(value);
@@ -226,7 +226,7 @@ export async function getPrograms(
                 ? `(${expandedExpressions.get(col.key) || col.computeExpression})`
                 : col.key;
 
-            if (col.type === 'file') {
+            if (col.type === 'file' || col.type === 'gcode') {
               return `json_extract(${col.key}, '$.name') LIKE $${params.length}`;
             } else if (col.type === 'number' || col.type === 'computed') {
               return `CAST(${columnRef} AS TEXT) LIKE $${params.length}`;
@@ -261,7 +261,7 @@ export async function getPrograms(
             let columnName: string;
             if (col.type === 'computed' && col.computeExpression) {
               columnName = `(${expandedExpressions.get(col.key) || col.computeExpression})`;
-            } else if (col.type === 'file') {
+            } else if (col.type === 'file' || col.type === 'gcode') {
               columnName = `json_extract(${col.key}, '$.name')`;
             } else {
               columnName = col.key;
@@ -336,7 +336,7 @@ export async function getPrograms(
           .map((col) => {
             const direction = col.sort === 1 ? 'ASC' : 'DESC';
 
-            if (col.type === 'file') {
+            if (col.type === 'file' || col.type === 'gcode') {
               return `json_extract(${col.key}, '$.name') ${direction}`;
             }
 

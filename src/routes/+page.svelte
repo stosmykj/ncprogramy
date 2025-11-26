@@ -7,6 +7,7 @@
   import ColumnManagerDialog from '../components/ColumnManager/ColumnManagerDialog.svelte';
   import BackupManager from '../components/BackupManager.svelte';
   import LogManager from '../components/LogManager.svelte';
+  import GCodeEditorDialog from '../components/GCodeEditorDialog.svelte';
   import InitialSetup from '../components/InitialSetup.svelte';
   import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
   import { SETTINGS_VARS, checkAppInitialized } from '$lib/settingsProcessor.svelte';
@@ -64,6 +65,7 @@
 <ColumnManagerDialog />
 <BackupManager />
 <LogManager />
+<GCodeEditorDialog />
 
 <style lang="scss">
   .container {
