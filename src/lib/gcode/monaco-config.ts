@@ -7,6 +7,7 @@ import type * as monaco from 'monaco-editor';
 import { G_CODES, M_CODES, MIKROPROG_EXTENSIONS } from './commands';
 import { GCodeParser } from './parser';
 import { GCodeValidator } from './validator';
+import { SNIPPETS } from '../snippetsProcessor.svelte';
 
 export const GCODE_LANGUAGE_ID = 'gcode';
 
@@ -390,61 +391,23 @@ export function createCompletionProvider(
         }
       );
 
-      // Add code snippets
-      suggestions.push(
-        {
-          label: 'program-start',
+      // Add user-defined snippets from snippets manager
+      for (const snippet of SNIPPETS) {
+        suggestions.push({
+          label: {
+            label: snippet.name,
+            description: snippet.description,
+          },
           kind: monacoInstance.languages.CompletionItemKind.Snippet,
-          insertText: [
-            '(${1:Program Name})',
-            'G21 (mm)',
-            'G90 (absolutní)',
-            'G17 (rovina XY)',
-            'G54 (souřadný systém)',
-            'G49 (zrušit korekci délky)',
-            'G40 (zrušit korekci rádiusu)',
-            '$0',
-          ].join('\n'),
-          insertTextRules: monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: snippet.code,
           range,
-          documentation: 'Začátek programu',
-          detail: 'Vloží standardní hlavičku programu',
-        },
-        {
-          label: 'drilling-cycle',
-          kind: monacoInstance.languages.CompletionItemKind.Snippet,
-          insertText: [
-            'G81 X${1:0} Y${2:0} Z${3:-10} R${4:2} F${5:100}',
-            'X${6:10}',
-            'Y${7:10}',
-            'X${8:20}',
-            'G80 (zrušit cyklus)',
-            '$0',
-          ].join('\n'),
-          insertTextRules: monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          range,
-          documentation: 'Vrtací cyklus',
-          detail: 'Vrtací cyklus s více pozicemi',
-        },
-        {
-          label: 'tool-change',
-          kind: monacoInstance.languages.CompletionItemKind.Snippet,
-          insertText: [
-            'M05 (stop vřetena)',
-            'G28 G91 Z0 (návrat Z)',
-            'G90',
-            'M06 T${1:01}',
-            'G43 H${1:01} Z${2:50}',
-            'M03 S${3:1500}',
-            'M08 (chlazení)',
-            '$0',
-          ].join('\n'),
-          insertTextRules: monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          range,
-          documentation: 'Výměna nástroje',
-          detail: 'Bezpečná výměna nástroje',
-        }
-      );
+          detail: snippet.description || 'Vlastní snippet',
+          documentation: {
+            value: `**${snippet.name}**${snippet.description ? ` - ${snippet.description}` : ''}\n\n\`\`\`gcode\n${snippet.code}\n\`\`\``,
+          },
+          sortText: `zzz${snippet.order.toString().padStart(3, '0')}`, // Sort after built-in suggestions
+        });
+      }
 
       return { suggestions };
     },

@@ -4,6 +4,7 @@
   import { registerGCodeLanguage, GCODE_LANGUAGE_ID } from '../lib/gcode/monaco-config';
   import { GCodeParser } from '../lib/gcode/parser';
   import { GCodeValidator } from '../lib/gcode/validator';
+  import { SETTINGS_VARS } from '../lib/settingsProcessor.svelte';
   import Icon from './Icon.svelte';
 
   let {
@@ -255,27 +256,6 @@
     }
   }
 
-  function insertSnippet(snippet: string): void {
-    if (!editor) return;
-
-    const position = editor.getPosition();
-    if (position) {
-      editor.executeEdits('insert-snippet', [
-        {
-          range: {
-            startLineNumber: position.lineNumber,
-            startColumn: position.column,
-            endLineNumber: position.lineNumber,
-            endColumn: position.column,
-          },
-          text: snippet,
-          forceMoveMarkers: true,
-        },
-      ]);
-      editor.focus();
-    }
-  }
-
   function goToLine(): void {
     if (!editor) return;
 
@@ -410,42 +390,14 @@
         </button>
       </div>
 
-      <div class="action-group snippets">
+      <div class="action-group">
         <button
           type="button"
-          class="snippet-btn"
-          onclick={() => insertSnippet('G00 X0 Y0 Z0')}
-          disabled={readOnly}
-          title="Rychloposuv"
+          class="toolbar-btn"
+          onclick={() => (SETTINGS_VARS.snippetsManagerOpened = true)}
+          title="Spravovat snippety (dostupné v nabídce pomocí Ctrl+Space)"
         >
-          G00
-        </button>
-        <button
-          type="button"
-          class="snippet-btn"
-          onclick={() => insertSnippet('G01 X10 Y10 F300')}
-          disabled={readOnly}
-          title="Lineární interpolace"
-        >
-          G01
-        </button>
-        <button
-          type="button"
-          class="snippet-btn"
-          onclick={() => insertSnippet('M06 T01')}
-          disabled={readOnly}
-          title="Výměna nástroje"
-        >
-          M06
-        </button>
-        <button
-          type="button"
-          class="snippet-btn"
-          onclick={() => insertSnippet('G81 X0 Y0 Z-10 R2 F100')}
-          disabled={readOnly}
-          title="Vrtací cyklus"
-        >
-          G81
+          <Icon name="mdiFileCodeOutline" size={18} />
         </button>
       </div>
     </div>
@@ -520,14 +472,9 @@
         &:last-child {
           border-right: none;
         }
-
-        &.snippets {
-          gap: 6px;
-        }
       }
 
-      .toolbar-btn,
-      .snippet-btn {
+      .toolbar-btn {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -562,20 +509,6 @@
         }
       }
 
-      .snippet-btn {
-        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        font-size: 11px;
-        font-weight: bold;
-        padding: 4px 10px;
-        background: #285597;
-        border-color: #285597;
-        color: #fff;
-
-        &:hover:not(:disabled) {
-          background: #1e3f6f;
-          border-color: #1e3f6f;
-        }
-      }
     }
   }
 

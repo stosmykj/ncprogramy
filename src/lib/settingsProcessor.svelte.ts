@@ -13,6 +13,7 @@ export const SETTINGS_VARS = $state({
   gcodeEditorFile: null as File | null,
   gcodeEditorProgramId: null as number | null,
   gcodeEditorColumnKey: null as string | null,
+  snippetsManagerOpened: false,
   isAppInitialized: false,
 });
 

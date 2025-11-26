@@ -8,9 +8,11 @@
   import BackupManager from '../components/BackupManager.svelte';
   import LogManager from '../components/LogManager.svelte';
   import GCodeEditorDialog from '../components/GCodeEditorDialog.svelte';
+  import SnippetsManagerDialog from '../components/SnippetsManager/SnippetsManagerDialog.svelte';
   import InitialSetup from '../components/InitialSetup.svelte';
   import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
   import { SETTINGS_VARS, checkAppInitialized } from '$lib/settingsProcessor.svelte';
+  import { loadSnippets } from '$lib/snippetsProcessor.svelte';
 
   const preventedKeys = ['ArrowUp', 'ArrowDown'];
   let isLoading = $state(true);
@@ -18,6 +20,7 @@
   onMount(async () => {
     await checkAppInitialized();
     await initTableColumns();
+    await loadSnippets();
     isLoading = false;
   });
 
@@ -66,6 +69,7 @@
 <BackupManager />
 <LogManager />
 <GCodeEditorDialog />
+<SnippetsManagerDialog />
 
 <style lang="scss">
   .container {

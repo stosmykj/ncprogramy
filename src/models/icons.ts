@@ -71,6 +71,7 @@ import {
   mdiFileCad,
   mdiArrowSplitVertical,
   mdiArrowSplitHorizontal,
+  mdiCog,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -146,6 +147,7 @@ export const iconMap = {
   mdiFileCad,
   mdiArrowSplitVertical,
   mdiArrowSplitHorizontal,
+  mdiCog,
 } as const;
 
 export type IconName = keyof typeof iconMap;
