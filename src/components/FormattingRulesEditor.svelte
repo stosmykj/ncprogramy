@@ -11,6 +11,7 @@
   import { buildStyleString, reloadFormattingRules } from '../lib/formattingProcessor.svelte';
   import { showError, showSuccess } from '$lib/toast.svelte';
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
+  import { TABLECOLUMNS } from '$lib/tableColumnProcessor.svelte';
   import Button from './Button.svelte';
   import { FormattingRule } from '../models/formattingRule';
   import ColorPicker from 'svelte-awesome-color-picker';
@@ -35,20 +36,14 @@
     }
   });
 
-  const availableColumns = [
-    { key: 'programId', label: 'Program ID', type: 'text' },
-    { key: 'name', label: 'Název', type: 'text' },
-    { key: 'orderNumber', label: 'Číslo zakázky', type: 'text' },
-    { key: 'deadlineAt', label: 'Termín', type: 'date' },
-    { key: 'arrivedAt', label: 'Dorazilo', type: 'date' },
-    { key: 'doneAt', label: 'Hotovo', type: 'date' },
-    { key: 'count', label: 'Počet kusů', type: 'number' },
-    { key: 'preparing', label: 'Příprava', type: 'number' },
-    { key: 'programing', label: 'Programování', type: 'number' },
-    { key: 'machineWorking', label: 'Obrábění', type: 'number' },
-    { key: 'extraTime', label: 'Další čas', type: 'text' },
-    { key: 'note', label: 'Poznámka', type: 'text' },
-  ];
+  // Get columns dynamically from table columns, excluding system/action columns
+  const availableColumns = $derived(
+    TABLECOLUMNS.filter((col) => !['actions', 'id'].includes(col.Key)).map((col) => ({
+      key: col.Key,
+      label: col.Label || col.Key,
+      type: col.Type === 'number' ? 'number' : col.Type === 'date' || col.Type === 'datetime' ? 'date' : 'text',
+    }))
+  );
 
   let editForm = $state({
     id: 0,
@@ -76,7 +71,7 @@
       logic: 'AND',
       conditions: [
         {
-          column: availableColumns[0].key,
+          column: availableColumns.length > 0 ? availableColumns[0].key : '',
           operator: 'equals',
           value: '',
         },
