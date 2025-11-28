@@ -209,7 +209,7 @@ Date: October 20, 2025
 - [x] Auto-update system via GitHub
 - [x] Inline editing with double-click
 - [x] Pagination with customizable page size
-- [x] Keyboard navigation (arrows, Tab, Enter)
+- [x] Keyboard navigation (arrows, Enter)
 - [x] Context menu for row operations
 - [x] File management with type validation
 - [x] Reactive state management (Svelte 5 runes)
