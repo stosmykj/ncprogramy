@@ -15,12 +15,14 @@
     columnKey,
     onSave,
     onCancel,
+    inDialog = false,
   }: {
     value: File | null | undefined;
     programId?: number;
     columnKey?: string;
     onSave: (file: File | null) => void;
     onCancel: () => void;
+    inDialog?: boolean;
   } = $props();
 
   let selectedFile = $state<File | null>(value || null);
@@ -84,6 +86,16 @@
           path: result,
           extension: extension,
         });
+
+        // In dialog mode, auto-save when file is selected
+        if (inDialog) {
+          onSave(selectedFile);
+        }
+
+        // Focus the filename input after file is loaded
+        setTimeout(() => {
+          document.getElementById('gcode-filename-input')?.focus();
+        }, 50);
       }
     } catch (error) {
       logger.error('Failed to select G-code file', error);
@@ -162,7 +174,7 @@
     onclick={handleFileSelect}
     onkeydown={handleKeyDown}
     role="button"
-    tabindex="0"
+    tabindex={selectedFile ? -1 : 0}
   >
     {#if selectedFile}
       <div class="file-details">
@@ -172,6 +184,7 @@
             id="gcode-filename-input"
             class="file-name-text"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={handleKeyDown}
             bind:value={selectedFile.Name}
           />
         </div>
@@ -187,14 +200,14 @@
   </div>
   <div class="file-actions">
     {#if selectedFile}
-      <Button onClick={openInGcodeEditor} icon="mdiFileCodeOutline" iconSize={24} primary onlyIcon title="Otevřít v editoru (Ctrl+E)">
+      <Button onClick={openInGcodeEditor} icon="mdiFileCodeOutline" iconSize={24} primary onlyIcon title="Otevřít v editoru (Ctrl+E)" tabIndex={-1}>
         <KeyboardShortcut keys="Ctrl+E" />
       </Button>
-      <Button onClick={handleRemove} icon="mdiClose" iconSize={24} primary onlyIcon>
+      <Button onClick={handleRemove} icon="mdiClose" iconSize={24} primary onlyIcon tabIndex={-1}>
         <KeyboardShortcut keys="Ctrl+Del" />
       </Button>
     {/if}
-    <Button onClick={handleFileSelect} icon="mdiFileUpload" iconSize={24} primary onlyIcon>
+    <Button onClick={handleFileSelect} icon="mdiFileUpload" iconSize={24} primary onlyIcon tabIndex={-1}>
       <KeyboardShortcut keys="Ctrl+O" />
     </Button>
   </div>
@@ -205,14 +218,14 @@
     display: flex;
     width: 100%;
     height: 100%;
-    padding: 10px;
+    padding: 0.625rem;
     align-items: center;
-    gap: 4px;
+    gap: 0.25rem;
   }
 
   .file-info-container {
     display: flex;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     transition: 0.15s ease;
     width: 100%;
     max-width: calc(100% - 130px);
@@ -223,20 +236,20 @@
   .file-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
     width: 100%;
 
     .file-name-row {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 0.25rem;
       font-weight: 500;
 
       .file-extension-badge {
         background: #285597;
         color: white;
-        padding: 5px 5px;
-        border-radius: 4px;
+        padding: 0.3125rem 0.3125rem;
+        border-radius: 0.25rem;
 
         &.gcode {
           background: #2e7d32;
@@ -246,22 +259,22 @@
       .file-name-text {
         flex: 1;
         height: 30px;
-        padding: 0 5px;
+        padding: 0 0.3125rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 16px;
+        font-size: 1rem;
         color: #1f2937;
         border: 1px solid #1f2937;
-        border-radius: 5px;
+        border-radius: 0.3125rem;
       }
     }
 
     .file-path-row {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 11px;
+      gap: 0.25rem;
+      font-size: 0.6875rem;
       color: #2e7d32;
 
       .path-value {
@@ -276,12 +289,12 @@
   .file-placeholder {
     color: #9ca3af;
     font-style: italic;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .file-actions {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
   }
 </style>
