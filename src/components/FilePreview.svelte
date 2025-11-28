@@ -4,8 +4,7 @@
   import Icon from './Icon.svelte';
   import KeyboardShortcut from './KeyboardShortcut.svelte';
   import FullFilePreviewDialog from './FullFilePreviewDialog.svelte';
-  import { Command } from '@tauri-apps/plugin-shell';
-  import { dirname } from '@tauri-apps/api/path';
+  import { openPath, revealItemInDir } from '@tauri-apps/plugin-opener';
   import { exists, stat } from '@tauri-apps/plugin-fs';
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { logger } from '$lib/logger';
@@ -117,8 +116,7 @@
     if (!file?.Path) return;
 
     try {
-      const command = Command.create('open', [file.Path]);
-      await command.execute();
+      await openPath(file.Path);
     } catch (error) {
       logger.error('Failed to open file', error);
     }
@@ -128,10 +126,7 @@
     if (!file?.Path) return;
 
     try {
-      const dirPath = await dirname(file.Path);
-
-      const command = Command.create('open', [dirPath]);
-      await command.execute();
+      await revealItemInDir(file.Path);
     } catch (error) {
       logger.error('Failed to open file location', error);
     }
@@ -228,7 +223,7 @@
     width: 400px;
     background: white;
     border: 1px solid #d0d5dd;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     animation: slideIn 0.15s ease-out;
     pointer-events: auto;
@@ -258,20 +253,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    padding: 0.75rem;
 
     .content-loading {
-      padding: 24px;
+      padding: 1.5rem;
       text-align: center;
       color: #667085;
-      font-size: 13px;
+      font-size: 0.8125rem;
     }
 
     .image-preview {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
@@ -279,15 +274,15 @@
       width: 100%;
       height: 300px;
       border: none;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       background: white;
     }
   }
 
   .preview-header {
     display: flex;
-    gap: 12px;
-    padding: 16px;
+    gap: 0.75rem;
+    padding: 1rem;
     border-bottom: 1px solid #eaecf0;
 
     .file-icon {
@@ -295,10 +290,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 48px;
-      height: 48px;
+      width: 3rem;
+      height: 3rem;
       background: rgba(74, 144, 226, 0.1);
-      border-radius: 8px;
+      border-radius: 0.5rem;
     }
 
     .file-info {
@@ -306,13 +301,13 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 0.25rem;
 
       .file-name {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 14px;
+        gap: 0.375rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: #101828;
         white-space: nowrap;
@@ -321,10 +316,10 @@
 
         .extension-badge {
           display: inline-block;
-          padding: 2px 6px;
+          padding: 0.125rem 0.375rem;
           background: #4a90e2;
           color: white;
-          font-size: 10px;
+          font-size: 0.625rem;
           font-weight: 700;
           border-radius: 3px;
           text-transform: uppercase;
@@ -333,7 +328,7 @@
       }
 
       .file-path {
-        font-size: 12px;
+        font-size: 0.75rem;
         color: #667085;
         white-space: nowrap;
         overflow: hidden;
@@ -343,16 +338,16 @@
   }
 
   .preview-body {
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
 
     .stat-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
+      font-size: 0.8125rem;
 
       .stat-label {
         color: #667085;
@@ -377,35 +372,35 @@
   }
 
   .preview-loading {
-    padding: 24px;
+    padding: 1.5rem;
     text-align: center;
     color: #667085;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .preview-footer {
     display: flex;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     border-top: 1px solid #eaecf0;
 
     .footer-button {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 0.25rem;
     }
 
     .footer-buttons-right {
       display: flex;
-      gap: 8px;
+      gap: 0.5rem;
     }
 
     :global(.shortcut-hint) {
       background: #e5e7eb;
       border-color: #d1d5db;
       color: #374151;
-      font-size: 10px;
-      padding: 2px 4px;
+      font-size: 0.625rem;
+      padding: 0.125rem 0.25rem;
     }
   }
 </style>
