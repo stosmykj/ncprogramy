@@ -20,8 +20,12 @@
 
   const rowStyles = getRowStyles(program);
 
+  // Track DATA_VARS changes to ensure reactivity
+  const currentRowPosition = $derived(DATA_VARS.rowPosition);
+  const currentColumnPosition = $derived(DATA_VARS.columnPosition);
+
   function getIsFocused(i: number): boolean {
-    return DATA_VARS.columnPosition === i && DATA_VARS.rowPosition === index;
+    return currentColumnPosition === i && currentRowPosition === index;
   }
 </script>
 

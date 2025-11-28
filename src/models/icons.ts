@@ -18,7 +18,9 @@ import {
   mdiFileCodeOutline,
   mdiCheckCircleOutline,
   mdiContentSave,
+  mdiContentCopy,
   mdiArrowDown,
+  mdiArrowUp,
   mdiViewDashboard,
   mdiFolder,
   mdiOpenInNew,
@@ -30,6 +32,7 @@ import {
   mdiUnfoldMoreHorizontal,
   mdiFilter,
   mdiFilterOutline,
+  mdiFilterOff,
   mdiFileEye,
   mdiDragVertical,
   mdiEye,
@@ -50,6 +53,8 @@ import {
   mdiFitToPageOutline,
   mdiMagnifyPlus,
   mdiMagnifyMinus,
+  mdiMagnifyPlusOutline,
+  mdiMagnifyMinusOutline,
   mdiGrid,
   mdiAxisArrow,
   mdiVectorLine,
@@ -72,6 +77,9 @@ import {
   mdiArrowSplitVertical,
   mdiArrowSplitHorizontal,
   mdiCog,
+  mdiSortAscending,
+  mdiSortDescending,
+  mdiSortVariantRemove,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -94,7 +102,9 @@ export const iconMap = {
   mdiFileCodeOutline,
   mdiCheckCircleOutline,
   mdiContentSave,
+  mdiContentCopy,
   mdiArrowDown,
+  mdiArrowUp,
   mdiViewDashboard,
   mdiFolder,
   mdiOpenInNew,
@@ -106,6 +116,7 @@ export const iconMap = {
   mdiUnfoldMoreHorizontal,
   mdiFilter,
   mdiFilterOutline,
+  mdiFilterOff,
   mdiFileEye,
   mdiDragVertical,
   mdiEye,
@@ -126,6 +137,8 @@ export const iconMap = {
   mdiFitToPageOutline,
   mdiMagnifyPlus,
   mdiMagnifyMinus,
+  mdiMagnifyPlusOutline,
+  mdiMagnifyMinusOutline,
   mdiGrid,
   mdiAxisArrow,
   mdiVectorLine,
@@ -148,6 +161,9 @@ export const iconMap = {
   mdiArrowSplitVertical,
   mdiArrowSplitHorizontal,
   mdiCog,
+  mdiSortAscending,
+  mdiSortDescending,
+  mdiSortVariantRemove,
 } as const;
 
 export type IconName = keyof typeof iconMap;

@@ -8,7 +8,7 @@
     max,
     required = false,
   }: {
-    value: number | null;
+    value: string | null;
     onSave: (value: number | null) => void;
     onCancel: () => void;
     autoFocus?: boolean;
@@ -21,6 +21,13 @@
   let hasError = $state(false);
   let errorMessage = $state('');
 
+  // Convert string to number for validation
+  const numericValue = $derived.by(() => {
+    if (value === null || value === '') return null;
+    const num = parseFloat(value);
+    return isNaN(num) ? null : num;
+  });
+
   $effect(() => {
     if (autoFocus && inputRef) {
       inputRef.focus();
@@ -29,20 +36,20 @@
   });
 
   function validate(): boolean {
-    if (required && (value === null || value === undefined)) {
+    if (required && numericValue === null) {
       hasError = true;
       errorMessage = 'Toto pole je povinné';
       return false;
     }
 
-    if (value !== null && value !== undefined) {
-      if (min !== undefined && value < min) {
+    if (numericValue !== null) {
+      if (min !== undefined && numericValue < min) {
         hasError = true;
         errorMessage = `Minimální hodnota je ${min}`;
         return false;
       }
 
-      if (max !== undefined && value > max) {
+      if (max !== undefined && numericValue > max) {
         hasError = true;
         errorMessage = `Maximální hodnota je ${max}`;
         return false;
@@ -58,7 +65,7 @@
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (validate()) {
-        onSave(value);
+        onSave(numericValue);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -70,13 +77,12 @@
 <div class="number-editor" class:has-error={hasError}>
   <input
     bind:this={inputRef}
-    type="number"
+    type="text"
+    inputmode="decimal"
     bind:value
     onkeydown={handleKeyDown}
     aria-label="Číselná hodnota"
     aria-invalid={hasError}
-    {min}
-    {max}
   />
   {#if hasError && errorMessage}
     <div class="error-message">{errorMessage}</div>
@@ -99,7 +105,7 @@
     input {
       width: 100%;
       height: 100%;
-      padding: 8px;
+      padding: 0.5rem;
       border: none;
       outline: none;
       font-family: inherit;
@@ -115,7 +121,7 @@
       position: absolute;
       bottom: -20px;
       left: 0;
-      font-size: 11px;
+      font-size: 0.6875rem;
       color: #dc2626;
       white-space: nowrap;
     }

@@ -458,15 +458,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     background: white;
 
     h2 {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.5rem;
       margin: 0;
-      font-size: 20px;
+      font-size: 1.25rem;
       color: #183868;
     }
 
@@ -474,7 +474,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px;
+      padding: 0.25rem;
       background: transparent;
       border: none;
       cursor: pointer;
@@ -489,7 +489,7 @@
   .editor-content {
     flex: 1;
     overflow: auto;
-    padding: 20px;
+    padding: 1.25rem;
   }
 
   .rules-list {
@@ -500,7 +500,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 1.25rem;
 
       h3 {
         margin: 0;
@@ -513,30 +513,30 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px 20px;
+      padding: 3.75rem 1.25rem;
       text-align: center;
       color: #999;
 
       p {
-        margin: 12px 0 20px;
-        font-size: 16px;
+        margin: 0.75rem 0 1.25rem;
+        font-size: 1rem;
       }
     }
 
     .rules-table {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 0.5rem;
     }
 
     .rule-row {
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 12px 16px;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
       background: white;
       border: 1px solid #ddd;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       transition: all 0.2s;
 
       &:hover {
@@ -553,10 +553,10 @@
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 2px;
+          gap: 0.125rem;
 
           .priority-number {
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: bold;
             color: #183868;
           }
@@ -568,24 +568,24 @@
 
         .rule-name {
           font-weight: 500;
-          font-size: 15px;
-          margin-bottom: 4px;
+          font-size: 0.9375rem;
+          margin-bottom: 0.25rem;
         }
 
         .rule-details {
           display: flex;
-          gap: 8px;
-          font-size: 12px;
+          gap: 0.5rem;
+          font-size: 0.75rem;
 
           .badge {
-            padding: 2px 8px;
+            padding: 0.125rem 0.5rem;
             background: #183868;
             color: white;
             border-radius: 3px;
           }
 
           .column-key {
-            padding: 2px 8px;
+            padding: 0.125rem 0.5rem;
             background: #e8e8e8;
             border-radius: 3px;
             font-family: monospace;
@@ -594,15 +594,15 @@
       }
 
       .rule-preview {
-        padding: 6px 16px;
+        padding: 0.375rem 1rem;
         border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
+        border-radius: 0.25rem;
+        font-size: 0.8125rem;
       }
 
       .rule-actions {
         display: flex;
-        gap: 4px;
+        gap: 0.25rem;
       }
     }
   }
@@ -611,33 +611,33 @@
     max-width: 900px;
     margin: 0 auto;
     background: white;
-    border-radius: 8px;
-    padding: 24px;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
 
     .form-header {
-      margin-bottom: 24px;
+      margin-bottom: 1.5rem;
 
       h3 {
         margin: 0;
         color: #183868;
-        font-size: 18px;
+        font-size: 1.125rem;
       }
     }
 
     .form-section {
-      margin-bottom: 24px;
+      margin-bottom: 1.5rem;
 
       h4 {
-        margin: 0 0 12px;
+        margin: 0 0 0.75rem;
         color: #183868;
-        font-size: 15px;
+        font-size: 0.9375rem;
         font-weight: 600;
       }
 
       label {
         display: block;
-        margin-bottom: 12px;
-        font-size: 13px;
+        margin-bottom: 0.75rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         color: #333;
       }
@@ -645,11 +645,11 @@
       .form-input,
       .form-select {
         width: 100%;
-        padding: 8px 12px;
+        padding: 0.5rem 0.75rem;
         border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-        margin-top: 4px;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
 
         &:focus {
           outline: none;
@@ -660,13 +660,13 @@
       .style-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        gap: 1rem;
 
         .checkbox-label {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-top: 4px;
+          gap: 0.5rem;
+          margin-top: 0.25rem;
 
           input[type='checkbox'] {
             width: 18px;
@@ -677,20 +677,20 @@
       }
 
       .preview-box {
-        margin-top: 12px;
-        padding: 16px;
+        margin-top: 0.75rem;
+        padding: 1rem;
         border: 1px solid #ddd;
-        border-radius: 4px;
+        border-radius: 0.25rem;
         text-align: center;
-        font-size: 14px;
+        font-size: 0.875rem;
       }
     }
 
     .form-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
-      padding-top: 16px;
+      gap: 0.75rem;
+      padding-top: 1rem;
       border-top: 1px solid #eee;
     }
   }

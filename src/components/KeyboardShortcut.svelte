@@ -15,11 +15,11 @@
   .keyboard-shortcut {
     display: flex;
     align-items: center;
-    padding: 4px 6px;
+    padding: 0.25rem 0.375rem;
     background: #1e4177;
     border: 1px solid #1e4177;
-    border-radius: 4px;
-    font-size: 11px;
+    border-radius: 0.25rem;
+    font-size: 0.6875rem;
     font-family:
       'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana,
       sans-serif;

@@ -181,10 +181,10 @@
 <style lang="scss">
   .condition-group {
     border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 12px;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
     background: #fff;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
 
     &[data-level='1'] {
       background: #f8f9fa;
@@ -205,15 +205,15 @@
   .group-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
 
     .logic-toggle {
-      padding: 4px 12px;
+      padding: 0.25rem 0.75rem;
       background: #183868;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
@@ -227,36 +227,36 @@
   .conditions-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .condition-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
+    gap: 0.5rem;
+    padding: 0.5rem;
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border-radius: 0.25rem;
 
     .logic-label {
-      padding: 4px 8px;
+      padding: 0.25rem 0.5rem;
       background: #183868;
       color: white;
       border-radius: 3px;
-      font-size: 11px;
+      font-size: 0.6875rem;
       font-weight: bold;
-      min-width: 40px;
+      min-width: 2.5rem;
       text-align: center;
     }
 
     .condition-select {
       flex: 1;
       min-width: 120px;
-      padding: 6px 8px;
+      padding: 0.375rem 0.5rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 13px;
+      border-radius: 0.25rem;
+      font-size: 0.8125rem;
 
       &:focus {
         outline: none;
@@ -267,10 +267,10 @@
     .condition-input {
       flex: 1;
       min-width: 150px;
-      padding: 6px 8px;
+      padding: 0.375rem 0.5rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 13px;
+      border-radius: 0.25rem;
+      font-size: 0.8125rem;
 
       &:focus {
         outline: none;
@@ -281,19 +281,19 @@
 
   .group-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 12px;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
   }
 
   .btn-small {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
     background: white;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 12px;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
 
@@ -307,7 +307,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
+    padding: 0.25rem;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 3px;
@@ -326,18 +326,18 @@
   }
 
   .nested-groups {
-    margin-top: 12px;
-    margin-left: 20px;
-    padding-left: 12px;
+    margin-top: 0.75rem;
+    margin-left: 1.25rem;
+    padding-left: 0.75rem;
     border-left: 2px solid #183868;
 
     .logic-connector {
-      padding: 4px 8px;
-      margin-bottom: 8px;
+      padding: 0.25rem 0.5rem;
+      margin-bottom: 0.5rem;
       background: #183868;
       color: white;
       border-radius: 3px;
-      font-size: 11px;
+      font-size: 0.6875rem;
       font-weight: bold;
       display: inline-block;
     }

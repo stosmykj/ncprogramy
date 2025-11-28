@@ -15,6 +15,7 @@
   const { program, header }: { program: Program; header: TableColumn } = $props();
 
   let editValue = $state<string | number | File | null | Date>(null);
+  let dateValue = $state<Date | null>(null);
   let fileValue = $state<File | null>(null);
   let suggestions = $state<string[]>([]);
 
@@ -22,6 +23,16 @@
     const currentValue = program.get(header.Key);
     if (currentValue instanceof File) {
       fileValue = currentValue;
+    } else if (header.Type === 'date' || header.Type === 'datetime') {
+      // Handle date/datetime columns - convert string to Date if needed
+      if (currentValue instanceof Date) {
+        dateValue = currentValue;
+      } else if (typeof currentValue === 'string' && currentValue) {
+        const parsedDate = new Date(currentValue);
+        dateValue = isNaN(parsedDate.getTime()) ? null : parsedDate;
+      } else {
+        dateValue = null;
+      }
     } else if (typeof currentValue === 'number') {
       editValue = currentValue.toString();
     } else if (typeof currentValue === 'string' || currentValue instanceof Date) {
@@ -107,10 +118,10 @@
 <div class="editable-cell" class:file={header.Type === 'file' || header.Type === 'gcode'} onkeydown={handleKeyDown}>
   {#if header.Type === 'number' && (typeof editValue === 'string' || editValue === null)}
     <NumberEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
-  {:else if header.Type === 'date' && (editValue instanceof Date || editValue === null)}
-    <DateEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
-  {:else if header.Type === 'datetime' && (editValue instanceof Date || editValue === null)}
-    <DateTimeEditor bind:value={editValue} onSave={handleSave} onCancel={handleCancel} />
+  {:else if header.Type === 'date'}
+    <DateEditor bind:value={dateValue} onSave={handleSave} onCancel={handleCancel} />
+  {:else if header.Type === 'datetime'}
+    <DateTimeEditor bind:value={dateValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'file' && (fileValue instanceof File || fileValue === null)}
     <FileEditor bind:value={fileValue} onSave={handleSave} onCancel={handleCancel} />
   {:else if header.Type === 'gcode' && (fileValue instanceof File || fileValue === null)}
@@ -130,14 +141,14 @@
     min-height: calc(100% + 12px);
     background: #fff;
     border: 2px solid #285597;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 10;
 
     &.file {
       left: 50%;
       width: 375px;
-      min-height: calc(100% + 40px);
+      min-height: calc(100% + 2.5rem);
     }
   }
 </style>

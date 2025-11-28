@@ -147,7 +147,7 @@
     input {
       width: 100%;
       height: 100%;
-      padding: 8px;
+      padding: 0.5rem;
       border: none;
       outline: none;
       font-family: inherit;
@@ -163,7 +163,7 @@
       position: absolute;
       bottom: -20px;
       left: 0;
-      font-size: 11px;
+      font-size: 0.6875rem;
       color: #dc2626;
       white-space: nowrap;
     }
@@ -173,10 +173,10 @@
       top: 100%;
       left: 0;
       right: 0;
-      margin-top: 4px;
+      margin-top: 0.25rem;
       background: white;
       border: 1px solid #e4e7ec;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       max-height: 200px;
       overflow-y: auto;
@@ -184,12 +184,12 @@
 
       .suggestion-item {
         width: 100%;
-        padding: 8px 12px;
+        padding: 0.5rem 0.75rem;
         background: none;
         border: none;
         text-align: left;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 0.875rem;
         color: #344054;
         transition: 0.1s ease;
 

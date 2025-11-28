@@ -107,7 +107,7 @@
           <div class="release-notes">
             <h4>Co je nového</h4>
             <div class="notes-content">
-              {UPDATE_STATE.update.body}
+              {@html UPDATE_STATE.update.body}
             </div>
           </div>
         {/if}
@@ -204,7 +204,7 @@
 
   .update-modal {
     background: white;
-    border-radius: 16px;
+    border-radius: 1rem;
     width: 90%;
     max-width: 768px;
     overflow: hidden;
@@ -226,24 +226,24 @@
   }
 
   .modal-header {
-    padding: 32px 32px 24px;
+    padding: 2rem 32px 1.5rem;
     text-align: center;
     border-bottom: 1px solid #e4e7ec;
 
     .icon-container {
-      margin: 0 auto 16px;
+      margin: 0 auto 1rem;
       width: 64px;
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
-      border-radius: 16px;
+      border-radius: 1rem;
     }
 
     h2 {
       margin: 0 0 8px 0;
-      font-size: 24px;
+      font-size: 1.5rem;
       color: #1d2939;
       font-weight: 600;
     }
@@ -251,12 +251,12 @@
     .subtitle {
       margin: 0;
       color: #667085;
-      font-size: 14px;
+      font-size: 0.875rem;
     }
   }
 
   .modal-content {
-    padding: 24px 32px;
+    padding: 1.5rem 2rem;
     flex: 1;
     overflow-y: auto;
     max-height: 400px;
@@ -266,14 +266,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .version-box {
     flex: 1;
-    padding: 16px;
-    border-radius: 12px;
+    padding: 1rem;
+    border-radius: 0.75rem;
     text-align: center;
 
     &.current {
@@ -287,16 +287,16 @@
     }
 
     .label {
-      font-size: 12px;
+      font-size: 0.75rem;
       color: #667085;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      margin-bottom: 0.5rem;
       font-weight: 600;
     }
 
     .version {
-      font-size: 20px;
+      font-size: 1.25rem;
       font-weight: 700;
       color: #1d2939;
     }
@@ -308,24 +308,64 @@
 
   .release-notes {
     background: #f9fafb;
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 16px;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
 
     h4 {
       margin: 0 0 12px 0;
-      font-size: 14px;
+      font-size: 0.875rem;
       color: #1d2939;
       font-weight: 600;
     }
 
     .notes-content {
       color: #667085;
-      font-size: 14px;
+      font-size: 0.875rem;
       line-height: 1.6;
-      white-space: pre-wrap;
       max-height: 200px;
       overflow-y: auto;
+
+      :global(h2) {
+        color: #3498db;
+        font-size: 1rem;
+        margin: 0.75rem 0 8px 0;
+      }
+
+      :global(h3) {
+        color: #27ae60;
+        font-size: 0.875rem;
+        margin: 0.625rem 0 6px 0;
+      }
+
+      :global(h4) {
+        color: #8e44ad;
+        font-size: 0.8125rem;
+        margin: 0.5rem 0 4px 0;
+      }
+
+      :global(ul) {
+        margin: 0.5rem 0;
+        padding-left: 1.25rem;
+      }
+
+      :global(li) {
+        margin-bottom: 0.25rem;
+      }
+
+      :global(strong) {
+        color: #2c3e50;
+      }
+
+      :global(p) {
+        margin: 0.375rem 0;
+      }
+
+      :global(hr) {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 0.75rem 0;
+      }
     }
   }
 
@@ -333,8 +373,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 24px 0;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
   }
 
   .progress-bar {
@@ -343,9 +383,9 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 24px;
+    height: 1.5rem;
     background: #c5c5c5;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     overflow: hidden;
 
     .progress-text {
@@ -364,8 +404,8 @@
   }
 
   .spinner {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border: 4px solid #e4e7ec;
     border-top-color: #285597;
     border-radius: 50%;
@@ -381,21 +421,21 @@
   .progress-text {
     margin: 0;
     color: #285597;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
   }
 
   .modal-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 24px 32px;
+    gap: 0.75rem;
+    padding: 1.5rem 2rem;
     border-top: 1px solid #e4e7ec;
     background: #f9fafb;
 
     div {
       display: flex;
-      gap: 12px;
+      gap: 0.75rem;
 
       button {
         height: 60px;

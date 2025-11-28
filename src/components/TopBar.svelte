@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
+  import { SETTINGS_VARS, zoomIn, zoomOut, zoomReset } from '$lib/settingsProcessor.svelte';
   import { UPDATE_STATE, initializeUpdater } from '$lib/updater.svelte';
   import { getTotalBackupSize, formatFileSize } from '$lib/backupProcessor';
   import { getTotalLogSize } from '$lib/logger';
@@ -89,6 +89,17 @@
     <QuickSearch />
   </div>
   <div class="section">
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick={zoomOut} title="Zmenšit (Ctrl+-)">
+        <Icon name="mdiMagnifyMinusOutline" size={18} color="#fff" />
+      </button>
+      <button class="zoom-display" onclick={zoomReset} title="Obnovit 100% (Ctrl+0)">
+        {SETTINGS_VARS.textZoomLevel}%
+      </button>
+      <button class="zoom-btn" onclick={zoomIn} title="Zvětšit (Ctrl++)">
+        <Icon name="mdiMagnifyPlusOutline" size={18} color="#fff" />
+      </button>
+    </div>
     <KeyboardShortcuts />
     {#if showLogIndicator}
       <button class="log-indicator" onclick={openLogManager} title="Správa logů">
@@ -121,7 +132,7 @@
   .top-bar {
     display: grid;
     height: 4rem;
-    padding-left: 16px;
+    padding-left: 1rem;
     grid-template-columns: 1fr 1fr 1fr;
     background: #183868;
 
@@ -129,7 +140,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 1.25rem;
 
       &:first-of-type {
         justify-content: start;
@@ -137,7 +148,52 @@
 
       &:last-of-type {
         justify-content: end;
-        padding: 0 16px;
+        padding: 0 1rem;
+      }
+    }
+  }
+
+  .zoom-controls {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.375rem;
+    overflow: hidden;
+
+    .zoom-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    .zoom-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 50px;
+      height: 2rem;
+      background: none;
+      border: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
       }
     }
   }
@@ -146,11 +202,11 @@
   .log-indicator {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
     background: rgba(255, 255, 255, 0.1);
     border: none;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     cursor: pointer;
     transition: background 0.15s;
 
@@ -160,7 +216,7 @@
 
     .backup-size,
     .log-size {
-      font-size: 12px;
+      font-size: 0.75rem;
       color: #a0aec0;
       font-weight: 500;
     }
@@ -170,8 +226,8 @@
     position: absolute;
     top: -4px;
     right: -4px;
-    width: 12px;
-    height: 12px;
+    width: 0.75rem;
+    height: 0.75rem;
     background: #ef4444;
     border: 2px solid #183868;
     border-radius: 50%;

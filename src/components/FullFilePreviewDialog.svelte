@@ -142,7 +142,7 @@
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding: 24px;
+    padding: 1.5rem;
     animation: fadeIn 0.2s ease-out;
   }
 
@@ -157,7 +157,7 @@
 
   .dialog-content {
     background: white;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     width: 100%;
     height: 100%;
     max-width: 80vw;
@@ -183,28 +183,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid #eaecf0;
     flex-shrink: 0;
 
     .file-info {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
 
       .extension-badge {
         display: inline-block;
-        padding: 4px 8px;
+        padding: 0.25rem 0.5rem;
         background: #4a90e2;
         color: white;
-        font-size: 11px;
+        font-size: 0.6875rem;
         font-weight: 700;
-        border-radius: 4px;
+        border-radius: 0.25rem;
         text-transform: uppercase;
       }
 
       .file-name {
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: 600;
         color: #101828;
       }
@@ -218,21 +218,21 @@
     align-items: center;
     justify-content: center;
     background: #f9fafb;
-    padding: 24px;
+    padding: 1.5rem;
 
     .loading,
     .no-preview {
-      padding: 48px;
+      padding: 3rem;
       text-align: center;
       color: #667085;
-      font-size: 15px;
+      font-size: 0.9375rem;
     }
 
     .full-image {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      border-radius: 8px;
+      border-radius: 0.5rem;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
@@ -240,7 +240,7 @@
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.5rem;
       background: white;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }

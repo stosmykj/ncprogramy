@@ -386,11 +386,11 @@
 <style lang="scss">
   .legacy-import-dialog {
     border: none;
-    border-radius: 16px;
+    border-radius: 1rem;
     padding: 0;
     width: 500px;
     max-width: 90vw;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
     overflow: hidden;
 
     &::backdrop {
@@ -419,11 +419,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 2rem;
+      height: 2rem;
       background: transparent;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.5rem;
       cursor: pointer;
       transition: background 0.2s;
 
@@ -477,7 +477,7 @@
     padding: 1rem;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     text-align: left;
 
     div {
@@ -507,8 +507,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     background: #e2e8f0;
     color: #64748b;
@@ -527,7 +527,7 @@
   }
 
   .step-line {
-    width: 40px;
+    width: 2.5rem;
     height: 3px;
     background: #e2e8f0;
 
@@ -547,7 +547,7 @@
     padding: 1rem 1.5rem;
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     width: 100%;
     text-align: left;
 
@@ -579,7 +579,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     background: #f1f5f9;
-    border-radius: 8px;
+    border-radius: 0.5rem;
 
     span {
       color: #475569;
@@ -600,7 +600,7 @@
     padding: 0.75rem 1rem;
     background: #fef3c7;
     border: 1px solid #fcd34d;
-    border-radius: 8px;
+    border-radius: 0.5rem;
 
     span {
       color: #92400e;
@@ -638,9 +638,9 @@
 
   .progress-bar {
     width: 100%;
-    height: 8px;
+    height: 0.5rem;
     background: #e2e8f0;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     margin-top: 1.5rem;
     overflow: hidden;
   }
@@ -648,7 +648,7 @@
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #285597 0%, #3b82f6 100%);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     transition: width 0.3s ease;
   }
 
@@ -691,7 +691,7 @@
     padding: 1rem 1.5rem;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     min-width: 100px;
 
     div {
@@ -724,7 +724,7 @@
     padding: 1rem;
     background: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     color: #991b1b;
     font-size: 0.9rem;
     max-width: 100%;

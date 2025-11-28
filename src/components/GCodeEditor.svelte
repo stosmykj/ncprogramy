@@ -304,6 +304,16 @@
   $effect(() => {
     onValidationErrors?.(errors);
   });
+
+  // React to zoom level changes
+  const BASE_FONT_SIZE = 14;
+  $effect(() => {
+    const zoomLevel = SETTINGS_VARS.textZoomLevel;
+    if (editor) {
+      const scaledFontSize = Math.round(BASE_FONT_SIZE * (zoomLevel / 100));
+      editor.updateOptions({ fontSize: scaledFontSize });
+    }
+  });
 </script>
 
 <div class="gcode-editor">
@@ -421,7 +431,7 @@
     height: 100%;
     background: #fff;
     border: 1px solid #dfe3e8;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     overflow: hidden;
   }
 
@@ -429,27 +439,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 0.5rem 0.75rem;
     background: #f8f9fa;
     border-bottom: 1px solid #dfe3e8;
 
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 1rem;
       color: #333;
-      font-size: 13px;
+      font-size: 0.8125rem;
 
       .filename {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 0.375rem;
         font-weight: 500;
         color: #285597;
 
         .modified-indicator {
           color: #ff9800;
-          font-size: 16px;
+          font-size: 1rem;
         }
       }
 
@@ -461,12 +471,12 @@
     .toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
 
       .action-group {
         display: flex;
-        gap: 4px;
-        padding: 0 8px;
+        gap: 0.25rem;
+        padding: 0 0.5rem;
         border-right: 1px solid #dfe3e8;
 
         &:last-child {
@@ -478,10 +488,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 4px 8px;
+        padding: 0.25rem 0.5rem;
         background: transparent;
         border: 1px solid transparent;
-        border-radius: 4px;
+        border-radius: 0.25rem;
         color: #666;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -520,7 +530,7 @@
 
     // Center line numbers in Monaco editor
     :global(.monaco-editor .lines-content .view-lines) {
-      padding-left: 5px;
+      padding-left: 0.3125rem;
     }
     :global(.monaco-editor .margin-view-overlays .line-numbers) {
       text-align: center;
@@ -535,7 +545,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
       color: #666;
     }
 

@@ -88,7 +88,7 @@
 
   .setup-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 1rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     width: 100%;
@@ -128,7 +128,7 @@
     padding: 1.25rem;
     background: #f9fafb;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
@@ -145,7 +145,7 @@
       width: 56px;
       height: 56px;
       background: white;
-      border-radius: 12px;
+      border-radius: 0.75rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       flex-shrink: 0;
     }

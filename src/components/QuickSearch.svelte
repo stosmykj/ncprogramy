@@ -45,9 +45,9 @@
   }
 
   onMount(() => {
-    // Global keyboard shortcut: Ctrl+K to focus search
+    // Global keyboard shortcut: Ctrl+F to focus search
     const globalHandler = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
         event.preventDefault();
         inputElement?.focus();
       }
@@ -80,11 +80,11 @@
       onClick={clearSearch}
       icon="mdiClose"
       primary
-      style="background: #1e4177; margin-right: 8px; border-radius: 4px; padding: 2px; height: 23px"
+      style="background: #1e4177; margin-right: 0.5rem; border-radius: 0.25rem; padding: 0.125rem; height: 23px"
     />
   {/if}
 
-  <KeyboardShortcut keys="Ctrl+K" />
+  <KeyboardShortcut keys="Ctrl+F" />
 </div>
 
 <style lang="scss">
@@ -97,8 +97,8 @@
     margin: 0;
     background: #285597;
     border: 2px solid #285597;
-    border-radius: 8px;
-    padding: 0 12px;
+    border-radius: 0.5rem;
+    padding: 0 0.75rem;
     transition: all 0.2s ease;
 
     &:focus-within {
@@ -110,7 +110,7 @@
       display: flex;
       align-items: center;
       color: #fff;
-      margin-right: 8px;
+      margin-right: 0.5rem;
       flex-shrink: 0;
     }
 
@@ -118,8 +118,8 @@
       flex: 1;
       border: none;
       outline: none;
-      padding: 10px 0;
-      font-size: 14px;
+      padding: 0.625rem 0;
+      font-size: 0.875rem;
       font-family: inherit;
       background: transparent;
       color: #fff;

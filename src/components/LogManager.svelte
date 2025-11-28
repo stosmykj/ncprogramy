@@ -168,61 +168,61 @@
 
   .modal {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     width: 600px;
     max-width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.2);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid #e5e7eb;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
     }
 
     h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: 600;
       color: #183868;
     }
 
     .log-count {
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #285597;
       background: #eff6ff;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.375rem;
       font-weight: 500;
     }
 
     .total-size {
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #6b7280;
       background: #f3f4f6;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.375rem;
     }
 
     .close-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 2rem;
+      height: 2rem;
       border: none;
       background: transparent;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       cursor: pointer;
       transition: background 0.15s;
 
@@ -235,13 +235,13 @@
   .modal-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 1.25rem;
   }
 
   .actions-bar {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
 
     .spacer {
       flex: 1;
@@ -251,23 +251,23 @@
   .loading,
   .empty {
     text-align: center;
-    padding: 40px;
+    padding: 2.5rem;
     color: #6b7280;
   }
 
   .log-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .log-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0.5rem;
   }
 
   .log-info {
@@ -277,18 +277,18 @@
   .log-name {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     font-weight: 500;
     color: #183868;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
   }
 
   .log-meta {
     display: flex;
-    gap: 16px;
-    font-size: 13px;
+    gap: 1rem;
+    font-size: 0.8125rem;
     color: #6b7280;
-    padding-left: 28px;
+    padding-left: 1.75rem;
   }
 
   .log-size {
@@ -299,16 +299,16 @@
   .info-box {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    margin-top: 20px;
-    padding: 12px 16px;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
     background: #eff6ff;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     border: 1px solid #bfdbfe;
 
     p {
       margin: 0;
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #1e40af;
       line-height: 1.5;
     }

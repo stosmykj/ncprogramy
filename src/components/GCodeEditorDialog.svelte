@@ -611,7 +611,7 @@ M30 ; konec programu`;
               </div>
               <GCodePreview
                 {code}
-                height={splitView === 'horizontal' ? '320px' : 'calc(100% - 40px)'}
+                height={splitView === 'horizontal' ? '320px' : 'calc(100% - 2.5rem)'}
                 showStats={true}
                 onError={handlePreviewError}
               />
@@ -649,7 +649,7 @@ M30 ; konec programu`;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding: 24px;
+    padding: 1.5rem;
     animation: fadeIn 0.2s ease-out;
   }
 
@@ -664,14 +664,14 @@ M30 ; konec programu`;
 
   .dialog-content {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     width: 100%;
     height: 100%;
     max-width: 95vw;
     max-height: 95vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
     animation: slideUp 0.2s ease-out;
     overflow: hidden;
   }
@@ -691,7 +691,7 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     background: #f8f9fa;
     border-bottom: 1px solid #dfe3e8;
     flex-shrink: 0;
@@ -699,16 +699,16 @@ M30 ; konec programu`;
     .header-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.625rem;
       color: #285597;
 
       .title {
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: 600;
       }
 
       .subtitle {
-        font-size: 12px;
+        font-size: 0.75rem;
         color: #666;
       }
     }
@@ -716,13 +716,13 @@ M30 ; konec programu`;
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.375rem;
 
       .separator {
         width: 1px;
-        height: 20px;
+        height: 1.25rem;
         background: #dfe3e8;
-        margin: 0 6px;
+        margin: 0 0.375rem;
       }
     }
   }
@@ -730,25 +730,25 @@ M30 ; konec programu`;
   .examples-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 16px;
+    gap: 0.625rem;
+    padding: 0.5rem 1rem;
     background: #e3f2fd;
     border-bottom: 1px solid #dfe3e8;
     flex-shrink: 0;
 
     .examples-label {
-      font-size: 12px;
+      font-size: 0.75rem;
       color: #666;
       font-weight: 500;
     }
 
     .example-btn {
-      padding: 4px 10px;
+      padding: 0.25rem 0.625rem;
       background: #285597;
       border: 1px solid #285597;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       color: #fff;
-      font-size: 11px;
+      font-size: 0.6875rem;
       cursor: pointer;
       transition: all 0.15s ease;
 
@@ -796,17 +796,17 @@ M30 ; konec programu`;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 8px 12px;
+          padding: 0.5rem 0.75rem;
           background: #f8f9fa;
           border-bottom: 1px solid #dfe3e8;
           color: #333;
-          font-size: 13px;
+          font-size: 0.8125rem;
           font-weight: 500;
 
           .error-title {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
           }
 
           .copy-btn {
@@ -814,11 +814,11 @@ M30 ; konec programu`;
             border: none;
             color: #666;
             cursor: pointer;
-            padding: 4px;
+            padding: 0.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 0.25rem;
             transition: all 0.15s ease;
 
             &:hover {
@@ -835,8 +835,8 @@ M30 ; konec programu`;
           .error-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
             cursor: pointer;
             transition: background 0.15s ease;
 
@@ -846,12 +846,12 @@ M30 ; konec programu`;
 
             .line-num {
               color: #666;
-              font-size: 12px;
+              font-size: 0.75rem;
             }
 
             .error-msg {
               color: #333;
-              font-size: 13px;
+              font-size: 0.8125rem;
             }
 
             &.error .error-msg {
@@ -868,9 +868,9 @@ M30 ; konec programu`;
           }
 
           .error-more {
-            padding: 6px 12px;
+            padding: 0.375rem 0.75rem;
             color: #666;
-            font-size: 12px;
+            font-size: 0.75rem;
             font-style: italic;
           }
         }
@@ -894,7 +894,7 @@ M30 ; konec programu`;
       .preview-header {
         display: flex;
         align-items: center;
-        padding: 8px 12px;
+        padding: 0.5rem 0.75rem;
         background: #f8f9fa;
         border-bottom: 1px solid #dfe3e8;
         flex-shrink: 0;
@@ -902,9 +902,9 @@ M30 ; konec programu`;
         h3 {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 0.375rem;
           margin: 0;
-          font-size: 13px;
+          font-size: 0.8125rem;
           font-weight: 500;
           color: #285597;
         }
@@ -916,16 +916,16 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 8px;
+    padding: 0.25rem 0.5rem;
     background: #fff;
     border: 1px solid #dfe3e8;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     color: #333;
     cursor: pointer;
     transition: all 0.15s ease;
 
     &.btn-icon {
-      padding: 4px 6px;
+      padding: 0.25rem 0.375rem;
     }
 
     &:hover:not(:disabled) {
@@ -956,13 +956,13 @@ M30 ; konec programu`;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 1rem;
     color: #666;
     background: #fff;
 
     p {
       margin: 0;
-      font-size: 14px;
+      font-size: 0.875rem;
     }
 
     :global(svg) {

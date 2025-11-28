@@ -79,7 +79,7 @@
   .snippet-editor {
     background: #e3f2fd;
     border: 2px solid #285597;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 1rem;
 
@@ -105,7 +105,7 @@
     textarea {
       padding: 0.5rem;
       border: 2px solid #ddd;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       font-size: 1rem;
       font-family: inherit;
 

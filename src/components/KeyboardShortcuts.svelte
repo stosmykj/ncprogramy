@@ -7,14 +7,16 @@
   let showHelp = $state(false);
 
   const shortcuts = [
-    { keys: ['Ctrl', 'K'], description: 'Zaměřit globální vyhledávání' },
+    { keys: ['Ctrl', 'F'], description: 'Zaměřit globální vyhledávání' },
     { keys: ['Ctrl', 'N'], description: 'Vytvořit nový program' },
+    { keys: ['Ctrl', 'D'], description: 'Duplikovat vybraný řádek' },
     { keys: ['Enter'], description: 'Začít editovat vybranou buňku' },
     { keys: ['Escape'], description: 'Zrušit editaci / Zavřít modály' },
-    { keys: ['Tab'], description: 'Přesunout se na další buňku' },
-    { keys: ['Shift', 'Tab'], description: 'Přesunout se na předchozí buňku' },
     { keys: ['↑', '↓', '←', '→'], description: 'Navigace v tabulce' },
     { keys: ['Ctrl', 'C'], description: 'Kopírovat obsah buňky' },
+    { keys: ['Ctrl', '+'], description: 'Zvětšit zobrazení' },
+    { keys: ['Ctrl', '-'], description: 'Zmenšit zobrazení' },
+    { keys: ['Ctrl', '0'], description: 'Obnovit velikost zobrazení' },
     { keys: ['?'], description: 'Zobrazit tuto nápovědu' },
   ];
 
@@ -81,13 +83,13 @@
   .shortcuts-indicator {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
     background: #285597;
     border: 1px solid #285597;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     color: #fff;
-    font-size: 13px;
+    font-size: 0.8125rem;
     cursor: pointer;
     transition: all 0.15s ease;
 
@@ -98,11 +100,11 @@
     }
 
     kbd {
-      padding: 2px 6px;
+      padding: 0.125rem 0.375rem;
       background: #1e4177;
       border: 1px solid #285597;
-      border-radius: 4px;
-      font-size: 12px;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
       font-family: monospace;
       color: #fff;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -134,7 +136,7 @@
 
   .shortcuts-modal {
     background: #285597;
-    border-radius: 16px;
+    border-radius: 1rem;
     width: 90%;
     max-width: 600px;
     max-height: 80vh;
@@ -158,25 +160,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 28px;
+    padding: 1.5rem 1.75rem;
     border-bottom: 1px solid #285597;
 
     h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 1.25rem;
       color: #fff;
       font-weight: 600;
     }
 
     .close-btn {
-      width: 32px;
-      height: 32px;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
       background: none;
       border: none;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       color: #fff;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -189,7 +191,7 @@
   }
 
   .shortcuts-list {
-    padding: 20px 28px;
+    padding: 1.25rem 1.75rem;
     max-height: 60vh;
     overflow-y: auto;
   }
@@ -198,7 +200,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 0;
+    padding: 0.875rem 0;
     border-bottom: 1px solid #285597;
 
     &:last-child {
@@ -208,25 +210,25 @@
     .shortcut-keys {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.375rem;
 
       .key {
-        padding: 6px 10px;
+        padding: 0.375rem 0.625rem;
         background: #1e4177;
         border: 1px solid #285597;
-        border-radius: 6px;
-        font-size: 13px;
+        border-radius: 0.375rem;
+        font-size: 0.8125rem;
         font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
         color: #fff;
         font-weight: 500;
-        min-width: 32px;
+        min-width: 2rem;
         text-align: center;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       .plus {
         color: #fff;
-        font-size: 12px;
+        font-size: 0.75rem;
         font-weight: 600;
       }
     }
@@ -234,29 +236,29 @@
     .shortcut-description {
       flex: 1;
       text-align: right;
-      font-size: 14px;
+      font-size: 0.875rem;
       color: #eee;
-      padding-left: 20px;
+      padding-left: 1.25rem;
     }
   }
 
   .modal-footer {
-    padding: 16px 28px;
+    padding: 1rem 1.75rem;
     background: #285597;
     border-top: 1px solid #285597;
 
     .help-text {
       margin: 0;
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #fff;
       text-align: center;
 
       kbd {
-        padding: 3px 6px;
+        padding: 3px 0.375rem;
         background: #1e4177;
         border: 1px solid #285597;
-        border-radius: 4px;
-        font-size: 12px;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
         font-family: monospace;
         color: #fff;
       }
@@ -265,7 +267,7 @@
 
   /* Scrollbar styling */
   .shortcuts-list::-webkit-scrollbar {
-    width: 8px;
+    width: 0.5rem;
   }
 
   .shortcuts-list::-webkit-scrollbar-track {
@@ -274,7 +276,7 @@
 
   .shortcuts-list::-webkit-scrollbar-thumb {
     background: #285597;
-    border-radius: 4px;
+    border-radius: 0.25rem;
 
     &:hover {
       background: #1e4177;

@@ -306,7 +306,7 @@
     z-index: 1000;
     background: white;
     border: 1px solid #d0d5dd;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     width: 280px;
     animation: slideDown 0.15s ease-out;
@@ -327,26 +327,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #eaecf0;
 
     .filter-title {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 0.875rem;
       color: #101828;
     }
 
     .close-button {
-      width: 24px;
-      height: 24px;
+      width: 1.5rem;
+      height: 1.5rem;
       padding: 0;
       border: none;
       background: transparent;
       color: #667085;
-      font-size: 20px;
+      font-size: 1.25rem;
       line-height: 1;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -359,18 +359,18 @@
   }
 
   .filter-body {
-    padding: 16px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
 
     .operator-select {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 0.375rem;
 
       label {
-        font-size: 13px;
+        font-size: 0.8125rem;
         font-weight: 500;
         color: #344054;
       }
@@ -378,10 +378,10 @@
 
     .filter-select {
       width: 100%;
-      padding: 8px 12px;
+      padding: 0.5rem 0.75rem;
       border: 1px solid #d0d5dd;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
       font-family: inherit;
       background: white;
       cursor: pointer;
@@ -396,10 +396,10 @@
 
     .filter-input {
       width: 100%;
-      padding: 8px 12px;
+      padding: 0.5rem 0.75rem;
       border: 1px solid #d0d5dd;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
       font-family: inherit;
       box-sizing: border-box;
 
@@ -416,29 +416,29 @@
 
     .between-separator {
       text-align: center;
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #667085;
-      margin: -6px 0;
+      margin: -0.375rem 0;
     }
 
     .filter-hint {
       margin-top: -4px;
       color: #667085;
-      font-size: 12px;
+      font-size: 0.75rem;
     }
   }
 
   .filter-footer {
     display: flex;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
     border-top: 1px solid #eaecf0;
     justify-content: flex-end;
 
     .btn {
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
       border: 1px solid;

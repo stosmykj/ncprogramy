@@ -550,7 +550,7 @@
     gap: 1rem;
     padding: 1rem;
     background: #f9fafb;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
   }
 
@@ -576,7 +576,7 @@
     padding: 0.75rem 1rem;
     background: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     color: #991b1b;
 
     .error-title {
@@ -634,7 +634,7 @@
     padding: 0.5rem 0.75rem;
     background: white;
     border: 1px solid #d0d5dd;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -674,11 +674,11 @@
   }
 
   .operator-button {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     background: white;
     border: 2px solid #d0d5dd;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     font-size: 1.25rem;
     font-weight: 600;
     cursor: pointer;
@@ -697,7 +697,7 @@
     gap: 0.75rem;
     padding: 1rem;
     background: white;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     border: 1px solid #e5e7eb;
   }
 
@@ -714,7 +714,7 @@
     gap: 0.5rem;
     padding: 0.5rem;
     background: #f3f4f6;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     position: relative;
 
     &.is-column {
@@ -781,7 +781,7 @@
     width: 60px;
     padding: 0.25rem 0.5rem;
     border: 1px solid #d0d5dd;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     text-align: center;
     font-weight: 600;
   }
@@ -798,7 +798,7 @@
     background: #fee2e2;
     color: #991b1b;
     border: 1px solid #fecaca;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;

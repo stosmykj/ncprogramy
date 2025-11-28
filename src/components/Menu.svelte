@@ -59,7 +59,7 @@
   .menu {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
     position: absolute;
     left: -20rem;
     top: 4rem;
@@ -67,7 +67,7 @@
     padding: 1rem;
     background: #183868;
     border-top: 2px solid #285597;
-    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: 0.5rem;
     color: #fff;
     transition: 0.4s;
     z-index: 10;

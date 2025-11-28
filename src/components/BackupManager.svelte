@@ -284,61 +284,61 @@
 
   .modal {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     width: 800px;
     max-width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.2);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid #e5e7eb;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
     }
 
     h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: 600;
       color: #183868;
     }
 
     .backup-count {
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #285597;
       background: #eff6ff;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.375rem;
       font-weight: 500;
     }
 
     .total-size {
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #6b7280;
       background: #f3f4f6;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.375rem;
     }
 
     .close-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 2rem;
+      height: 2rem;
       border: none;
       background: transparent;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       cursor: pointer;
       transition: background 0.15s;
 
@@ -351,13 +351,13 @@
   .modal-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 1.25rem;
   }
 
   .actions-bar {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
 
     .spacer {
       flex: 1;
@@ -367,24 +367,24 @@
   .loading,
   .empty {
     text-align: center;
-    padding: 40px;
+    padding: 2.5rem;
     color: #6b7280;
   }
 
   .backup-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .backup-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 1rem;
     background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     transition: border-color 0.15s;
 
     &:hover {
@@ -400,13 +400,13 @@
   .backup-date {
     font-weight: 600;
     color: #183868;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
   }
 
   .backup-meta {
     display: flex;
-    gap: 12px;
-    font-size: 13px;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
     color: #6b7280;
   }
 
@@ -423,20 +423,20 @@
   .filename {
     color: #9ca3af;
     font-family: monospace;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .backup-actions {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     flex-shrink: 0;
   }
 
   .load-more {
     text-align: center;
-    padding: 16px;
+    padding: 1rem;
     color: #9ca3af;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   // Dialog styles
@@ -455,50 +455,50 @@
 
   .dialog {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     width: 450px;
     max-width: 90vw;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.3);
   }
 
   .dialog-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 20px;
+    gap: 0.75rem;
+    padding: 1.25rem;
     border-bottom: 1px solid #e5e7eb;
 
     h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 1rem;
       font-weight: 600;
       color: #1f2937;
     }
   }
 
   .dialog-content {
-    padding: 20px;
+    padding: 1.25rem;
 
     p {
-      margin: 0 0 16px;
+      margin: 0 0 1rem;
       color: #6b7280;
-      font-size: 14px;
+      font-size: 0.875rem;
     }
   }
 
   .dialog-options {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .option-btn {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 14px;
+    gap: 0.75rem;
+    padding: 0.875rem;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     background: #fff;
     cursor: pointer;
     text-align: left;
@@ -525,14 +525,14 @@
       strong {
         display: block;
         color: #1f2937;
-        font-size: 14px;
-        margin-bottom: 2px;
+        font-size: 0.875rem;
+        margin-bottom: 0.125rem;
       }
 
       span {
         display: block;
         color: #6b7280;
-        font-size: 12px;
+        font-size: 0.75rem;
       }
     }
   }
@@ -540,10 +540,10 @@
   .dialog-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 20px;
+    gap: 0.625rem;
+    padding: 1rem 1.25rem;
     border-top: 1px solid #e5e7eb;
     background: #f9fafb;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 12px 0.75rem;
   }
 </style>

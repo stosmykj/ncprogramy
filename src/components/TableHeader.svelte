@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { TableColumn } from '../models/tableColumn';
-  import { toggleSort, updateTableColumn } from '$lib/tableColumnProcessor.svelte';
+  import { toggleSort, updateTableColumn, clearSort } from '$lib/tableColumnProcessor.svelte';
   import FilterPopover from './FilterPopover.svelte';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
-  import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
   import { logger } from '$lib/logger';
 
   const { header = $bindable() }: { header: TableColumn } = $props();
@@ -20,6 +20,22 @@
   let isDragging = $state(false);
   let showDropIndicator = $state(false);
   let newWidth: number | null = $state(null);
+  let showContextMenu = $state(false);
+  let contextMenuPos = $state({ x: 0, y: 0 });
+
+  // Tooltip text for sort badge
+  const sortTooltip = $derived.by(() => {
+    if (header.Sort === 0) return '';
+    const direction = header.Sort === 1 ? 'Vzestupně' : 'Sestupně';
+    const position = header.SortPosition > 0 ? ` (pořadí ${header.SortPosition})` : '';
+    return `Řazení: ${direction}${position}`;
+  });
+
+  // Tooltip text for filter badge
+  const filterTooltip = $derived.by(() => {
+    if (!header.Filter) return '';
+    return `Filtr aktivní`;
+  });
 
   $effect(() => {
     if (!pad.length) return;
@@ -30,21 +46,42 @@
     }
   });
 
-  async function changeSort(event: MouseEvent) {
-    const target = event.target as HTMLElement;
+  async function handleSort() {
+    if (!header.Sortable) return;
+    await toggleSort(header.Key);
+    DATA_VARS.reloadData = true;
+    showContextMenu = false;
+  }
 
-    // Don't sort if clicking filter button or resize handle
-    if (target.closest('.filter-button') || target.closest('.resize-handle') || isResizing) {
-      return;
-    }
+  async function handleClearSort() {
+    await clearSort(header.Key);
+    DATA_VARS.reloadData = true;
+    showContextMenu = false;
+  }
+
+  function openFilterPopover() {
+    filterPopoverOpen = true;
+    showContextMenu = false;
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+    contextMenuPos = { x: event.clientX, y: event.clientY };
+    showContextMenu = true;
+  }
+
+  function closeContextMenu() {
+    showContextMenu = false;
+  }
+
+  // Click on header to toggle sort (simple click)
+  async function handleHeaderClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.closest('.resize-handle') || isResizing) return;
+    if (!header.Sortable) return;
 
     await toggleSort(header.Key);
     DATA_VARS.reloadData = true;
-  }
-
-  function toggleFilterPopover(event: MouseEvent) {
-    event.stopPropagation();
-    filterPopoverOpen = !filterPopoverOpen;
   }
 
   // Resize functionality
@@ -59,7 +96,7 @@
       if (!isResizing) return;
       e.preventDefault();
       const diff = e.clientX - resizeStartX;
-      newWidth = Math.max(50, resizeStartWidth + diff);
+      newWidth = Math.max(40, resizeStartWidth + diff);
       header.Width = newWidth;
 
       // Apply cursor globally during resize
@@ -149,19 +186,8 @@
   }
 </script>
 
-{#if header.Key === 'actions'}
-  <th
-    bind:clientWidth={columnWidth}
-    bind:borderBoxSize={pad}
-    id="header_{header.Key}"
-    class="actions"
-    role="columnheader"
-    scope="col"
-    aria-label="Akce"
-  >
-  </th>
-{:else}
-  <th
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<th
     bind:this={headerElement}
     bind:clientWidth={columnWidth}
     bind:borderBoxSize={pad}
@@ -172,6 +198,8 @@
     aria-label={header.Label || header.Key}
     aria-sort={header.Sort === 1 ? 'ascending' : header.Sort === -1 ? 'descending' : 'none'}
     draggable="true"
+    onclick={handleHeaderClick}
+    oncontextmenu={handleContextMenu}
     ondragstart={handleDragStart}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
@@ -179,70 +207,98 @@
     ondragend={handleDragEnd}
     class:dragging={isDragging}
     class:drop-target={showDropIndicator}
+    class:sorted={header.Sort !== 0}
+    class:filtered={!!header.Filter}
   >
     <div class="header-content">
-      <div class="title-row">
-        <span class="title">{header.Label || header.Key}</span>
-      </div>
-      <div class="actions-row">
-        <Button
-          class="sort-button"
-          onClick={(e: MouseEvent) => {
-            e.stopPropagation();
-            changeSort(e);
-          }}
-          icon={header.Sort === 1
-            ? 'mdiChevronDown'
-            : header.Sort === -1
-              ? 'mdiChevronUp'
-              : 'mdiUnfoldMoreHorizontal'}
-          iconColor="#fff"
-          color="#fff"
-          style="background: {header.Sort !== 0
-            ? '#22aa44'
-            : 'none'}; padding: 3px; border: none; height: 22px;"
-        >
-          {#if header.SortPosition > 0}<span class="sort-number">{header.SortPosition}</span>{/if}
-        </Button>
+      <span class="title">{header.Label || header.Key}</span>
 
-        <Button
-          class="filter-button"
-          warning={!!header.Filter}
-          primary={!header.Filter}
-          onClick={toggleFilterPopover}
-          icon={header.Filter ? 'mdiFilter' : 'mdiFilterOutline'}
-          onlyIcon={!!header.Filter}
-        />
-      </div>
+      <!-- Indicator badges - positioned at the end -->
+      {#if header.Sort !== 0 || header.Filter}
+        <div class="indicators">
+          {#if header.Sort !== 0}
+            <span class="indicator sort-indicator" title={sortTooltip}>
+              <Icon
+                name={header.Sort === 1 ? 'mdiArrowDown' : 'mdiArrowUp'}
+                size={10}
+                color="#22aa44"
+              />
+              {#if header.SortPosition > 0}
+                <span class="indicator-number">{header.SortPosition}</span>
+              {/if}
+            </span>
+          {/if}
+          {#if header.Filter}
+            <span class="indicator filter-indicator" title={filterTooltip}>
+              <Icon name="mdiFilter" size={8} color="#f59e0b" />
+            </span>
+          {/if}
+        </div>
+      {/if}
     </div>
 
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="resize-handle" onmousedown={startResize}></div>
   </th>
 
+  <!-- Context Menu -->
+  {#if showContextMenu}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="context-menu-overlay" onclick={closeContextMenu}></div>
+    <div
+      class="context-menu"
+      style="top: {contextMenuPos.y}px; left: {contextMenuPos.x}px;"
+    >
+      {#if header.Sortable}
+        <button class="menu-item" onclick={handleSort}>
+          <Icon
+            name={header.Sort === 0 ? 'mdiSortAscending' : header.Sort === 1 ? 'mdiSortDescending' : 'mdiSortAscending'}
+            size={16}
+            color="#374151"
+          />
+          <span>
+            {#if header.Sort === 0}
+              Seřadit vzestupně
+            {:else if header.Sort === 1}
+              Seřadit sestupně
+            {:else}
+              Seřadit vzestupně
+            {/if}
+          </span>
+        </button>
+        {#if header.Sort !== 0}
+          <button class="menu-item" onclick={handleClearSort}>
+            <Icon name="mdiSortVariantRemove" size={16} color="#374151" />
+            <span>Zrušit řazení</span>
+          </button>
+        {/if}
+        <div class="menu-divider"></div>
+      {/if}
+      <button class="menu-item" onclick={openFilterPopover}>
+        <Icon name={header.Filter ? 'mdiFilterOff' : 'mdiFilter'} size={16} color="#374151" />
+        <span>{header.Filter ? 'Upravit filtr' : 'Filtrovat'}</span>
+      </button>
+    </div>
+  {/if}
+
   <FilterPopover column={header} bind:isOpen={filterPopoverOpen} anchorElement={headerElement} />
-{/if}
 
 <style lang="scss">
   $border-color: #dfe3e8;
 
   th {
     position: relative;
-    height: 3.5rem;
-    padding: 0.3rem 0.5rem;
+    height: 2.2rem;
+    padding: 0 0.5rem;
     font-weight: bold;
     background: #285597;
     color: white;
     user-select: none;
-    cursor: grab;
-    transition: background-color 0.2s;
+    cursor: pointer;
+    transition: background-color 0.15s;
 
     &:hover {
       background: #1e4177;
-    }
-
-    &:active {
-      cursor: grabbing;
     }
 
     &.dragging {
@@ -253,29 +309,6 @@
     &.drop-target {
       background: #1e4177;
       box-shadow: inset 3px 0 0 #4a90e2;
-
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background: #4a90e2;
-        animation: pulse 0.8s ease-in-out infinite;
-      }
-    }
-
-    @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
-        transform: scaleX(1);
-      }
-      50% {
-        opacity: 0.7;
-        transform: scaleX(1.5);
-      }
     }
 
     &::after {
@@ -285,60 +318,120 @@
       right: 0;
       width: 1px;
       height: 100%;
-      background: #fff;
-    }
-
-    &.actions {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 50px;
-      padding: 0;
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .header-content {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       height: 100%;
-      gap: 2px;
+      gap: 0.125rem;
+      min-width: 0;
     }
 
-    .title-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       flex: 1;
-      min-height: 24px;
-
-      .title {
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-      }
+      min-width: 0;
+      text-align: center;
     }
 
-    .actions-row {
+    .indicators {
       display: flex;
       align-items: center;
+      gap: 1px;
+      flex-shrink: 0;
+    }
+
+    .indicator {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 1px;
+      line-height: 1;
+
+      .indicator-number {
+        font-size: 0.5rem;
+        font-weight: 700;
+        color: #22aa44;
+      }
     }
 
     .resize-handle {
       position: absolute;
       top: 0;
       right: 0;
-      width: 3px;
-      height: 3.5rem;
+      width: 0.25rem;
+      height: 100%;
       cursor: col-resize;
       z-index: 2;
 
       &:hover {
-        opacity: 1;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.6);
       }
+    }
+  }
+
+  .context-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  .context-menu {
+    position: fixed;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 0.25rem;
+    min-width: 160px;
+    z-index: 1000;
+    animation: fadeIn 0.1s ease;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      background: none;
+      font-size: 0.8125rem;
+      color: #374151;
+      cursor: pointer;
+      border-radius: 0.25rem;
+      text-align: left;
+      transition: background 0.1s;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 0.25rem 0;
     }
   }
 </style>

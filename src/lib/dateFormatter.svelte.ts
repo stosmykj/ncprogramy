@@ -64,3 +64,26 @@ export function parseDate(dateStr: string): Date {
 export function parseDateTime(dateTimeStr: string): Date {
   return parse(dateTimeStr, 'dd. MM. yyyy HH:mm', new Date(), { locale: cs });
 }
+
+/**
+ * Formats a date using a custom format string (date-fns format)
+ * Falls back to default format if customFormat is not provided
+ * @param date The date to format
+ * @param customFormat Optional custom format string (e.g., "dd. MM. yyyy", "yyyy-MM-dd")
+ * @param isDateTime Whether to use datetime default format when no custom format provided
+ */
+export function formatWithCustomFormat(
+  date: Date,
+  customFormat?: string,
+  isDateTime: boolean = false
+): string {
+  if (customFormat) {
+    try {
+      return format(date, customFormat, { locale: cs });
+    } catch {
+      // Fall back to default if invalid format
+      return isDateTime ? formatDateTime(date) : formatDate(date);
+    }
+  }
+  return isDateTime ? formatDateTime(date) : formatDate(date);
+}

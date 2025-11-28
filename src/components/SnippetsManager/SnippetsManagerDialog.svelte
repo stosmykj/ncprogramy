@@ -239,12 +239,12 @@
 <style lang="scss">
   .snippets-manager-dialog {
     border: none;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     padding: 0;
     width: 600px;
     max-width: 90vw;
     max-height: 85vh;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
 
     &::backdrop {
       background: rgba(0, 0, 0, 0.5);
@@ -286,7 +286,7 @@
     gap: 0.75rem;
     padding: 1rem;
     background: #fff3cd;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
     color: #856404;
@@ -305,7 +305,7 @@
     padding: 1rem;
     background: white;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     transition: all 0.2s;
 
     &:hover {
@@ -327,9 +327,9 @@
         left: 0;
         right: 0;
         top: -4px;
-        height: 4px;
+        height: 0.25rem;
         background: #4a90e2;
-        border-radius: 2px;
+        border-radius: 0.125rem;
       }
     }
 
@@ -342,9 +342,9 @@
         left: 0;
         right: 0;
         bottom: -4px;
-        height: 4px;
+        height: 0.25rem;
         background: #4a90e2;
-        border-radius: 2px;
+        border-radius: 0.125rem;
       }
     }
   }
@@ -392,7 +392,7 @@
     padding: 0.1rem 0.4rem;
     background: #e3f2fd;
     color: #285597;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -404,7 +404,7 @@
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     background: #f5f5f5;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -429,7 +429,7 @@
     padding: 0.5rem;
     background: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     cursor: pointer;
     transition: background 0.2s;
 
@@ -464,6 +464,6 @@
     padding: 1.5rem;
     border-top: 1px solid #dfe3e8;
     background: #f8f9fa;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 12px 0.75rem;
   }
 </style>

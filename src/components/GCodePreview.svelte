@@ -621,21 +621,21 @@
     flex-direction: column;
     background: #fff;
     border: 1px solid #dfe3e8;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     overflow: hidden;
   }
 
   .preview-toolbar {
     display: flex;
-    gap: 16px;
-    padding: 8px 12px;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
     background: #f8f9fa;
     border-bottom: 1px solid #dfe3e8;
 
     .toolbar-group {
       display: flex;
-      gap: 4px;
-      padding: 0 8px;
+      gap: 0.25rem;
+      padding: 0 0.5rem;
       border-right: 1px solid #dfe3e8;
 
       &:first-child {
@@ -651,10 +651,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px 8px;
+      padding: 0.25rem 0.5rem;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 4px;
+      border-radius: 0.25rem;
       color: #666;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -697,7 +697,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 0.75rem;
       color: #666;
       z-index: 10;
     }
