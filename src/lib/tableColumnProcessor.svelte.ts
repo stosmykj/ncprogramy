@@ -102,6 +102,10 @@ export async function applyFilter(key: ColumnKeys, filter: string | undefined): 
   await updateTableColumn(TABLECOLUMNS[index]);
 }
 
+export async function clearSort(key: ColumnKeys): Promise<void> {
+  await removeSortInternal(key);
+}
+
 async function removeSortInternal(key: ColumnKeys): Promise<void> {
   const sorted = TABLECOLUMNS.filter((v) => v.SortPosition !== 0).toSorted(
     (a, b) => a.SortPosition - b.SortPosition

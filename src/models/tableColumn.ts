@@ -1,7 +1,7 @@
 import type { DbTableColumn } from './dbTableColumn';
 
 export type ColumnWidth = number | 'auto';
-export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'gcode' | 'computed';
+export type ColumnType = 'string' | 'number' | 'datetime' | 'date' | 'file' | 'gcode' | 'computed' | 'incremental';
 
 export class TableColumn {
   private key: string;
@@ -18,6 +18,12 @@ export class TableColumn {
   private computeExpression?: string;
   private archived: boolean = false;
   private label?: string;
+  private sortable: boolean = true;
+  private dateFormat?: string;
+  private copyable: boolean = true;
+  private inlineEditable: boolean = true;
+  private incrementalPattern?: string;
+  private incrementalRewritable: boolean = false;
 
   constructor({
     key,
@@ -34,6 +40,12 @@ export class TableColumn {
     computeExpression,
     archived,
     label,
+    sortable,
+    dateFormat,
+    copyable,
+    inlineEditable,
+    incrementalPattern,
+    incrementalRewritable,
   }: DbTableColumn) {
     this.key = key;
     this.createdAt = createdAt ? new Date(createdAt) : new Date();
@@ -49,6 +61,12 @@ export class TableColumn {
     this.computeExpression = computeExpression ?? undefined;
     this.archived = archived ?? false;
     this.label = label ?? undefined;
+    this.sortable = sortable ?? true;
+    this.dateFormat = dateFormat ?? undefined;
+    this.copyable = copyable ?? true;
+    this.inlineEditable = inlineEditable ?? true;
+    this.incrementalPattern = incrementalPattern ?? undefined;
+    this.incrementalRewritable = incrementalRewritable ?? false;
   }
 
   get Key(): string {
@@ -163,6 +181,54 @@ export class TableColumn {
     this.label = value;
   }
 
+  get Sortable(): boolean {
+    return this.sortable;
+  }
+
+  set Sortable(value: boolean) {
+    this.sortable = value;
+  }
+
+  get DateFormat(): string | undefined {
+    return this.dateFormat;
+  }
+
+  set DateFormat(value: string | undefined) {
+    this.dateFormat = value;
+  }
+
+  get Copyable(): boolean {
+    return this.copyable;
+  }
+
+  set Copyable(value: boolean) {
+    this.copyable = value;
+  }
+
+  get InlineEditable(): boolean {
+    return this.inlineEditable;
+  }
+
+  set InlineEditable(value: boolean) {
+    this.inlineEditable = value;
+  }
+
+  get IncrementalPattern(): string | undefined {
+    return this.incrementalPattern;
+  }
+
+  set IncrementalPattern(value: string | undefined) {
+    this.incrementalPattern = value;
+  }
+
+  get IncrementalRewritable(): boolean {
+    return this.incrementalRewritable;
+  }
+
+  set IncrementalRewritable(value: boolean) {
+    this.incrementalRewritable = value;
+  }
+
   toSqlUpdate(): string {
     return `UPDATE table_columns SET
       updatedAt = CURRENT_TIMESTAMP,
@@ -176,7 +242,13 @@ export class TableColumn {
       filter = $9,
       computeExpression = $10,
       archived = $11,
-      label = $12
+      label = $12,
+      sortable = $13,
+      dateFormat = $14,
+      copyable = $15,
+      inlineEditable = $16,
+      incrementalPattern = $17,
+      incrementalRewritable = $18
     WHERE key=$1;`;
   }
 
@@ -194,6 +266,12 @@ export class TableColumn {
       this.computeExpression,
       this.archived,
       this.label,
+      this.sortable,
+      this.dateFormat,
+      this.copyable,
+      this.inlineEditable,
+      this.incrementalPattern,
+      this.incrementalRewritable,
     ];
   }
 }

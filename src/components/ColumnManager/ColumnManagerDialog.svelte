@@ -22,12 +22,25 @@
     type: ColumnType;
     label: string;
     computeExpression?: string;
+    sortable: boolean;
+    dateFormat?: string;
+    copyable: boolean;
+    inlineEditable: boolean;
+    incrementalPattern?: string;
+    incrementalRewritable: boolean;
   }>({
     key: '',
     type: 'string',
     label: '',
     computeExpression: undefined,
+    sortable: true,
+    dateFormat: undefined,
+    copyable: true,
+    inlineEditable: true,
+    incrementalPattern: undefined,
+    incrementalRewritable: false,
   });
+  let showDateFormatHelp = $state(false);
   let isCreatingNew = $state(false);
   let refreshColumns = $state({});
   let pendingNewColumns = $state<Set<string>>(new Set());
@@ -72,8 +85,8 @@
         if (pendingNewColumns.has(col.Key)) {
           // Insert new column
           await db.execute(
-            `INSERT INTO table_columns (key, type, position, sort, sortPosition, visible, width, align, archived, label, computeExpression)
-             VALUES ($1, $2, $3, 0, 0, $4, 'auto', 'left', 0, $5, $6)`,
+            `INSERT INTO table_columns (key, type, position, sort, sortPosition, visible, width, align, archived, label, computeExpression, sortable, dateFormat, copyable, inlineEditable, incrementalPattern, incrementalRewritable)
+             VALUES ($1, $2, $3, 0, 0, $4, 'auto', 'left', 0, $5, $6, $7, $8, $9, $10, $11, $12)`,
             [
               col.Key,
               col.Type,
@@ -81,6 +94,12 @@
               col.Visible ? 1 : 0,
               col.Label || null,
               col.ComputeExpression || null,
+              col.Sortable ? 1 : 0,
+              col.DateFormat || null,
+              col.Copyable ? 1 : 0,
+              col.InlineEditable ? 1 : 0,
+              col.IncrementalPattern || null,
+              col.IncrementalRewritable ? 1 : 0,
             ]
           );
 
@@ -96,13 +115,20 @@
         } else {
           // Update existing column
           await db.execute(
-            'UPDATE table_columns SET visible = $1, position = $2, archived = $3, label = $4, computeExpression = $5 WHERE key = $6',
+            'UPDATE table_columns SET type = $1, visible = $2, position = $3, archived = $4, label = $5, computeExpression = $6, sortable = $7, dateFormat = $8, copyable = $9, inlineEditable = $10, incrementalPattern = $11, incrementalRewritable = $12 WHERE key = $13',
             [
+              col.Type,
               col.Visible ? 1 : 0,
               col.Position,
               col.Archived ? 1 : 0,
               col.Label || null,
               col.ComputeExpression || null,
+              col.Sortable ? 1 : 0,
+              col.DateFormat || null,
+              col.Copyable ? 1 : 0,
+              col.InlineEditable ? 1 : 0,
+              col.IncrementalPattern || null,
+              col.IncrementalRewritable ? 1 : 0,
               col.Key,
             ]
           );
@@ -148,6 +174,12 @@
       type: col.Type,
       label: col.Label || '',
       computeExpression: col.ComputeExpression,
+      sortable: col.Sortable,
+      dateFormat: col.DateFormat,
+      copyable: col.Copyable,
+      inlineEditable: col.InlineEditable,
+      incrementalPattern: col.IncrementalPattern,
+      incrementalRewritable: col.IncrementalRewritable,
     };
 
     isCreatingNew = false;
@@ -156,7 +188,18 @@
   function startNewColumn() {
     isCreatingNew = true;
     editingIndex = null;
-    editFormData = { key: '', type: 'string', label: '', computeExpression: undefined };
+    editFormData = {
+      key: '',
+      type: 'string',
+      label: '',
+      computeExpression: undefined,
+      sortable: true,
+      dateFormat: undefined,
+      copyable: true,
+      inlineEditable: true,
+      incrementalPattern: undefined,
+      incrementalRewritable: false,
+    };
   }
 
   function cancelEdit() {
@@ -168,8 +211,15 @@
     if (editingIndex !== null) {
       // Update existing column in local state
       const col = columns[editingIndex];
+      col.Type = editFormData.type;
       col.Label = editFormData.label || undefined;
       col.ComputeExpression = editFormData.computeExpression || undefined;
+      col.Sortable = editFormData.sortable;
+      col.DateFormat = editFormData.dateFormat || undefined;
+      col.Copyable = editFormData.copyable;
+      col.InlineEditable = editFormData.inlineEditable;
+      col.IncrementalPattern = editFormData.incrementalPattern || undefined;
+      col.IncrementalRewritable = editFormData.incrementalRewritable;
       refreshColumns = {};
     } else if (isCreatingNew && editFormData.key) {
       // Check if key already exists in local columns
@@ -197,6 +247,12 @@
         computeExpression: editFormData.computeExpression || undefined,
         createdAt: now,
         updatedAt: now,
+        sortable: editFormData.sortable,
+        dateFormat: editFormData.dateFormat || undefined,
+        copyable: editFormData.copyable,
+        inlineEditable: editFormData.inlineEditable,
+        incrementalPattern: editFormData.incrementalPattern || undefined,
+        incrementalRewritable: editFormData.incrementalRewritable,
       });
 
       columns = [...columns, newColumn];
@@ -333,6 +389,7 @@
               <option value="file">Soubor</option>
               <option value="gcode">G-code soubor</option>
               <option value="computed">Vypočítaný</option>
+              <option value="incremental">Inkrementální</option>
             </select>
           </label>
         </div>
@@ -342,6 +399,82 @@
             columnKey={editFormData.key}
           />
         {/if}
+        {#if editFormData.type === 'incremental'}
+          <div class="form-row">
+            <label>
+              Vzor (pattern):
+              <input
+                type="text"
+                bind:value={editFormData.incrementalPattern}
+                placeholder="např. {'{YY}{###}'}"
+              />
+              <small class="help-text">
+                Použijte: {'{YY}'} = rok (2 číslice), {'{YYYY}'} = rok (4 číslice), {'{MM}'} = měsíc (01-12), {'{DD}'} = den (01-31), {'{###}'} = pořadí (3 číslice)
+              </small>
+            </label>
+          </div>
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" bind:checked={editFormData.incrementalRewritable} />
+              <span>Hodnotu lze přepisovat</span>
+            </label>
+          </div>
+        {/if}
+        {#if editFormData.type === 'date' || editFormData.type === 'datetime'}
+          <div class="form-row">
+            <label>
+              Formát data:
+              <input
+                type="text"
+                bind:value={editFormData.dateFormat}
+                placeholder="dd. MM. yyyy"
+              />
+              <button type="button" class="help-toggle" onclick={() => showDateFormatHelp = !showDateFormatHelp}>
+                {showDateFormatHelp ? 'Skrýt nápovědu' : 'Zobrazit nápovědu formátu'}
+              </button>
+            </label>
+            {#if showDateFormatHelp}
+              <div class="date-format-help">
+                <p><strong>Běžné tokeny:</strong></p>
+                <ul>
+                  <li><code>dd</code> - den (01-31)</li>
+                  <li><code>MM</code> - měsíc (01-12)</li>
+                  <li><code>yyyy</code> - rok (4 číslice)</li>
+                  <li><code>yy</code> - rok (2 číslice)</li>
+                  <li><code>HH</code> - hodina (00-23)</li>
+                  <li><code>mm</code> - minuta (00-59)</li>
+                  <li><code>ss</code> - sekunda (00-59)</li>
+                </ul>
+                <p><strong>Příklady:</strong></p>
+                <ul>
+                  <li><code>dd. MM. yyyy</code> → 28. 11. 2025</li>
+                  <li><code>yyyy-MM-dd</code> → 2025-11-28</li>
+                  <li><code>dd/MM/yyyy HH:mm</code> → 28/11/2025 14:30</li>
+                </ul>
+              </div>
+            {/if}
+          </div>
+        {/if}
+        <div class="form-row-group">
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" bind:checked={editFormData.sortable} />
+              <span>Řaditelný</span>
+            </label>
+          </div>
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" bind:checked={editFormData.copyable} />
+              <span>Kopírovat při duplikaci řádku</span>
+            </label>
+          </div>
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" bind:checked={editFormData.inlineEditable} />
+              <span>Inline editace</span>
+            </label>
+          </div>
+        </div>
         <div class="form-actions">
           <Button onClick={cancelEdit}><span>Zrušit</span></Button>
           <Button onClick={saveEdit} success><span>Vytvořit</span></Button>
@@ -363,6 +496,8 @@
                 <strong>{column.Key}</strong>
                 {#if isComputed(column)}
                   <span class="computed-badge">Vypočítaný</span>
+                {:else if column.Type === 'incremental'}
+                  <span class="incremental-badge">Inkrementální</span>
                 {/if}
               </div>
               <div class="form-row">
@@ -371,11 +506,105 @@
                   <input type="text" bind:value={editFormData.label} placeholder={column.Key} />
                 </label>
               </div>
-              {#if isComputed(column)}
-                <ComputeExpressionBuilder bind:expression={editFormData.computeExpression} />
-              {/if}
               <div class="form-row">
-                <small><strong>Typ:</strong> {column.Type} (nelze změnit po vytvoření)</small>
+                <label>
+                  Typ:
+                  {#if column.Type === 'computed'}
+                    <select bind:value={editFormData.type} disabled>
+                      <option value="computed">Vypočítaný</option>
+                    </select>
+                    <small class="help-text">Vypočítané sloupce nelze změnit na jiný typ</small>
+                  {:else}
+                    <select bind:value={editFormData.type}>
+                      <option value="string">Text</option>
+                      <option value="number">Číslo</option>
+                      <option value="date">Datum</option>
+                      <option value="datetime">Datum a čas</option>
+                      <option value="file">Soubor</option>
+                      <option value="gcode">G-code soubor</option>
+                      <option value="incremental">Inkrementální</option>
+                    </select>
+                    {#if editFormData.type !== column.Type}
+                      <small class="type-warning">Změna typu může ovlivnit zobrazení stávajících dat</small>
+                    {/if}
+                  {/if}
+                </label>
+              </div>
+              {#if editFormData.type === 'computed'}
+                <ComputeExpressionBuilder bind:expression={editFormData.computeExpression} columnKey={column.Key} />
+              {/if}
+              {#if editFormData.type === 'date' || editFormData.type === 'datetime'}
+                <div class="form-row">
+                  <label>
+                    Formát data:
+                    <input
+                      type="text"
+                      bind:value={editFormData.dateFormat}
+                      placeholder="dd. MM. yyyy"
+                    />
+                    <button type="button" class="help-toggle" onclick={() => showDateFormatHelp = !showDateFormatHelp}>
+                      {showDateFormatHelp ? 'Skrýt nápovědu' : 'Zobrazit nápovědu formátu'}
+                    </button>
+                  </label>
+                  {#if showDateFormatHelp}
+                    <div class="date-format-help">
+                      <p><strong>Běžné tokeny:</strong></p>
+                      <ul>
+                        <li><code>dd</code> - den (01-31)</li>
+                        <li><code>MM</code> - měsíc (01-12)</li>
+                        <li><code>yyyy</code> - rok (4 číslice)</li>
+                        <li><code>HH</code> - hodina (00-23)</li>
+                        <li><code>mm</code> - minuta (00-59)</li>
+                      </ul>
+                      <p><strong>Příklady:</strong></p>
+                      <ul>
+                        <li><code>dd. MM. yyyy</code> → 28. 11. 2025</li>
+                        <li><code>yyyy-MM-dd</code> → 2025-11-28</li>
+                      </ul>
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+              {#if editFormData.type === 'incremental'}
+                <div class="form-row">
+                  <label>
+                    Vzor (pattern):
+                    <input
+                      type="text"
+                      bind:value={editFormData.incrementalPattern}
+                      placeholder="např. {'{YY}{###}'}"
+                    />
+                    <small class="help-text">
+                      Použijte: {'{YY}'} = rok (2 číslice), {'{YYYY}'} = rok (4 číslice), {'{MM}'} = měsíc (01-12), {'{DD}'} = den (01-31), {'{###}'} = pořadí (3 číslice)
+                    </small>
+                  </label>
+                </div>
+                <div class="form-row checkbox-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" bind:checked={editFormData.incrementalRewritable} />
+                    <span>Hodnotu lze přepisovat</span>
+                  </label>
+                </div>
+              {/if}
+              <div class="form-row-group inline">
+                <div class="form-row checkbox-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" bind:checked={editFormData.sortable} />
+                    <span>Řaditelný</span>
+                  </label>
+                </div>
+                <div class="form-row checkbox-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" bind:checked={editFormData.copyable} />
+                    <span>Kopírovat</span>
+                  </label>
+                </div>
+                <div class="form-row checkbox-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" bind:checked={editFormData.inlineEditable} />
+                    <span>Inline editace</span>
+                  </label>
+                </div>
               </div>
               <div class="form-actions">
                 <Button icon="mdiCancel" onClick={cancelEdit} onlyIcon />
@@ -404,7 +633,7 @@
                 {#if !isProtected(column.Key) && !column.Archived}
                   <Icon name="mdiDragVertical" size={20} color="#666" />
                 {:else}
-                  <div style="width: 20px;"></div>
+                  <div style="width: 1.25rem;"></div>
                 {/if}
               </div>
 
@@ -474,12 +703,12 @@
 <style lang="scss">
   .column-manager-dialog {
     border: none;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     padding: 0;
     width: 750px;
     max-width: 90vw;
     max-height: 85vh;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
 
     &::backdrop {
       background: rgba(0, 0, 0, 0.5);
@@ -519,7 +748,7 @@
   .edit-form-inline {
     background: #e3f2fd;
     border: 2px solid #285597;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 1rem;
   }
@@ -529,10 +758,118 @@
     padding: 0.2rem 0.5rem;
     background: #4caf50;
     color: white;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+  }
+
+  .incremental-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #ff9800;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .form-row-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(40, 85, 151, 0.05);
+    border-radius: 0.375rem;
+
+    &.inline {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  }
+
+  .checkbox-row {
+    margin-bottom: 0 !important;
+  }
+
+  .checkbox-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #285597;
+    }
+
+    span {
+      font-weight: 500;
+    }
+  }
+
+  .help-toggle {
+    background: none;
+    border: none;
+    color: #285597;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: underline;
+    padding: 0;
+    margin-top: 0.25rem;
+
+    &:hover {
+      color: #1e4177;
+    }
+  }
+
+  .help-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .type-warning {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #d97706;
+    font-weight: 500;
+  }
+
+  .date-format-help {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+
+    p {
+      margin: 0 0 0.5rem 0;
+    }
+
+    ul {
+      margin: 0 0 0.75rem 0;
+      padding-left: 1.25rem;
+    }
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+
+    code {
+      background: #e3f2fd;
+      padding: 0.15rem 0.35rem;
+      border-radius: 3px;
+      font-family: monospace;
+    }
   }
 
   .form-row {
@@ -550,7 +887,7 @@
     select {
       padding: 0.5rem;
       border: 2px solid #ddd;
-      border-radius: 6px;
+      border-radius: 0.375rem;
       font-size: 1rem;
 
       &:focus {
@@ -579,7 +916,7 @@
     gap: 0.75rem;
     padding: 1rem;
     background: #fff3cd;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
     color: #856404;
@@ -598,7 +935,7 @@
     padding: 1rem;
     background: white;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     transition: all 0.2s;
 
     &:hover:not(.locked):not(.archived) {
@@ -621,9 +958,9 @@
         left: 0;
         right: 0;
         top: -4px;
-        height: 4px;
+        height: 0.25rem;
         background: #4a90e2;
-        border-radius: 2px;
+        border-radius: 0.125rem;
       }
     }
 
@@ -636,9 +973,9 @@
         left: 0;
         right: 0;
         bottom: -4px;
-        height: 4px;
+        height: 0.25rem;
         background: #4a90e2;
-        border-radius: 2px;
+        border-radius: 0.125rem;
       }
     }
 
@@ -712,7 +1049,7 @@
     padding: 0.5rem;
     background: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     cursor: pointer;
     transition: background 0.2s;
 
@@ -729,6 +1066,6 @@
     padding: 1.5rem;
     border-top: 1px solid #dfe3e8;
     background: #f8f9fa;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 12px 0.75rem;
   }
 </style>

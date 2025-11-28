@@ -15,4 +15,10 @@ export interface DbTableColumn {
   computeExpression?: string;
   archived?: boolean;
   label?: string;
+  sortable?: boolean;
+  dateFormat?: string;
+  copyable?: boolean;
+  inlineEditable?: boolean;
+  incrementalPattern?: string;
+  incrementalRewritable?: boolean;
 }
