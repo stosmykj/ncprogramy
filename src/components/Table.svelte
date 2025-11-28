@@ -1,17 +1,16 @@
 <script lang="ts">
   import TableRow from './TableRow.svelte';
   import { onMount } from 'svelte';
-  import { getPrograms, PROGRAMS, DATA_VARS, addProgram } from '$lib/dataProcessor.svelte';
+  import { getPrograms, PROGRAMS, DATA_VARS, removeProgram } from '$lib/dataProcessor.svelte';
   import TableHeader from './TableHeader.svelte';
   import { writeText as clipWrite } from '@tauri-apps/plugin-clipboard-manager';
   import type { BodyContextMenuData } from '../interfaces/BodyContextMenuData';
-  import Button from './Button.svelte';
-  import { slide } from 'svelte/transition';
+  import Icon from './Icon.svelte';
   import { initTableColumns, TABLECOLUMNS } from '$lib/tableColumnProcessor.svelte';
   import { initFormattingRules } from '$lib/formattingProcessor.svelte';
-  import { Program } from '../models/program';
-  import KeyboardShortcut from './KeyboardShortcut.svelte';
-  import { TableColumn } from '$models/tableColumn';
+  import ProgramDialog from './ProgramDialog.svelte';
+  import { PROGRAM_DIALOG } from '$lib/programDialogState.svelte';
+  import { confirm } from '@tauri-apps/plugin-dialog';
 
   let page: number = $state(1);
   let pageSize: number = $state(50);
@@ -45,25 +44,15 @@
   });
 
   const visibleColumns = $derived.by(() => {
-    return [
-      new TableColumn({
-        key: 'actions',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        type: 'string',
-        position: 0,
-        sort: 0,
-        sortPosition: 0,
-        visible: true,
-        width: 60,
-        filter: undefined,
-        computeExpression: undefined,
-        archived: false,
-        label: '',
-        align: 'center',
-      }),
-      ...TABLECOLUMNS.filter((header) => header.Visible),
-    ];
+    return TABLECOLUMNS.filter((header) => header.Visible);
+  });
+
+  // Get the currently focused program
+  const focusedProgram = $derived.by(() => {
+    if (DATA_VARS.rowPosition >= 0 && DATA_VARS.rowPosition < PROGRAMS.length) {
+      return PROGRAMS[DATA_VARS.rowPosition];
+    }
+    return null;
   });
 
   async function pageChange(pageNumber: number) {
@@ -95,13 +84,24 @@
     const target = event.target as HTMLElement;
     const isInputElement = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA';
 
+    // Don't process if dialog is open
+    if (PROGRAM_DIALOG.isOpen) {
+      return;
+    }
+
+    // Allow Ctrl+N to work even when an input is focused
+    if (event.ctrlKey && event.key === 'n') {
+      newRow(event);
+      return;
+    }
+
+    // Block other keys when an input element is focused (unless editing a table cell)
     if (isInputElement && !DATA_VARS.isEditing) {
       return;
     }
 
     changeCellPosition(event.key);
     handleEdit(event);
-    await newRow(event);
     await copyContent(event);
   }
 
@@ -123,7 +123,7 @@
         DATA_VARS.rowPosition += DATA_VARS.rowPosition < PROGRAMS.length - 1 ? 1 : 0;
         break;
       case 'ArrowLeft':
-        DATA_VARS.columnPosition -= DATA_VARS.columnPosition > 1 ? 1 : 0;
+        DATA_VARS.columnPosition -= DATA_VARS.columnPosition > 0 ? 1 : 0;
         break;
       case 'ArrowRight':
         DATA_VARS.columnPosition += DATA_VARS.columnPosition < visibleColumns.length - 1 ? 1 : 0;
@@ -174,11 +174,15 @@
     }
   }
 
-  async function copyContent(event: KeyboardEvent, force: boolean = false) {
-    if (!event.ctrlKey || (event.key !== 'c' && !force)) {
+  async function copyContent(event: KeyboardEvent) {
+    if (!event.ctrlKey || event.key !== 'c') {
       return;
     }
 
+    await copyCurrentCell();
+  }
+
+  async function copyCurrentCell() {
     const elm = document.getElementById(
       `cell_${DATA_VARS.rowPosition}_${DATA_VARS.columnPosition}`
     );
@@ -186,22 +190,66 @@
     if (elm?.textContent) {
       await clipWrite(elm.textContent);
     }
+    tableBodyContextMenuData.opened = false;
   }
 
   function handleEdit(event: KeyboardEvent, force: boolean = false) {
     if (event.key !== 'Enter' && !force) {
       return;
     }
+    // Ctrl+Enter opens edit dialog, don't start inline editing
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
     DATA_VARS.isEditing = true;
   }
 
-  async function newRow(event: KeyboardEvent) {
+  function newRow(event: KeyboardEvent) {
     if (event.key !== 'n' || !event.ctrlKey) {
       return;
     }
 
-    // Create a new empty program - user will fill in the values
-    await addProgram(new Program());
+    event.preventDefault();
+    // Open program dialog in create mode
+    PROGRAM_DIALOG.mode = 'create';
+    PROGRAM_DIALOG.program = null;
+    PROGRAM_DIALOG.isOpen = true;
+  }
+
+  // Row action functions for context menu
+  function openEditDialog() {
+    if (!focusedProgram) return;
+    PROGRAM_DIALOG.mode = 'edit';
+    PROGRAM_DIALOG.program = focusedProgram;
+    // Focus the column that was selected when context menu was opened
+    PROGRAM_DIALOG.focusColumn = visibleColumns[DATA_VARS.columnPosition]?.Key ?? null;
+    PROGRAM_DIALOG.isOpen = true;
+    tableBodyContextMenuData.opened = false;
+  }
+
+  function openCopyDialog() {
+    if (!focusedProgram) return;
+    PROGRAM_DIALOG.mode = 'create';
+    PROGRAM_DIALOG.program = focusedProgram; // Pass source for copying
+    PROGRAM_DIALOG.isOpen = true;
+    tableBodyContextMenuData.opened = false;
+  }
+
+  async function deleteRow() {
+    if (!focusedProgram) return;
+    tableBodyContextMenuData.opened = false;
+
+    const result = await confirm('Opravdu smazat záznam?', {
+      title: `Smazání záznamu #${focusedProgram.Id}`,
+      kind: 'warning',
+    });
+    if (result) {
+      await removeProgram(focusedProgram);
+    }
+  }
+
+  function closeContextMenu() {
+    tableBodyContextMenuData.opened = false;
   }
 </script>
 
@@ -257,22 +305,40 @@
     Záznamů: {PROGRAMS.length} / {DATA_VARS.count}
   </div>
 </div>
-{#if tableBodyContextMenuData.opened}
+{#if tableBodyContextMenuData.opened && focusedProgram}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <div class="context-menu-overlay" onclick={closeContextMenu}></div>
   <div
-    class="body-cx-menu"
-    style="top: {tableBodyContextMenuData.cursorPosition.y}px; left: {tableBodyContextMenuData
-      .cursorPosition.x}px;"
-    transition:slide={{ duration: 250 }}
+    class="context-menu"
+    style="top: {tableBodyContextMenuData.cursorPosition.y}px; left: {tableBodyContextMenuData.cursorPosition.x}px;"
     role="menu"
   >
-    <Button onClick={(e: KeyboardEvent) => handleEdit(e, true)} primary>
-      <span class="text">Upravit</span><KeyboardShortcut keys="Enter" /></Button
-    >
-    <Button onClick={(e: KeyboardEvent) => copyContent(e, true)} primary>
-      <span class="text">Kopírovat</span><KeyboardShortcut keys="Ctrl+C" /></Button
-    >
+    <button class="menu-item" onclick={openEditDialog}>
+      <Icon name="mdiPencil" size={16} color="#374151" />
+      <span>Upravit</span>
+      <span class="shortcut">Enter</span>
+    </button>
+    <button class="menu-item" onclick={openCopyDialog}>
+      <Icon name="mdiContentCopy" size={16} color="#374151" />
+      <span>Duplikovat</span>
+      <span class="shortcut">Ctrl+D</span>
+    </button>
+    <button class="menu-item" onclick={copyCurrentCell}>
+      <Icon name="mdiContentSave" size={16} color="#374151" />
+      <span>Kopírovat hodnotu</span>
+      <span class="shortcut">Ctrl+C</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item danger" onclick={deleteRow}>
+      <Icon name="mdiTrashCan" size={16} color="#dc2626" />
+      <span>Smazat</span>
+      <span class="shortcut">Del</span>
+    </button>
   </div>
 {/if}
+
+<ProgramDialog />
 
 <style lang="scss">
   $primary-bg: #285597;
@@ -340,22 +406,74 @@
       margin: 0.8rem;
     }
   }
-  .body-cx-menu {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
+  .context-menu-overlay {
+    position: fixed;
     top: 0;
     left: 0;
-    height: auto;
-    padding: 10px;
-    background: #183868;
-    border-radius: 1rem;
-    box-shadow: 0.25rem 0.2rem 0.7rem #444;
-    z-index: 1;
-    transition: 0.2s;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+  }
 
-    .text {
-      margin-right: 20px;
+  .context-menu {
+    position: fixed;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 0.25rem;
+    min-width: 180px;
+    z-index: 1000;
+    animation: fadeIn 0.1s ease;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      background: none;
+      font-size: 0.8125rem;
+      color: #374151;
+      cursor: pointer;
+      border-radius: 0.25rem;
+      text-align: left;
+      transition: background 0.1s;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+
+      &.danger {
+        color: #dc2626;
+
+        &:hover {
+          background: #fef2f2;
+        }
+      }
+
+      .shortcut {
+        margin-left: auto;
+        font-size: 0.6875rem;
+        color: #9ca3af;
+      }
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 0.25rem 0;
     }
   }
 </style>

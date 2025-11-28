@@ -1,15 +1,14 @@
 <script lang="ts">
   import type { Program } from '../models/program';
   import type { TableColumn } from '../models/tableColumn';
-  import { DATA_VARS, getDisplayValue, removeProgram } from '$lib/dataProcessor.svelte';
+  import { DATA_VARS, getDisplayValue } from '$lib/dataProcessor.svelte';
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import type { BodyContextMenuData } from '../interfaces/BodyContextMenuData';
   import EditableCell from './EditableCell.svelte';
   import FilePreview from './FilePreview.svelte';
-  import Button from './Button.svelte';
-  import { confirm } from '@tauri-apps/plugin-dialog';
   import { File } from '../models/file';
   import { buildStyleString, getCellStyles } from '$lib/formattingProcessor.svelte';
+  import { PROGRAM_DIALOG } from '$lib/programDialogState.svelte';
 
   let {
     program,
@@ -26,9 +25,11 @@
   } = $props();
 
   let columnWidth = $state(document.querySelector(`#header_${header.Key}`)?.clientWidth);
-  // Not editable: actions, system columns, computed columns
+  // Not editable: system columns, computed columns, or columns with InlineEditable disabled
   const editable =
-    !['actions', 'id', 'createdAt', 'updatedAt'].includes(header.Key) && header.Type !== 'computed';
+    !['id', 'createdAt', 'updatedAt'].includes(header.Key) &&
+    header.Type !== 'computed' &&
+    header.InlineEditable !== false;
   let showFilePreview = $state(false);
   let cellElement: HTMLElement | null = $state(null);
   let hoverTimeout: number | null = $state(null);
@@ -74,7 +75,28 @@
   function handleKeyDown(event: KeyboardEvent) {
     // Don't handle keys when G-code editor dialog is open
     if (SETTINGS_VARS.gcodeEditorOpened) return;
-    if (!focused || DATA_VARS.isEditing) return;
+    if (!focused) return;
+
+    // Ctrl+D to duplicate current row (works even when editing)
+    if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+      event.preventDefault();
+      PROGRAM_DIALOG.mode = 'create';
+      PROGRAM_DIALOG.program = program;
+      PROGRAM_DIALOG.isOpen = true;
+      return;
+    }
+
+    // Ctrl+Enter to open edit dialog for current row
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      PROGRAM_DIALOG.mode = 'edit';
+      PROGRAM_DIALOG.program = program;
+      PROGRAM_DIALOG.focusColumn = header.Key; // Focus the column that was selected
+      PROGRAM_DIALOG.isOpen = true;
+      return;
+    }
+
+    if (DATA_VARS.isEditing) return;
 
     // Space toggles file preview for file columns
     if (event.key === ' ' && isFileColumn && fileValue) {
@@ -114,7 +136,7 @@
   }
 
   function changeFocus() {
-    if (header.Key === 'actions' || DATA_VARS.isEditing) {
+    if (DATA_VARS.isEditing) {
       return;
     }
 
@@ -155,16 +177,6 @@
     }
   }
 
-  async function tryDeleteItem() {
-    const result = await confirm('Opravdu smazat záznam?', {
-      title: `Smazání záznamu #${program.Id}`,
-      kind: 'warning',
-    });
-    if (result) {
-      await removeProgram(program);
-    }
-  }
-
   function handleMouseEnter() {
     if (isFileColumn && fileValue && !DATA_VARS.isEditing) {
       hoverTimeout = window.setTimeout(() => {
@@ -198,16 +210,12 @@
   onmouseleave={handleMouseLeave}
   role="gridcell"
   tabindex={focused ? 0 : -1}
-  aria-label={header.Key === 'actions' ? 'Akce' : getDisplayValue(program, header)}
+  aria-label={getDisplayValue(program, header)}
   aria-readonly={!editable}
   aria-selected={focused}
 >
   <div class="content" style="justify-content: ${header.Align};">
-    {#if header.Key === 'actions'}
-      <Button icon="mdiTrashCan" onClick={tryDeleteItem} danger onlyIcon></Button>
-    {:else}
-      {getDisplayValue(program, header)}
-    {/if}
+    {getDisplayValue(program, header)}
   </div>
   {#if DATA_VARS.isEditing && focused}
     <EditableCell {program} {header} />
@@ -234,10 +242,6 @@
     white-space: nowrap;
     border-right: 1px solid $border-color;
     overflow: hidden;
-
-    &:first-of-type {
-      padding: 0;
-    }
 
     &.preview {
       overflow: unset;
