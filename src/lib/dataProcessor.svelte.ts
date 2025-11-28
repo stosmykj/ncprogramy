@@ -5,7 +5,7 @@ import { File } from '../models/file';
 import { DatabaseError, handleError } from './errorHandler';
 import { showError, showSuccess } from './toast.svelte';
 import { getDatabase } from './database';
-import { formatDate, formatDateTime } from './dateFormatter.svelte';
+import { formatDate, formatDateTime, formatWithCustomFormat } from './dateFormatter.svelte';
 import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
 import { logger } from './logger';
 
@@ -550,6 +550,65 @@ export async function removeProgram(program: Program): Promise<void> {
   }
 }
 
+/**
+ * Copies (duplicates) a program row
+ * - Respects copyable column setting (skips columns marked as not copyable)
+ * - Generates new values for incremental columns
+ * - Keeps same file references for file columns
+ */
+export async function copyProgram(source: Program): Promise<void> {
+  try {
+    const db = await getDatabase();
+
+    // Get all column settings
+    const columns = await db.select<
+      Array<{
+        key: string;
+        type: string;
+        copyable: number;
+        incrementalPattern: string | null;
+      }>
+    >(
+      `SELECT key, type, copyable, incrementalPattern FROM table_columns
+       WHERE type != 'computed'
+       AND key NOT IN ('id', 'createdAt', 'updatedAt', 'actions')
+       ORDER BY position`
+    );
+
+    // Create new program instance
+    const newProgram = new Program();
+
+    for (const col of columns) {
+      // Skip non-copyable columns
+      if (!col.copyable) {
+        continue;
+      }
+
+      // Handle incremental columns - generate new value
+      if (col.type === 'incremental' && col.incrementalPattern) {
+        const newValue = await generateIncrementalValue(col.incrementalPattern, col.key);
+        newProgram.set(col.key, newValue);
+        continue;
+      }
+
+      // Copy the value from source
+      const sourceValue = source.get(col.key);
+      if (sourceValue !== undefined && sourceValue !== null) {
+        newProgram.set(col.key, sourceValue);
+      }
+    }
+
+    // Use existing addProgram function to insert
+    await addProgram(newProgram);
+
+    showSuccess('Program byl úspěšně zkopírován');
+  } catch (error) {
+    const message = handleError(error);
+    showError(message);
+    throw new DatabaseError('Failed to copy program', message);
+  }
+}
+
 export function getDisplayValue(program: Program, header: TableColumn): string {
   if (header.Key === 'actions') {
     return '';
@@ -564,10 +623,29 @@ export function getDisplayValue(program: Program, header: TableColumn): string {
     return value.toString();
   }
   if (value instanceof Date) {
+    // Use custom format if specified, otherwise use defaults
+    if (header.DateFormat) {
+      return formatWithCustomFormat(value, header.DateFormat, header.Type === 'datetime');
+    }
     if (header.Type === 'date') {
       return formatDate(value);
     }
     return formatDateTime(value);
+  }
+  // Handle string dates (ISO format from database) for date/datetime columns
+  if (typeof value === 'string' && (header.Type === 'date' || header.Type === 'datetime')) {
+    const dateValue = new Date(value);
+    if (!isNaN(dateValue.getTime())) {
+      if (header.DateFormat) {
+        return formatWithCustomFormat(dateValue, header.DateFormat, header.Type === 'datetime');
+      }
+      if (header.Type === 'date') {
+        return formatDate(dateValue);
+      }
+      return formatDateTime(dateValue);
+    }
+    // Invalid date string - return as is
+    return value;
   }
   if (value instanceof File) {
     return value.Name;
@@ -609,5 +687,97 @@ export async function findCurrentYearLastItem(columnKey: string): Promise<Progra
   } catch (error) {
     logger.error('Failed to find current year last item', error);
     return null;
+  }
+}
+
+/**
+ * Generates an incremental value based on a pattern
+ * Pattern placeholders:
+ * - {YY} = 2-digit year
+ * - {YYYY} = 4-digit year
+ * - {MM} = 2-digit month (01-12)
+ * - {DD} = 2-digit day (01-31)
+ * - {###} = 3-digit sequence (001, 002, etc.)
+ * - {####} = 4-digit sequence
+ * - {#####} = 5-digit sequence
+ */
+export async function generateIncrementalValue(
+  pattern: string,
+  columnKey: string
+): Promise<string> {
+  try {
+    const db = await getDatabase();
+    const now = new Date();
+    const year2 = now.getFullYear().toString().slice(-2);
+    const year4 = now.getFullYear().toString();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+
+    // Replace date placeholders first
+    let patternForSearch = pattern
+      .replace(/\{YYYY\}/g, year4)
+      .replace(/\{YY\}/g, year2)
+      .replace(/\{MM\}/g, month)
+      .replace(/\{DD\}/g, day);
+
+    // Find sequence placeholder and its length
+    const seqMatch = pattern.match(/\{(#+)\}/);
+    if (!seqMatch) {
+      // No sequence placeholder, just return the pattern with year replaced
+      return patternForSearch;
+    }
+
+    const seqLength = seqMatch[1].length;
+    const seqPlaceholder = seqMatch[0];
+
+    // Build SQL LIKE pattern to find existing values
+    const sqlPattern = patternForSearch.replace(seqPlaceholder, '%');
+
+    // Check if column exists
+    const programsTableInfo = await db.select<Array<{ name: string }>>(
+      'PRAGMA table_info(programs)'
+    );
+    const existingColumnNames = programsTableInfo.map((col) => col.name);
+
+    if (!existingColumnNames.includes(columnKey)) {
+      // Column doesn't exist, start at 1
+      return patternForSearch.replace(seqPlaceholder, '1'.padStart(seqLength, '0'));
+    }
+
+    // Find the highest existing value matching the pattern
+    const result = await db.select<Array<{ val: string }>>(
+      `SELECT ${columnKey} as val FROM programs WHERE ${columnKey} LIKE $1 ORDER BY ${columnKey} DESC LIMIT 1`,
+      [sqlPattern]
+    );
+
+    if (result.length === 0 || !result[0].val) {
+      // No existing values, start at 1
+      return patternForSearch.replace(seqPlaceholder, '1'.padStart(seqLength, '0'));
+    }
+
+    // Extract the sequence number from the existing value
+    const existingValue = result[0].val;
+    const prefix = patternForSearch.split(seqPlaceholder)[0];
+    const suffix = patternForSearch.split(seqPlaceholder)[1] || '';
+
+    // Extract numeric part
+    const numericPart = existingValue
+      .replace(prefix, '')
+      .replace(suffix, '');
+
+    const currentSeq = parseInt(numericPart, 10);
+    const nextSeq = isNaN(currentSeq) ? 1 : currentSeq + 1;
+
+    return patternForSearch.replace(seqPlaceholder, nextSeq.toString().padStart(seqLength, '0'));
+  } catch (error) {
+    logger.error('Failed to generate incremental value', error);
+    // Return a safe default
+    const now = new Date();
+    return pattern
+      .replace(/\{YYYY\}/g, now.getFullYear().toString())
+      .replace(/\{YY\}/g, now.getFullYear().toString().slice(-2))
+      .replace(/\{MM\}/g, (now.getMonth() + 1).toString().padStart(2, '0'))
+      .replace(/\{DD\}/g, now.getDate().toString().padStart(2, '0'))
+      .replace(/\{#+\}/g, '001');
   }
 }
