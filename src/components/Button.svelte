@@ -12,6 +12,7 @@
     iconColor?: string;
     style?: string;
     color?: string;
+    title?: string;
     onlyIcon?: boolean;
     primary?: boolean;
     danger?: boolean;
@@ -19,6 +20,7 @@
     success?: boolean;
     warning?: boolean;
     selected?: boolean;
+    tabIndex?: number;
   } = $props();
 
   const iconColor = $derived.by(() => {
@@ -79,6 +81,7 @@
   class:disabled={props.disabled}
   class:warning={props.warning}
   class:selected={props.selected}
+  tabindex={props.tabIndex}
   {onclick}
 >
   {#if props.icon}
@@ -103,7 +106,8 @@
     border: 2px solid #c0c0c0;
     color: #333;
     outline: none;
-    border-radius: 8px;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
     font-weight: bold;
     font-family:
       'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana,
@@ -113,6 +117,11 @@
 
     &:hover {
       background: #c0c0c0;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #4a90e2;
+      outline-offset: 2px;
     }
 
     &.full {
@@ -185,7 +194,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 4px;
+      gap: 0.25rem;
     }
 
     &.icon {
