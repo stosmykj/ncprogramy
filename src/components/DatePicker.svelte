@@ -26,11 +26,16 @@
 
   $effect(() => {
     if (autoFocus && wrapperRef) {
-      const input = wrapperRef.querySelector('input');
-      if (input) {
-        input.focus();
-        input.select();
-      }
+      // Use setTimeout to ensure the DateInput component has rendered its internal input
+      setTimeout(() => {
+        const input = wrapperRef?.querySelector('input');
+        if (input) {
+          input.focus();
+          input.select();
+          // Also click to open the picker
+          input.click();
+        }
+      }, 50);
     }
   });
 
@@ -65,8 +70,8 @@
       width: 100%;
       height: 2.2rem;
       border: 1px solid #d0d5dd;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
       font-family: inherit;
       background: white;
       box-sizing: border-box;
@@ -99,9 +104,9 @@
       height: 100%;
       background: white;
       border: 1px solid #d0d5dd;
-      border-radius: 8px;
+      border-radius: 0.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      padding: 12px;
+      padding: 0.75rem;
       z-index: 1001;
     }
 
@@ -110,9 +115,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 4px 12px;
+      padding: 0.5rem 4px 0.75rem;
       border-bottom: 1px solid #eaecf0;
-      margin-bottom: 12px;
+      margin-bottom: 0.75rem;
     }
 
     :global(.picker-header button) {
@@ -120,9 +125,9 @@
       border: none;
       color: #344054;
       cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 14px;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
       font-weight: 500;
       transition: all 0.2s ease;
 
@@ -136,31 +141,31 @@
     :global(.weekdays) {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: 4px;
+      gap: 0.25rem;
+      margin-bottom: 0.25rem;
     }
 
     :global(.weekday) {
       text-align: center;
-      font-size: 12px;
+      font-size: 0.75rem;
       font-weight: 600;
       color: #667085;
-      padding: 4px;
+      padding: 0.25rem;
     }
 
     // Calendar days
     :global(.days) {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
+      gap: 0.125rem;
     }
 
     :global(.day) {
       aspect-ratio: 1;
       border: none;
       background: transparent;
-      border-radius: 6px;
-      font-size: 13px;
+      border-radius: 0.375rem;
+      font-size: 0.8125rem;
       color: #344054;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -198,20 +203,20 @@
     // Time picker section
     :global(.time-picker) {
       border-top: 1px solid #eaecf0;
-      padding-top: 12px;
-      margin-top: 12px;
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
       display: flex;
-      gap: 8px;
+      gap: 0.5rem;
       align-items: center;
       justify-content: center;
     }
 
     :global(.time-picker input) {
       width: 60px;
-      padding: 6px 8px;
+      padding: 0.375rem 0.5rem;
       border: 1px solid #d0d5dd;
-      border-radius: 4px;
-      font-size: 14px;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
       text-align: center;
       font-family: inherit;
 
@@ -223,7 +228,7 @@
     }
 
     :global(.time-separator) {
-      font-size: 16px;
+      font-size: 1rem;
       font-weight: 600;
       color: #667085;
     }
@@ -234,7 +239,7 @@
       justify-content: center;
       position: absolute;
       top: 0;
-      right: 8px;
+      right: 0.5rem;
       height: 100%;
       z-index: 10;
     }
