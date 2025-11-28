@@ -72,6 +72,30 @@ pub fn run() {
                 CREATE INDEX IF NOT EXISTS idx_formatting_rules_enabled ON formatting_rules(enabled, priority);
             ",
             kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "Add column settings fields",
+            sql: "
+                -- Add sortable column (default true)
+                ALTER TABLE table_columns ADD COLUMN sortable BIT NOT NULL DEFAULT 1;
+
+                -- Add dateFormat for custom date formatting
+                ALTER TABLE table_columns ADD COLUMN dateFormat TEXT;
+
+                -- Add copyable column (default true)
+                ALTER TABLE table_columns ADD COLUMN copyable BIT NOT NULL DEFAULT 1;
+
+                -- Add inlineEditable column (default true)
+                ALTER TABLE table_columns ADD COLUMN inlineEditable BIT NOT NULL DEFAULT 1;
+
+                -- Add incrementalPattern for incremental columns
+                ALTER TABLE table_columns ADD COLUMN incrementalPattern TEXT;
+
+                -- Add incrementalRewritable for incremental columns (default false)
+                ALTER TABLE table_columns ADD COLUMN incrementalRewritable BIT NOT NULL DEFAULT 0;
+            ",
+            kind: MigrationKind::Up,
         }
     ];
 
