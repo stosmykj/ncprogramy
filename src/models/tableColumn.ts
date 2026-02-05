@@ -252,7 +252,7 @@ export class TableColumn {
     WHERE key=$1;`;
   }
 
-  toArray(): Array<any> {
+  toArray(): Array<string | number | boolean | undefined> {
     return [
       this.key,
       this.type,

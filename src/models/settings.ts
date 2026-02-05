@@ -74,13 +74,13 @@ export class Settings {
   }
 
   toSqlUpdate(): string {
-    return `UPDATE settings SET 
+    return `UPDATE settings SET
       updatedAt = CURRENT_TIMESTAMP,
-      value = $3,
+      value = $3
     WHERE id=$4;`;
   }
 
-  toArray(): Array<any> {
+  toArray(): Array<string | number | undefined> {
     return [this.key, this.type, this.value?.toString(), this.id];
   }
 }

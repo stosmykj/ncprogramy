@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { GCodeParser } from '../lib/gcode/parser';
   import { ToolpathGenerator, type ToolpathData } from '../lib/gcode/toolpath';
+  import { logger } from '../lib/logger';
   import Icon from './Icon.svelte';
 
   let {
@@ -75,11 +76,11 @@
   }
 
   function generateToolpath(): void {
-    console.log('[GCodePreview] generateToolpath called');
+    logger.debug('[GCodePreview] generateToolpath called');
 
     // Skip processing for empty or placeholder content
     if (!code.trim() || code.startsWith('; Načítání')) {
-      console.log('[GCodePreview] No code or placeholder, clearing toolpath');
+      logger.debug('[GCodePreview] No code or placeholder, clearing toolpath');
       toolpathData = null;
       error = null;
       render();
@@ -88,35 +89,35 @@
 
     isLoading = true;
     error = null;
-    console.log('[GCodePreview] Rendering loading state...');
+    logger.debug('[GCodePreview] Rendering loading state...');
     render(); // Show loading state immediately
 
     // Use setTimeout with longer delay to let Monaco load first
-    console.log('[GCodePreview] Scheduling toolpath generation with setTimeout...');
+    logger.debug('[GCodePreview] Scheduling toolpath generation with setTimeout...');
     setTimeout(() => {
-      console.log('[GCodePreview] setTimeout callback started');
+      logger.debug('[GCodePreview] setTimeout callback started');
       // Use requestAnimationFrame to yield to browser
       requestAnimationFrame(() => {
-        console.log('[GCodePreview] requestAnimationFrame callback started');
+        logger.debug('[GCodePreview] requestAnimationFrame callback started');
         try {
-          console.log('[GCodePreview] Creating G-code parser...');
+          logger.debug('[GCodePreview] Creating G-code parser...');
           const parser = new GCodeParser(code);
-          console.log('[GCodePreview] Parser loaded...');
-          console.log('[GCodePreview] Parsing G-code...');
+          logger.debug('[GCodePreview] Parser loaded...');
+          logger.debug('[GCodePreview] Parsing G-code...');
           const { ast, errors } = parser.parse();
-          console.log('[GCodePreview] G-code parsed, errors:', errors.length);
+          logger.debug('[GCodePreview] G-code parsed, errors:', errors.length);
 
           if (errors.length > 0 && errors.some((e) => e.severity === 'error')) {
             error = 'Nelze vygenerovat dráhu nástroje - kód obsahuje chyby';
             toolpathData = null;
-            console.log('[GCodePreview] Parse errors found, skipping toolpath generation');
+            logger.debug('[GCodePreview] Parse errors found, skipping toolpath generation');
           } else {
-            console.log('[GCodePreview] Generating toolpath...');
+            logger.debug('[GCodePreview] Generating toolpath...');
             const generator = new ToolpathGenerator();
             toolpathData = generator.generate(ast);
-            console.log('[GCodePreview] Toolpath generated, segments:', toolpathData?.segments?.length);
+            logger.debug('[GCodePreview] Toolpath generated, segments:', toolpathData?.segments?.length);
             fitToView();
-            console.log('[GCodePreview] fitToView complete');
+            logger.debug('[GCodePreview] fitToView complete');
           }
         } catch (err) {
           error = 'Chyba při generování dráhy nástroje';
@@ -124,9 +125,9 @@
           console.error('[GCodePreview] Error:', err);
         } finally {
           isLoading = false;
-          console.log('[GCodePreview] Rendering final state...');
+          logger.debug('[GCodePreview] Rendering final state...');
           render();
-          console.log('[GCodePreview] generateToolpath complete');
+          logger.debug('[GCodePreview] generateToolpath complete');
         }
       });
     }, 500); // Wait 500ms to let Monaco initialize first
@@ -422,7 +423,7 @@
 
     // Use longer delay on first render to let Monaco load first
     const delay = isFirstRender ? 1000 : 200;
-    console.log('[GCodePreview] $effect scheduling generateToolpath with delay:', delay);
+    logger.debug('[GCodePreview] $effect scheduling generateToolpath with delay:', delay);
 
     // Delay generation to let UI render first
     generateTimeout = setTimeout(() => {

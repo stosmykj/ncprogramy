@@ -5,6 +5,7 @@
   import { GCodeParser } from '../lib/gcode/parser';
   import { GCodeValidator } from '../lib/gcode/validator';
   import { SETTINGS_VARS } from '../lib/settingsProcessor.svelte';
+  import { logger } from '../lib/logger';
   import Icon from './Icon.svelte';
 
   let {
@@ -48,33 +49,33 @@
   }
 
   onMount(async () => {
-    console.log('[GCodeEditor] onMount started');
+    logger.debug('[GCodeEditor] onMount started');
     try {
       // Delay Monaco import to let UI render first
-      console.log('[GCodeEditor] Waiting 100ms before Monaco import...');
+      logger.debug('[GCodeEditor] Waiting 100ms before Monaco import...');
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Dynamically import Monaco with proper worker setup for SvelteKit
-      console.log('[GCodeEditor] Importing monaco-setup...');
+      logger.debug('[GCodeEditor] Importing monaco-setup...');
       monacoInstance = (await import('../lib/gcode/monaco-setup')).default;
-      console.log('[GCodeEditor] Monaco imported successfully');
+      logger.debug('[GCodeEditor] Monaco imported successfully');
 
       // Register G-code language
-      console.log('[GCodeEditor] Registering G-code language...');
+      logger.debug('[GCodeEditor] Registering G-code language...');
       registerGCodeLanguage(monacoInstance);
-      console.log('[GCodeEditor] G-code language registered');
+      logger.debug('[GCodeEditor] G-code language registered');
 
       // Use requestAnimationFrame to yield to browser before heavy editor creation
-      console.log('[GCodeEditor] Scheduling editor creation via requestAnimationFrame...');
+      logger.debug('[GCodeEditor] Scheduling editor creation via requestAnimationFrame...');
       requestAnimationFrame(() => {
-        console.log('[GCodeEditor] requestAnimationFrame callback started');
+        logger.debug('[GCodeEditor] requestAnimationFrame callback started');
         if (!monacoInstance || !editorContainer) {
-          console.log('[GCodeEditor] Missing monacoInstance or editorContainer, aborting');
+          logger.debug('[GCodeEditor] Missing monacoInstance or editorContainer, aborting');
           return;
         }
 
         // Create editor with minimal features first to prevent blocking
-        console.log('[GCodeEditor] Creating Monaco editor...');
+        logger.debug('[GCodeEditor] Creating Monaco editor...');
         // Use plaintext initially to avoid heavy processing during load
         editor = monacoInstance.editor.create(editorContainer, {
           value: code,
@@ -121,10 +122,10 @@
           cursorSmoothCaretAnimation: 'off',
           smoothScrolling: false,
         });
-        console.log('[GCodeEditor] Monaco editor created');
+        logger.debug('[GCodeEditor] Monaco editor created');
 
         // Handle content changes
-        console.log('[GCodeEditor] Setting up event handlers...');
+        logger.debug('[GCodeEditor] Setting up event handlers...');
         editor.onDidChangeModelContent(() => {
           // Skip if we're programmatically updating from code prop
           if (isUpdatingFromCode) return;
@@ -158,22 +159,22 @@
         editor.addCommand(monacoInstance!.KeyMod.CtrlCmd | monacoInstance!.KeyCode.Slash, () => {
           editor?.getAction('editor.action.commentLine')?.run();
         });
-        console.log('[GCodeEditor] Event handlers set up');
+        logger.debug('[GCodeEditor] Event handlers set up');
 
         // Initial validation - deferred to allow UI to render first
-        console.log('[GCodeEditor] Setting isLoading = false');
+        logger.debug('[GCodeEditor] Setting isLoading = false');
         isLoading = false;
-        console.log('[GCodeEditor] Setup complete');
+        logger.debug('[GCodeEditor] Setup complete');
 
         // Switch to gcode language after a delay to avoid blocking
-        console.log('[GCodeEditor] Scheduling language switch to gcode...');
+        logger.debug('[GCodeEditor] Scheduling language switch to gcode...');
         languageSwitchTimeout = setTimeout(() => {
           if (editor && monacoInstance) {
-            console.log('[GCodeEditor] Switching to gcode language...');
+            logger.debug('[GCodeEditor] Switching to gcode language...');
             const model = editor.getModel();
             if (model) {
               monacoInstance.editor.setModelLanguage(model, GCODE_LANGUAGE_ID);
-              console.log('[GCodeEditor] Language switched to gcode');
+              logger.debug('[GCodeEditor] Language switched to gcode');
               // Now schedule validation
               debouncedValidation(500);
             }
@@ -181,7 +182,7 @@
         }, 1500);
       });
     } catch (error) {
-      console.error('[GCodeEditor] Failed to load Monaco Editor:', error);
+      logger.error('[GCodeEditor] Failed to load Monaco Editor:', error);
       isLoading = false;
     }
   });

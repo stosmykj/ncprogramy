@@ -57,18 +57,21 @@ export async function updateTableColumn(tableColumn: TableColumn): Promise<void>
 
 export async function showHeader(key: ColumnKeys): Promise<void> {
   const index = TABLECOLUMNS.findIndex((c) => c.Key === key);
+  if (index === -1) return;
   TABLECOLUMNS[index].Visible = true;
   await updateTableColumn(TABLECOLUMNS[index]);
 }
 
 export async function hideHeader(key: ColumnKeys): Promise<void> {
   const index = TABLECOLUMNS.findIndex((c) => c.Key === key);
+  if (index === -1) return;
   TABLECOLUMNS[index].Visible = false;
   await updateTableColumn(TABLECOLUMNS[index]);
 }
 
 export async function toggleSort(key: ColumnKeys): Promise<void> {
   const index = TABLECOLUMNS.findIndex((c) => c.Key === key);
+  if (index === -1) return;
   const column = TABLECOLUMNS[index];
 
   // Toggle through: none (0) -> asc (1) -> desc (-1) -> none (0)
@@ -90,6 +93,7 @@ export async function toggleSort(key: ColumnKeys): Promise<void> {
 
 export async function addSort(key: ColumnKeys): Promise<void> {
   const index = TABLECOLUMNS.findIndex((c) => c.Key === key);
+  if (index === -1) return;
   TABLECOLUMNS[index].SortPosition = (await getLastSortNumber()) + 1;
   TABLECOLUMNS[index].Sort = 1;
 
@@ -98,6 +102,7 @@ export async function addSort(key: ColumnKeys): Promise<void> {
 
 export async function applyFilter(key: ColumnKeys, filter: string | undefined): Promise<void> {
   const index = TABLECOLUMNS.findIndex((c) => c.Key === key);
+  if (index === -1) return;
   TABLECOLUMNS[index].Filter = filter;
   await updateTableColumn(TABLECOLUMNS[index]);
 }

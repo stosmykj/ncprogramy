@@ -515,11 +515,10 @@ export async function updateProgram(program: Program): Promise<void> {
     if (result.rowsAffected > 0) {
       const item = await getProgramById(program.Id);
       if (item) {
-        PROGRAMS.splice(
-          PROGRAMS.findIndex((p) => p.Id === program.Id),
-          1,
-          item
-        );
+        const index = PROGRAMS.findIndex((p) => p.Id === program.Id);
+        if (index !== -1) {
+          PROGRAMS.splice(index, 1, item);
+        }
       }
       DATA_VARS.refresh = {};
       showSuccess('Program byl úspěšně aktualizován');
@@ -536,10 +535,10 @@ export async function removeProgram(program: Program): Promise<void> {
     const db = await getDatabase();
     const result = await db.execute(program.toSqlDelete(), [program.Id]);
     if (result.rowsAffected > 0) {
-      PROGRAMS.splice(
-        PROGRAMS.findIndex((p) => p.Id === program.Id),
-        1
-      );
+      const index = PROGRAMS.findIndex((p) => p.Id === program.Id);
+      if (index !== -1) {
+        PROGRAMS.splice(index, 1);
+      }
       DATA_VARS.refresh = {};
       showSuccess('Program byl úspěšně smazán');
     }

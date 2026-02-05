@@ -8,6 +8,7 @@
   import { exists, stat } from '@tauri-apps/plugin-fs';
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { logger } from '$lib/logger';
+  import { formatFileSize } from '$lib/backupProcessor';
 
   let {
     file,
@@ -90,14 +91,6 @@
     }
   }
 
-  function formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  }
-
   function getFileIcon(extension: string) {
     const ext = extension.toLowerCase();
     if (ext === 'pdf') return 'mdiFilePdfBox';
@@ -141,7 +134,7 @@
   >
     <div class="preview-header">
       <div class="file-icon">
-        <Icon name={getFileIcon(file.Extension)} size={32} color="#4a90e2" />
+        <Icon name={getFileIcon(file.Extension)} size={32} color="var(--color-primary)" />
       </div>
       <div class="file-info">
         <div class="file-name" title={file.Name}>

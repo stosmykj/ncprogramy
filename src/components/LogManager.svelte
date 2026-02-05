@@ -2,6 +2,7 @@
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import { getLogFiles, getTotalLogSize, clearAllLogs, exportLogs, logger } from '$lib/logger';
   import { formatFileSize } from '$lib/backupProcessor';
+  import { formatDate } from '$lib/dateFormatter.svelte';
   import { save } from '@tauri-apps/plugin-dialog';
   import { writeTextFile } from '@tauri-apps/plugin-fs';
   import { showSuccess, showError } from '$lib/toast.svelte';
@@ -57,14 +58,6 @@
       logger.error('Failed to export logs', error);
       showError('Nepodařilo se exportovat logy');
     }
-  }
-
-  function formatDate(date: Date): string {
-    return date.toLocaleDateString('cs-CZ', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
   }
 
   function close() {
