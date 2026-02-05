@@ -254,7 +254,7 @@
           <Icon
             name={header.Sort === 0 ? 'mdiSortAscending' : header.Sort === 1 ? 'mdiSortDescending' : 'mdiSortAscending'}
             size={16}
-            color="#374151"
+            color="var(--color-text)"
           />
           <span>
             {#if header.Sort === 0}
@@ -268,14 +268,14 @@
         </button>
         {#if header.Sort !== 0}
           <button class="menu-item" onclick={handleClearSort}>
-            <Icon name="mdiSortVariantRemove" size={16} color="#374151" />
+            <Icon name="mdiSortVariantRemove" size={16} color="var(--color-text)" />
             <span>Zrušit řazení</span>
           </button>
         {/if}
         <div class="menu-divider"></div>
       {/if}
       <button class="menu-item" onclick={openFilterPopover}>
-        <Icon name={header.Filter ? 'mdiFilterOff' : 'mdiFilter'} size={16} color="#374151" />
+        <Icon name={header.Filter ? 'mdiFilterOff' : 'mdiFilter'} size={16} color="var(--color-text)" />
         <span>{header.Filter ? 'Upravit filtr' : 'Filtrovat'}</span>
       </button>
     </div>
@@ -284,21 +284,19 @@
   <FilterPopover column={header} bind:isOpen={filterPopoverOpen} anchorElement={headerElement} />
 
 <style lang="scss">
-  $border-color: #dfe3e8;
-
   th {
     position: relative;
-    height: 2.2rem;
-    padding: 0 0.5rem;
-    font-weight: bold;
-    background: #285597;
-    color: white;
+    height: var(--table-header-height);
+    padding: 0 var(--space-3);
+    font-weight: 600;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
     user-select: none;
     cursor: pointer;
-    transition: background-color 0.15s;
+    transition: background-color var(--transition-base);
 
     &:hover {
-      background: #1e4177;
+      background: var(--color-primary-hover);
     }
 
     &.dragging {
@@ -307,8 +305,8 @@
     }
 
     &.drop-target {
-      background: #1e4177;
-      box-shadow: inset 3px 0 0 #4a90e2;
+      background: var(--color-primary-hover);
+      box-shadow: inset 3px 0 0 var(--color-primary-light);
     }
 
     &::after {
@@ -318,7 +316,7 @@
       right: 0;
       width: 1px;
       height: 100%;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.25);
     }
 
     .header-content {
@@ -327,12 +325,12 @@
       justify-content: center;
       width: 100%;
       height: 100%;
-      gap: 0.125rem;
+      gap: var(--space-1);
       min-width: 0;
     }
 
     .title {
-      font-size: 0.8125rem;
+      font-size: var(--font-size-sm);
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
@@ -359,7 +357,7 @@
       .indicator-number {
         font-size: 0.5rem;
         font-weight: 700;
-        color: #22aa44;
+        color: var(--color-success);
       }
     }
 
@@ -367,13 +365,13 @@
       position: absolute;
       top: 0;
       right: 0;
-      width: 0.25rem;
+      width: var(--space-2);
       height: 100%;
       cursor: col-resize;
       z-index: 2;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.5);
       }
     }
   }
@@ -384,18 +382,18 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
+    z-index: var(--z-overlay);
   }
 
   .context-menu {
     position: fixed;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    padding: 0.25rem;
-    min-width: 160px;
-    z-index: 1000;
-    animation: fadeIn 0.1s ease;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-2);
+    min-width: 150px;
+    z-index: var(--z-modal);
+    animation: fadeIn var(--transition-fast);
 
     @keyframes fadeIn {
       from {
@@ -411,27 +409,27 @@
     .menu-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-3);
       width: 100%;
-      padding: 0.5rem 0.75rem;
+      padding: var(--space-3) var(--space-4);
       border: none;
       background: none;
-      font-size: 0.8125rem;
-      color: #374151;
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
       cursor: pointer;
-      border-radius: 0.25rem;
+      border-radius: var(--radius-sm);
       text-align: left;
-      transition: background 0.1s;
+      transition: background var(--transition-fast);
 
       &:hover {
-        background: #f3f4f6;
+        background: var(--color-bg-muted);
       }
     }
 
     .menu-divider {
       height: 1px;
-      background: #e5e7eb;
-      margin: 0.25rem 0;
+      background: var(--color-border-light);
+      margin: var(--space-2) 0;
     }
   }
 </style>

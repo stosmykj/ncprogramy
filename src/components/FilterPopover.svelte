@@ -303,13 +303,13 @@
 <style lang="scss">
   .filter-popover {
     position: absolute;
-    z-index: 1000;
-    background: white;
-    border: 1px solid #d0d5dd;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: 280px;
-    animation: slideDown 0.15s ease-out;
+    z-index: var(--z-modal);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    width: 260px;
+    animation: slideDown var(--transition-base);
   }
 
   @keyframes slideDown {
@@ -327,13 +327,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #eaecf0;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border-lighter);
 
     .filter-title {
       font-weight: 600;
-      font-size: 0.875rem;
-      color: #101828;
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
     }
 
     .close-button {
@@ -342,133 +342,97 @@
       padding: 0;
       border: none;
       background: transparent;
-      color: #667085;
-      font-size: 1.25rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-xl);
       line-height: 1;
       cursor: pointer;
-      border-radius: 0.25rem;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
 
       &:hover {
-        background: #f2f4f7;
-        color: #344054;
+        background: var(--color-bg-muted);
+        color: var(--color-text);
       }
     }
   }
 
   .filter-body {
-    padding: 1rem;
+    padding: var(--space-6);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-4);
 
     .operator-select {
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: var(--space-2);
 
       label {
-        font-size: 0.8125rem;
+        font-size: var(--font-size-sm);
         font-weight: 500;
-        color: #344054;
+        color: var(--color-text);
       }
     }
 
     .filter-select {
       width: 100%;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
+      padding: var(--input-padding);
+      border: var(--input-border);
+      border-radius: var(--input-radius);
+      font-size: var(--font-size-sm);
       font-family: inherit;
-      background: white;
+      background: var(--color-bg);
       cursor: pointer;
       box-sizing: border-box;
 
       &:focus {
         outline: none;
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
     }
 
     .filter-input {
       width: 100%;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
+      padding: var(--input-padding);
+      border: var(--input-border);
+      border-radius: var(--input-radius);
+      font-size: var(--font-size-sm);
       font-family: inherit;
       box-sizing: border-box;
 
       &:focus {
         outline: none;
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
 
       &::placeholder {
-        color: #98a2b3;
+        color: var(--color-text-muted);
       }
     }
 
     .between-separator {
       text-align: center;
-      font-size: 0.8125rem;
-      color: #667085;
-      margin: -0.375rem 0;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin: calc(-1 * var(--space-2)) 0;
     }
 
     .filter-hint {
       margin-top: -4px;
-      color: #667085;
-      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-xs);
     }
   }
 
   .filter-footer {
     display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-top: 1px solid #eaecf0;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--color-border-lighter);
     justify-content: flex-end;
-
-    .btn {
-      padding: 0.5rem 0.875rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      border: 1px solid;
-      transition: all 0.15s ease;
-
-      &:active {
-        transform: scale(0.98);
-      }
-    }
-
-    .btn-secondary {
-      background: white;
-      border-color: #d0d5dd;
-      color: #344054;
-
-      &:hover {
-        background: #f9fafb;
-        border-color: #98a2b3;
-      }
-    }
-
-    .btn-primary {
-      background: #4a90e2;
-      border-color: #4a90e2;
-      color: white;
-
-      &:hover {
-        background: #3b7bc7;
-        border-color: #3b7bc7;
-      }
-    }
   }
 </style>

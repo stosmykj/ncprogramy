@@ -91,7 +91,7 @@
           {/if}
         </div>
         <button class="close-btn" onclick={close} aria-label="Zavřít">
-          <Icon name="mdiClose" size={24} color="#666" />
+          <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
         </button>
       </div>
 
@@ -127,7 +127,7 @@
               <div class="log-item">
                 <div class="log-info">
                   <div class="log-name">
-                    <Icon name="mdiFileDocument" size={20} color="#285597" />
+                    <Icon name="mdiFileDocument" size={20} color="var(--color-primary)" />
                     <span>{logFile.name}</span>
                   </div>
                   <div class="log-meta">
@@ -141,7 +141,7 @@
         {/if}
 
         <div class="info-box">
-          <Icon name="mdiInformation" size={18} color="#285597" />
+          <Icon name="mdiInformation" size={18} color="var(--color-primary)" />
           <p>
             Logy jsou uchovávány po dobu 30 dní. Starší logy jsou automaticky mazány. Každý týden je
             vytvořen nový soubor logu.
@@ -159,59 +159,59 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-bg-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--z-modal);
   }
 
   .modal {
-    background: #fff;
-    border-radius: 0.75rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 600px;
     max-width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-xl);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    padding: var(--space-6) var(--space-8);
+    border-bottom: 1px solid var(--color-border-light);
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-4);
     }
 
     h2 {
       margin: 0;
-      font-size: 1.125rem;
+      font-size: var(--font-size-lg);
       font-weight: 600;
-      color: #183868;
+      color: var(--color-primary-dark);
     }
 
     .log-count {
-      font-size: 0.8125rem;
-      color: #285597;
-      background: #eff6ff;
-      padding: 0.25rem 0.625rem;
-      border-radius: 0.375rem;
+      font-size: var(--font-size-sm);
+      color: var(--color-primary);
+      background: var(--color-primary-lighter);
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-md);
       font-weight: 500;
     }
 
     .total-size {
-      font-size: 0.8125rem;
-      color: #6b7280;
-      background: #f3f4f6;
-      padding: 0.25rem 0.625rem;
-      border-radius: 0.375rem;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-muted);
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-md);
     }
 
     .close-btn {
@@ -222,12 +222,12 @@
       height: 2rem;
       border: none;
       background: transparent;
-      border-radius: 0.375rem;
+      border-radius: var(--radius-md);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--transition-base);
 
       &:hover {
-        background: #f3f4f6;
+        background: var(--color-bg-muted);
       }
     }
   }
@@ -235,13 +235,13 @@
   .modal-content {
     flex: 1;
     overflow-y: auto;
-    padding: 1.25rem;
+    padding: var(--space-8);
   }
 
   .actions-bar {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
 
     .spacer {
       flex: 1;
@@ -251,23 +251,23 @@
   .loading,
   .empty {
     text-align: center;
-    padding: 2.5rem;
-    color: #6b7280;
+    padding: var(--space-10) var(--space-8);
+    color: var(--color-text-secondary);
   }
 
   .log-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .log-item {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
   }
 
   .log-info {
@@ -277,39 +277,39 @@
   .log-name {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-4);
     font-weight: 500;
-    color: #183868;
-    margin-bottom: 0.25rem;
+    color: var(--color-primary-dark);
+    margin-bottom: var(--space-1);
   }
 
   .log-meta {
     display: flex;
-    gap: 1rem;
-    font-size: 0.8125rem;
-    color: #6b7280;
+    gap: var(--space-8);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
     padding-left: 1.75rem;
   }
 
   .log-size {
-    color: #059669;
+    color: var(--color-success);
     font-weight: 500;
   }
 
   .info-box {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-    padding: 0.75rem 1rem;
-    background: #eff6ff;
-    border-radius: 0.5rem;
-    border: 1px solid #bfdbfe;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-primary-lighter);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-primary-light);
 
     p {
       margin: 0;
-      font-size: 0.8125rem;
-      color: #1e40af;
+      font-size: var(--font-size-sm);
+      color: var(--color-primary-dark);
       line-height: 1.5;
     }
   }

@@ -49,7 +49,7 @@
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              stroke="#285597"
+              stroke="var(--color-primary)"
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -90,7 +90,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M5 12h14m0 0l-7-7m7 7l-7 7"
-                stroke="#667085"
+                stroke="var(--color-text-secondary)"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -184,12 +184,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-bg-overlay-blur);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.2s ease;
+    z-index: var(--z-top);
+    animation: fadeIn var(--transition-base);
     backdrop-filter: blur(4px);
   }
 
@@ -203,13 +203,13 @@
   }
 
   .update-modal {
-    background: white;
-    border-radius: 1rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 90%;
     max-width: 768px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: slideUp 0.3s ease;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp var(--transition-slow);
     display: flex;
     flex-direction: column;
   }
@@ -226,37 +226,37 @@
   }
 
   .modal-header {
-    padding: 2rem 32px 1.5rem;
+    padding: var(--space-10) var(--space-10) var(--space-8);
     text-align: center;
-    border-bottom: 1px solid #e4e7ec;
+    border-bottom: 1px solid var(--color-border-light);
 
     .icon-container {
-      margin: 0 auto 1rem;
+      margin: 0 auto var(--space-8);
       width: 64px;
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
-      border-radius: 1rem;
+      background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-lighter) 100%);
+      border-radius: var(--radius-xl);
     }
 
     h2 {
-      margin: 0 0 8px 0;
-      font-size: 1.5rem;
-      color: #1d2939;
+      margin: 0 0 var(--space-4) 0;
+      font-size: var(--font-size-xl);
+      color: var(--color-text);
       font-weight: 600;
     }
 
     .subtitle {
       margin: 0;
-      color: #667085;
-      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
     }
   }
 
   .modal-content {
-    padding: 1.5rem 2rem;
+    padding: var(--space-8) var(--space-10);
     flex: 1;
     overflow-y: auto;
     max-height: 400px;
@@ -266,39 +266,39 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: var(--space-8);
+    margin-bottom: var(--space-10);
   }
 
   .version-box {
     flex: 1;
-    padding: 1rem;
-    border-radius: 0.75rem;
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
     text-align: center;
 
     &.current {
-      background: #f9fafb;
-      border: 1px solid #e4e7ec;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-light);
     }
 
     &.latest {
-      background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
-      border: 1px solid #bfdbfe;
+      background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-lighter) 100%);
+      border: 1px solid var(--color-primary-light);
     }
 
     .label {
-      font-size: 0.75rem;
-      color: #667085;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--space-4);
       font-weight: 600;
     }
 
     .version {
-      font-size: 1.25rem;
+      font-size: var(--font-size-xl);
       font-weight: 700;
-      color: #1d2939;
+      color: var(--color-text);
     }
   }
 
@@ -307,50 +307,50 @@
   }
 
   .release-notes {
-    background: #f9fafb;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    margin-top: 1rem;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    margin-top: var(--space-8);
 
     h4 {
-      margin: 0 0 12px 0;
-      font-size: 0.875rem;
-      color: #1d2939;
+      margin: 0 0 var(--space-6) 0;
+      font-size: var(--font-size-base);
+      color: var(--color-text);
       font-weight: 600;
     }
 
     .notes-content {
-      color: #667085;
-      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
       line-height: 1.6;
       max-height: 200px;
       overflow-y: auto;
 
       :global(h2) {
         color: #3498db;
-        font-size: 1rem;
-        margin: 0.75rem 0 8px 0;
+        font-size: var(--font-size-md);
+        margin: var(--space-6) 0 var(--space-4) 0;
       }
 
       :global(h3) {
         color: #27ae60;
-        font-size: 0.875rem;
-        margin: 0.625rem 0 6px 0;
+        font-size: var(--font-size-base);
+        margin: var(--space-5) 0 var(--space-3) 0;
       }
 
       :global(h4) {
         color: #8e44ad;
-        font-size: 0.8125rem;
-        margin: 0.5rem 0 4px 0;
+        font-size: var(--font-size-sm);
+        margin: var(--space-4) 0 var(--space-2) 0;
       }
 
       :global(ul) {
-        margin: 0.5rem 0;
-        padding-left: 1.25rem;
+        margin: var(--space-4) 0;
+        padding-left: var(--space-10);
       }
 
       :global(li) {
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--space-2);
       }
 
       :global(strong) {
@@ -358,13 +358,13 @@
       }
 
       :global(p) {
-        margin: 0.375rem 0;
+        margin: var(--space-3) 0;
       }
 
       :global(hr) {
         border: none;
-        border-top: 1px solid #ddd;
-        margin: 0.75rem 0;
+        border-top: 1px solid var(--color-border);
+        margin: var(--space-6) 0;
       }
     }
   }
@@ -373,8 +373,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1.5rem 0;
+    gap: var(--space-6);
+    padding: var(--space-8) 0;
   }
 
   .progress-bar {
@@ -384,12 +384,12 @@
     justify-content: center;
     width: 100%;
     height: 1.5rem;
-    background: #c5c5c5;
-    border-radius: 0.5rem;
+    background: var(--color-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
 
     .progress-text {
-      color: #ffffff;
+      color: var(--color-text-on-primary);
       z-index: 1;
     }
   }
@@ -399,15 +399,15 @@
     left: 0;
     top: 0;
     height: 100%;
-    background: linear-gradient(90deg, #285597, #183868);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
     border-radius: 3px;
   }
 
   .spinner {
     width: 2.5rem;
     height: 2.5rem;
-    border: 4px solid #e4e7ec;
-    border-top-color: #285597;
+    border: 4px solid var(--color-border-light);
+    border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -420,22 +420,22 @@
 
   .progress-text {
     margin: 0;
-    color: #285597;
-    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-size: var(--font-size-base);
     font-weight: 500;
   }
 
   .modal-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.5rem 2rem;
-    border-top: 1px solid #e4e7ec;
-    background: #f9fafb;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-10);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
 
     div {
       display: flex;
-      gap: 0.75rem;
+      gap: var(--space-6);
 
       button {
         height: 60px;

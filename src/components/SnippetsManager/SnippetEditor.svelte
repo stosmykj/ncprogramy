@@ -77,46 +77,46 @@
 
 <style lang="scss">
   .snippet-editor {
-    background: #e3f2fd;
-    border: 2px solid #285597;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: var(--color-primary-light);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
 
     h3 {
-      margin: 0 0 1rem 0;
-      color: #285597;
-      font-size: 1.1rem;
+      margin: 0 0 var(--space-6) 0;
+      color: var(--color-primary);
+      font-size: var(--font-size-lg);
     }
   }
 
   .form-row {
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-6);
 
     label {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-3);
       font-weight: 600;
-      color: #333;
+      color: var(--color-text);
     }
 
     input[type='text'],
     textarea {
-      padding: 0.5rem;
-      border: 2px solid #ddd;
-      border-radius: 0.375rem;
-      font-size: 1rem;
+      padding: var(--space-3);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-base);
       font-family: inherit;
 
       &:focus {
         outline: none;
-        border-color: #285597;
+        border-color: var(--color-primary);
       }
     }
 
     textarea {
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-family: var(--font-mono);
       resize: vertical;
       min-height: 60px;
     }
@@ -125,7 +125,7 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
   }
 </style>

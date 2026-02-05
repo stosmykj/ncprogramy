@@ -157,7 +157,7 @@
     {/if}
 
     <div class="instructions">
-      <Icon name="mdiInformationOutline" size={20} color="#285597" />
+      <Icon name="mdiInformationOutline" size={20} color="var(--color-primary)" />
       <span>Přetáhněte snippety pro změnu pořadí. Klikněte pro úpravu.</span>
     </div>
 
@@ -180,7 +180,7 @@
             ondragend={handleDragEnd}
           >
             <div class="drag-handle">
-              <Icon name="mdiDragVertical" size={20} color="#666" />
+              <Icon name="mdiDragVertical" size={20} color="var(--color-text-secondary)" />
             </div>
 
             <div
@@ -208,14 +208,14 @@
                 onclick={() => startEdit(snippet)}
                 title="Upravit snippet"
               >
-                <Icon name="mdiPencil" size={20} color="#285597" />
+                <Icon name="mdiPencil" size={20} color="var(--color-primary)" />
               </button>
               <button
                 class="action-button delete"
                 onclick={() => handleDelete(snippet)}
                 title="Smazat snippet"
               >
-                <Icon name="mdiTrashCan" size={20} color="#dc3545" />
+                <Icon name="mdiTrashCan" size={20} color="var(--color-danger)" />
               </button>
             </div>
           </div>
@@ -239,15 +239,15 @@
 <style lang="scss">
   .snippets-manager-dialog {
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-xl);
     padding: 0;
     width: 600px;
     max-width: 90vw;
     max-height: 85vh;
-    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
 
     &::backdrop {
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--color-bg-overlay);
       backdrop-filter: blur(4px);
     }
   }
@@ -256,26 +256,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #dfe3e8;
-    background: #f8f9fa;
-    border-radius: 12px 12px 0 0;
+    padding: var(--space-8);
+    border-bottom: 1px solid var(--color-border-lighter);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 
     h2 {
       margin: 0;
-      font-size: 1.5rem;
-      color: #285597;
+      font-size: var(--font-size-xl);
+      color: var(--color-primary);
     }
 
     .header-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-4);
       align-items: center;
     }
   }
 
   .dialog-body {
-    padding: 1.5rem;
+    padding: var(--space-8);
     overflow-y: auto;
     max-height: calc(85vh - 200px);
   }
@@ -283,34 +283,34 @@
   .instructions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: var(--space-6);
+    padding: var(--space-6);
     background: #fff3cd;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-8);
+    font-size: var(--font-size-base);
     color: #856404;
   }
 
   .snippets-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-4);
   }
 
   .snippet-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background: var(--color-bg);
+    border: 2px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
 
     &:hover {
-      border-color: #285597;
-      box-shadow: 0 2px 8px rgba(40, 85, 151, 0.1);
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
     }
 
     &.dragging {
@@ -327,9 +327,9 @@
         left: 0;
         right: 0;
         top: -4px;
-        height: 0.25rem;
-        background: #4a90e2;
-        border-radius: 0.125rem;
+        height: var(--space-2);
+        background: var(--color-primary);
+        border-radius: var(--space-1);
       }
     }
 
@@ -342,9 +342,9 @@
         left: 0;
         right: 0;
         bottom: -4px;
-        height: 0.25rem;
-        background: #4a90e2;
-        border-radius: 0.125rem;
+        height: var(--space-2);
+        background: var(--color-primary);
+        border-radius: var(--space-1);
       }
     }
   }
@@ -363,12 +363,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-2);
     cursor: pointer;
 
     &:hover {
       .snippet-name {
-        color: #285597;
+        color: var(--color-primary);
       }
     }
   }
@@ -376,35 +376,35 @@
   .snippet-name-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-4);
   }
 
   .snippet-name {
     font-weight: 600;
-    font-size: 1rem;
-    color: #333;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    transition: color 0.2s;
+    font-size: var(--font-size-md);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    transition: color var(--transition-base);
   }
 
   .default-badge {
     display: inline-block;
-    padding: 0.1rem 0.4rem;
-    background: #e3f2fd;
-    color: #285597;
-    border-radius: 0.25rem;
-    font-size: 0.7rem;
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-2xs);
     font-weight: 600;
     text-transform: uppercase;
   }
 
   .snippet-code {
-    font-size: 0.85rem;
-    color: #666;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    background: #f5f5f5;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    background: var(--color-bg-muted);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -412,33 +412,33 @@
   }
 
   .snippet-description {
-    font-size: 0.85rem;
-    color: #888;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
     font-style: italic;
   }
 
   .snippet-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-4);
   }
 
   .action-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    padding: var(--space-3);
     background: transparent;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background var(--transition-base);
 
     &:hover {
-      background: #f0f0f0;
+      background: var(--color-bg-muted);
     }
 
     &.delete:hover {
-      background: #ffe0e0;
+      background: var(--color-danger-light);
     }
   }
 
@@ -447,23 +447,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem;
-    color: #999;
+    padding: 2rem;
+    color: var(--color-text-muted);
     text-align: center;
 
     p {
-      margin-top: 1rem;
-      font-size: 0.95rem;
+      margin-top: var(--space-6);
+      font-size: var(--font-size-base);
     }
   }
 
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-top: 1px solid #dfe3e8;
-    background: #f8f9fa;
-    border-radius: 0 0 12px 0.75rem;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    border-top: 1px solid var(--color-border-lighter);
+    background: var(--color-bg-subtle);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   }
 </style>

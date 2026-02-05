@@ -139,10 +139,10 @@
     transform: translate(-50%, -50%);
     width: calc(100% + 30px);
     min-height: calc(100% + 12px);
-    background: #fff;
-    border: 2px solid #285597;
-    border-radius: 0.25rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: var(--color-bg);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
     z-index: 10;
 
     &.file {

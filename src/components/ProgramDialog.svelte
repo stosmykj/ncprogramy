@@ -259,7 +259,7 @@
           {/if}
         </h2>
         <button class="close-btn" onclick={closeDialog} title="Zavřít (Esc)">
-          <Icon name="mdiClose" size={24} color="#667085" />
+          <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
         </button>
       </div>
 
@@ -367,12 +367,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-bg-overlay-blur);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.2s ease;
+    z-index: var(--z-top);
+    animation: fadeIn var(--transition-base);
     backdrop-filter: blur(4px);
   }
 
@@ -382,14 +382,14 @@
   }
 
   .program-modal {
-    background: white;
-    border-radius: 1rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 90%;
     max-width: 800px;
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: slideUp 0.3s ease;
+    animation: slideUp var(--transition-slow);
     display: flex;
     flex-direction: column;
   }
@@ -409,14 +409,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e4e7ec;
-    background: #f9fafb;
+    padding: var(--space-6) var(--space-8);
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
 
     h2 {
       margin: 0;
-      font-size: 1.25rem;
-      color: #1d2939;
+      font-size: var(--font-size-xl);
+      color: var(--color-text);
       font-weight: 600;
     }
 
@@ -428,18 +428,18 @@
       height: 36px;
       background: none;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: var(--radius-lg);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--transition-base);
 
       &:hover {
-        background: #e4e7ec;
+        background: var(--color-border-light);
       }
     }
   }
 
   .modal-content {
-    padding: 1.5rem;
+    padding: var(--space-8);
     flex: 1;
     overflow-y: auto;
   }
@@ -447,7 +447,7 @@
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem 1rem;
+    gap: var(--space-6) var(--space-8);
 
     @media (max-width: 500px) {
       grid-template-columns: 1fr;
@@ -457,52 +457,52 @@
   .form-field {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: var(--space-3);
 
     label {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
+      gap: var(--space-4);
+      font-size: var(--font-size-base);
       font-weight: 500;
-      color: #344054;
+      color: var(--color-text);
     }
 
     .badge {
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.6875rem;
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-2xs);
       font-weight: 600;
       text-transform: uppercase;
 
       &.incremental {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: var(--color-primary-light);
+        color: var(--color-primary-dark);
       }
     }
 
     input {
-      padding: 0.625rem 0.875rem;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      color: #1d2939;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      padding: var(--space-5) 0.875rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      font-size: var(--font-size-base);
+      color: var(--color-text);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
 
       &:focus {
         outline: none;
-        border-color: #285597;
-        box-shadow: 0 0 0 3px rgba(40, 85, 151, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
 
       &:disabled {
-        background: #f9fafb;
-        color: #667085;
+        background: var(--color-bg-subtle);
+        color: var(--color-text-secondary);
         cursor: not-allowed;
       }
 
       &.readonly {
-        background: #f3f4f6;
+        background: var(--color-bg-muted);
       }
     }
   }
@@ -510,17 +510,17 @@
   .file-editor-wrapper {
     position: relative;
     min-height: 60px;
-    border: 1px solid #d0d5dd;
-    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
 
   .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid #e4e7ec;
-    background: #f9fafb;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-8);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
   }
 </style>

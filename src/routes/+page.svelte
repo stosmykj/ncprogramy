@@ -82,7 +82,7 @@
   .table-container {
     flex: 1;
     max-width: 100%;
-    background: #fff;
+    background: var(--color-bg);
     overflow: auto;
   }
 
@@ -91,7 +91,7 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-    font-size: 1.25rem;
-    color: #667085;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-secondary);
   }
 </style>

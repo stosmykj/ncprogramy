@@ -577,7 +577,7 @@ M30 ; konec programu`;
                 <div class="error-list">
                   {#if previewError}
                     <div class="error-item error">
-                      <Icon name="mdiAlertCircle" size={16} color="#dc3545" />
+                      <Icon name="mdiAlertCircle" size={16} color="var(--color-danger)" />
                       <span class="line-num">Náhled:</span>
                       <span class="error-msg">{previewError}</span>
                     </div>
@@ -587,7 +587,7 @@ M30 ; konec programu`;
                       <Icon
                         name={error.severity === 'error' ? 'mdiAlertCircle' : error.severity === 'warning' ? 'mdiAlert' : 'mdiInformation'}
                         size={16}
-                        color={error.severity === 'error' ? '#dc3545' : error.severity === 'warning' ? '#ffc107' : '#17a2b8'}
+                        color={error.severity === 'error' ? 'var(--color-danger)' : error.severity === 'warning' ? 'var(--color-warning)' : '#17a2b8'}
                       />
                       <span class="line-num">Řádek {error.line}:</span>
                       <span class="error-msg">{error.message}</span>
@@ -643,13 +643,13 @@ M30 ; konec programu`;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-bg-overlay);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 1.5rem;
+    z-index: var(--z-top);
+    padding: var(--space-10);
     animation: fadeIn 0.2s ease-out;
   }
 
@@ -663,15 +663,15 @@ M30 ; konec programu`;
   }
 
   .dialog-content {
-    background: #fff;
-    border-radius: 0.75rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 100%;
     height: 100%;
     max-width: 95vw;
     max-height: 95vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
     animation: slideUp 0.2s ease-out;
     overflow: hidden;
   }
@@ -691,38 +691,38 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    padding: var(--space-4) var(--space-8);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      color: #285597;
+      gap: var(--space-5);
+      color: var(--color-primary);
 
       .title {
-        font-size: 1rem;
+        font-size: var(--font-size-md);
         font-weight: 600;
       }
 
       .subtitle {
-        font-size: 0.75rem;
-        color: #666;
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
       }
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
+      gap: var(--space-3);
 
       .separator {
         width: 1px;
-        height: 1.25rem;
-        background: #dfe3e8;
-        margin: 0 0.375rem;
+        height: var(--space-10);
+        background: var(--color-border);
+        margin: 0 var(--space-3);
       }
     }
   }
@@ -730,31 +730,31 @@ M30 ; konec programu`;
   .examples-bar {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.5rem 1rem;
-    background: #e3f2fd;
-    border-bottom: 1px solid #dfe3e8;
+    gap: var(--space-5);
+    padding: var(--space-3) var(--space-8);
+    background: var(--color-primary-light);
+    border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 
     .examples-label {
-      font-size: 0.75rem;
-      color: #666;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
       font-weight: 500;
     }
 
     .example-btn {
-      padding: 0.25rem 0.625rem;
-      background: #285597;
-      border: 1px solid #285597;
-      border-radius: 0.25rem;
-      color: #fff;
-      font-size: 0.6875rem;
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-sm);
+      color: var(--color-bg);
+      font-size: var(--font-size-2xs);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all var(--transition-base);
 
       &:hover {
-        background: #1e3f6f;
-        border-color: #1e3f6f;
+        background: var(--color-primary-dark);
+        border-color: var(--color-primary-dark);
       }
     }
   }
@@ -764,7 +764,7 @@ M30 ; konec programu`;
     display: flex;
     overflow: hidden;
     min-height: 0;
-    background: #f5f5f5;
+    background: var(--color-bg-muted);
 
     &.split {
       &.horizontal {
@@ -788,42 +788,42 @@ M30 ; konec programu`;
         display: flex;
         flex-direction: column;
         max-height: 200px;
-        background: #fff;
-        border-top: 1px solid #dfe3e8;
+        background: var(--color-bg);
+        border-top: 1px solid var(--color-border);
         flex-shrink: 0;
 
         .error-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.5rem 0.75rem;
-          background: #f8f9fa;
-          border-bottom: 1px solid #dfe3e8;
-          color: #333;
-          font-size: 0.8125rem;
+          padding: var(--space-3) var(--space-6);
+          background: var(--color-bg-subtle);
+          border-bottom: 1px solid var(--color-border);
+          color: var(--color-text);
+          font-size: var(--font-size-sm);
           font-weight: 500;
 
           .error-title {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-4);
           }
 
           .copy-btn {
             background: transparent;
             border: none;
-            color: #666;
+            color: var(--color-text-secondary);
             cursor: pointer;
-            padding: 0.25rem;
+            padding: var(--space-2);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0.25rem;
-            transition: all 0.15s ease;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-base);
 
             &:hover {
-              color: #285597;
-              background: #e3f2fd;
+              color: var(--color-primary);
+              background: var(--color-primary-light);
             }
           }
         }
@@ -835,27 +835,27 @@ M30 ; konec programu`;
           .error-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
+            gap: var(--space-4);
+            padding: var(--space-2) var(--space-6);
             cursor: pointer;
-            transition: background 0.15s ease;
+            transition: background var(--transition-base);
 
             &:hover {
-              background: #f5f5f5;
+              background: var(--color-bg-muted);
             }
 
             .line-num {
-              color: #666;
-              font-size: 0.75rem;
+              color: var(--color-text-secondary);
+              font-size: var(--font-size-xs);
             }
 
             .error-msg {
-              color: #333;
-              font-size: 0.8125rem;
+              color: var(--color-text);
+              font-size: var(--font-size-sm);
             }
 
             &.error .error-msg {
-              color: #dc3545;
+              color: var(--color-danger);
             }
 
             &.warning .error-msg {
@@ -863,14 +863,14 @@ M30 ; konec programu`;
             }
 
             &.info .error-msg {
-              color: #285597;
+              color: var(--color-primary);
             }
           }
 
           .error-more {
-            padding: 0.375rem 0.75rem;
-            color: #666;
-            font-size: 0.75rem;
+            padding: var(--space-2) var(--space-6);
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
             font-style: italic;
           }
         }
@@ -883,30 +883,30 @@ M30 ; konec programu`;
       flex-direction: column;
       min-width: 0;
       min-height: 0;
-      border-top: 1px solid #dfe3e8;
-      background: #fff;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-bg);
 
       .dialog-body.vertical & {
         border-top: none;
-        border-left: 1px solid #dfe3e8;
+        border-left: 1px solid var(--color-border);
       }
 
       .preview-header {
         display: flex;
         align-items: center;
-        padding: 0.5rem 0.75rem;
-        background: #f8f9fa;
-        border-bottom: 1px solid #dfe3e8;
+        padding: var(--space-3) var(--space-6);
+        background: var(--color-bg-subtle);
+        border-bottom: 1px solid var(--color-border);
         flex-shrink: 0;
 
         h3 {
           display: flex;
           align-items: center;
-          gap: 0.375rem;
+          gap: var(--space-3);
           margin: 0;
-          font-size: 0.8125rem;
+          font-size: var(--font-size-sm);
           font-weight: 500;
-          color: #285597;
+          color: var(--color-primary);
         }
       }
     }
@@ -916,22 +916,22 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem 0.5rem;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.25rem;
-    color: #333;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--transition-base);
 
     &.btn-icon {
-      padding: 0.25rem 0.375rem;
+      padding: var(--space-2) var(--space-3);
     }
 
     &:hover:not(:disabled) {
-      background: #f0f0f0;
-      border-color: #285597;
-      color: #285597;
+      background: var(--color-bg-muted);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
     }
 
     &:active:not(:disabled) {
@@ -939,9 +939,9 @@ M30 ; konec programu`;
     }
 
     &.active {
-      background: #285597;
-      border-color: #285597;
-      color: #fff;
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: var(--color-bg);
     }
 
     &:disabled {
@@ -956,26 +956,26 @@ M30 ; konec programu`;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    color: #666;
-    background: #fff;
+    gap: var(--space-8);
+    color: var(--color-text-secondary);
+    background: var(--color-bg);
 
     p {
       margin: 0;
-      font-size: 0.875rem;
+      font-size: var(--font-size-base);
     }
 
     :global(svg) {
       animation: spin 1s linear infinite;
-      color: #285597;
+      color: var(--color-primary);
     }
 
     &.error {
-      color: #dc3545;
+      color: var(--color-danger);
 
       :global(svg) {
         animation: none;
-        color: #dc3545;
+        color: var(--color-danger);
       }
     }
   }

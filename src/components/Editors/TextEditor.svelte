@@ -139,7 +139,7 @@
 
     &.has-error {
       input {
-        background: #fef2f2;
+        background: var(--color-danger-light);
         color: #991b1b;
       }
     }
@@ -147,7 +147,7 @@
     input {
       width: 100%;
       height: 100%;
-      padding: 0.5rem;
+      padding: var(--space-3);
       border: none;
       outline: none;
       font-family: inherit;
@@ -163,8 +163,8 @@
       position: absolute;
       bottom: -20px;
       left: 0;
-      font-size: 0.6875rem;
-      color: #dc2626;
+      font-size: var(--font-size-2xs);
+      color: var(--color-danger);
       white-space: nowrap;
     }
 
@@ -173,34 +173,34 @@
       top: 100%;
       left: 0;
       right: 0;
-      margin-top: 0.25rem;
-      background: white;
-      border: 1px solid #e4e7ec;
-      border-radius: 0.375rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-top: var(--space-2);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
       max-height: 200px;
       overflow-y: auto;
-      z-index: 100;
+      z-index: var(--z-dropdown);
 
       .suggestion-item {
         width: 100%;
-        padding: 0.5rem 0.75rem;
+        padding: var(--space-3) var(--space-4);
         background: none;
         border: none;
         text-align: left;
         cursor: pointer;
-        font-size: 0.875rem;
-        color: #344054;
-        transition: 0.1s ease;
+        font-size: var(--font-size-sm);
+        color: var(--color-text);
+        transition: var(--transition-fast);
 
         &:hover,
         &.selected {
-          background: #f0f9ff;
-          color: #285597;
+          background: var(--color-primary-lighter);
+          color: var(--color-primary);
         }
 
         &:not(:last-child) {
-          border-bottom: 1px solid #f2f4f7;
+          border-bottom: 1px solid var(--color-border-lighter);
         }
       }
     }

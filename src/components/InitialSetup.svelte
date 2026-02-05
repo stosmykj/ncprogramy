@@ -22,7 +22,7 @@
 <div class="initial-setup">
   <div class="setup-card">
     <div class="header">
-      <Icon name="mdiTableLarge" size={48} color="#285597" />
+      <Icon name="mdiTableLarge" size={48} color="var(--color-primary)" />
       <h1>Vítejte v NC Programy</h1>
       <p>Pro začátek je potřeba nastavit strukturu tabulky</p>
     </div>
@@ -30,40 +30,40 @@
     <div class="options">
       <button class="option-card" onclick={openColumnManager}>
         <div class="option-icon">
-          <Icon name="mdiViewColumn" size={32} color="#285597" />
+          <Icon name="mdiViewColumn" size={32} color="var(--color-primary)" />
         </div>
         <div class="option-content">
           <h3>Vytvořit novou strukturu</h3>
           <p>Definujte vlastní sloupce a začněte s prázdnou databází</p>
         </div>
         <div class="option-arrow">
-          <Icon name="mdiChevronRight" size={24} color="#667085" />
+          <Icon name="mdiChevronRight" size={24} color="var(--color-text-secondary)" />
         </div>
       </button>
 
       <button class="option-card" onclick={openImportDialog}>
         <div class="option-icon">
-          <Icon name="mdiImport" size={32} color="#285597" />
+          <Icon name="mdiImport" size={32} color="var(--color-primary)" />
         </div>
         <div class="option-content">
           <h3>Import ze staré aplikace</h3>
           <p>Importujte sloupce a data z původní verze NC Programy</p>
         </div>
         <div class="option-arrow">
-          <Icon name="mdiChevronRight" size={24} color="#667085" />
+          <Icon name="mdiChevronRight" size={24} color="var(--color-text-secondary)" />
         </div>
       </button>
 
       <button class="option-card" onclick={openBackupManager}>
         <div class="option-icon">
-          <Icon name="mdiBackupRestore" size={32} color="#285597" />
+          <Icon name="mdiBackupRestore" size={32} color="var(--color-primary)" />
         </div>
         <div class="option-content">
           <h3>Obnovit ze zálohy</h3>
           <p>Obnovte data z dříve vytvořené zálohy aplikace</p>
         </div>
         <div class="option-arrow">
-          <Icon name="mdiChevronRight" size={24} color="#667085" />
+          <Icon name="mdiChevronRight" size={24} color="var(--color-text-secondary)" />
         </div>
       </button>
     </div>
@@ -82,14 +82,14 @@
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 7rem);
-    padding: 2rem;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    padding: var(--space-10);
+    background: linear-gradient(135deg, var(--color-bg-subtle) 0%, var(--color-bg-muted) 100%);
   }
 
   .setup-card {
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
     max-width: 600px;
     width: 100%;
     overflow: hidden;
@@ -97,56 +97,56 @@
 
   .header {
     text-align: center;
-    padding: 2.5rem 2rem 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    padding: var(--space-10) var(--space-10) var(--space-8);
+    border-bottom: 1px solid var(--color-border-light);
 
     h1 {
-      margin: 1rem 0 0.5rem;
-      font-size: 1.75rem;
+      margin: var(--space-6) 0 var(--space-3);
+      font-size: var(--font-size-xl);
       font-weight: 600;
-      color: #1d2939;
+      color: var(--color-text);
     }
 
     p {
       margin: 0;
-      color: #667085;
-      font-size: 1rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-md);
     }
   }
 
   .options {
-    padding: 1.5rem;
+    padding: var(--space-8);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-6);
   }
 
   .option-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    background: #f9fafb;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.75rem;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    background: var(--color-bg-subtle);
+    border: 2px solid var(--color-border-light);
+    border-radius: var(--radius-xl);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
     text-align: left;
 
     &:hover:not(:disabled) {
-      border-color: #285597;
-      background: #f0f4ff;
+      border-color: var(--color-primary);
+      background: var(--color-primary-lighter);
     }
 
     .option-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 56px;
-      height: 56px;
-      background: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 48px;
+      height: 48px;
+      background: var(--color-bg);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
       flex-shrink: 0;
     }
 
@@ -154,16 +154,16 @@
       flex: 1;
 
       h3 {
-        margin: 0 0 0.25rem;
-        font-size: 1.1rem;
+        margin: 0 0 var(--space-2);
+        font-size: var(--font-size-lg);
         font-weight: 600;
-        color: #1d2939;
+        color: var(--color-text);
       }
 
       p {
         margin: 0;
-        font-size: 0.875rem;
-        color: #667085;
+        font-size: var(--font-size-base);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -173,14 +173,14 @@
   }
 
   .footer {
-    padding: 1rem 2rem 1.5rem;
+    padding: var(--space-6) var(--space-10) var(--space-8);
     text-align: center;
-    background: #f9fafb;
+    background: var(--color-bg-subtle);
 
     p {
       margin: 0;
-      font-size: 0.875rem;
-      color: #98a2b3;
+      font-size: var(--font-size-base);
+      color: var(--color-text-muted);
     }
   }
 

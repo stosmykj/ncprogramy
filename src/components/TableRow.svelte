@@ -42,19 +42,18 @@
 </tr>
 
 <style lang="scss">
-  $row-hover: #f0f4f8;
-
   tr {
     display: flex;
     align-items: center;
     min-width: max-content;
+    height: var(--table-row-height);
   }
 
   tr:nth-child(even) {
-    background: #f6f6f6;
+    background: var(--color-bg-subtle);
   }
 
   tr:hover {
-    background: $row-hover;
+    background: var(--color-primary-light);
   }
 </style>

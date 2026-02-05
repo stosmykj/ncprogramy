@@ -233,15 +233,15 @@
     display: flex;
     width: 100%;
     height: 100%;
-    padding: 0.625rem;
+    padding: var(--space-4);
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-2);
   }
 
   .file-info-container {
     display: flex;
-    border-radius: 0.25rem;
-    transition: 0.15s ease;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-base);
     width: 100%;
     max-width: calc(100% - 95px);
     min-height: 50px;
@@ -251,73 +251,74 @@
 
     &:focus {
       outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+      border-color: var(--color-primary);
+      box-shadow: var(--input-focus-ring);
     }
 
     &:hover {
-      background: rgba(74, 144, 226, 0.05);
+      background: rgba(40, 85, 151, 0.05);
     }
   }
 
   .file-details {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-2);
     width: 100%;
 
     .file-name-row {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--space-2);
       font-weight: 500;
 
       .file-extension-badge {
-        background: #285597;
-        color: white;
-        padding: 0.3125rem 0.3125rem;
-        border-radius: 0.25rem;
+        background: var(--color-primary);
+        color: var(--color-text-on-primary);
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
       }
 
       .file-name-text {
         flex: 1;
-        height: 30px;
-        padding: 0 0.3125rem;
+        height: 1.75rem;
+        padding: 0 var(--space-2);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 1rem;
-        color: #1f2937;
-        border: 1px solid #1f2937;
-        border-radius: 0.3125rem;
+        font-size: var(--font-size-sm);
+        color: var(--color-text);
+        border: var(--input-border);
+        border-radius: var(--radius-sm);
       }
     }
 
     .file-path-row {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      font-size: 0.6875rem;
-      color: #285597;
+      gap: var(--space-2);
+      font-size: var(--font-size-2xs);
+      color: var(--color-primary);
 
       .path-value {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: 'Courier New', monospace;
+        font-family: var(--font-mono);
       }
     }
   }
 
   .file-placeholder {
-    color: #9ca3af;
+    color: var(--color-text-muted);
     font-style: italic;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
   }
 
   .file-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-2);
   }
 </style>

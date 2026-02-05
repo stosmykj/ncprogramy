@@ -429,9 +429,9 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.375rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
@@ -439,45 +439,45 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border-light);
 
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      color: #333;
-      font-size: 0.8125rem;
+      gap: var(--space-8);
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
 
       .filename {
         display: flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: var(--space-3);
         font-weight: 500;
-        color: #285597;
+        color: var(--color-primary);
 
         .modified-indicator {
-          color: #ff9800;
-          font-size: 1rem;
+          color: var(--color-warning);
+          font-size: var(--font-size-md);
         }
       }
 
       .position {
-        color: #666;
+        color: var(--color-text-secondary);
       }
     }
 
     .toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-6);
 
       .action-group {
         display: flex;
-        gap: 0.25rem;
-        padding: 0 0.5rem;
-        border-right: 1px solid #dfe3e8;
+        gap: var(--space-2);
+        padding: 0 var(--space-4);
+        border-right: 1px solid var(--color-border-light);
 
         &:last-child {
           border-right: none;
@@ -488,19 +488,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.25rem 0.5rem;
+        padding: var(--space-2) var(--space-4);
         background: transparent;
         border: 1px solid transparent;
-        border-radius: 0.25rem;
-        color: #666;
+        border-radius: var(--radius-sm);
+        color: var(--color-text-secondary);
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all var(--transition-base);
         position: relative;
 
         &:hover:not(:disabled) {
-          background: #e3f2fd;
-          border-color: #285597;
-          color: #285597;
+          background: var(--color-primary-light);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
         }
 
         &:active:not(:disabled) {
@@ -508,9 +508,9 @@
         }
 
         &.active {
-          background: #285597;
-          border-color: #285597;
-          color: #fff;
+          background: var(--color-primary);
+          border-color: var(--color-primary);
+          color: var(--color-text-on-primary);
         }
 
         &:disabled {
@@ -530,7 +530,7 @@
 
     // Center line numbers in Monaco editor
     :global(.monaco-editor .lines-content .view-lines) {
-      padding-left: 0.3125rem;
+      padding-left: var(--space-3);
     }
     :global(.monaco-editor .margin-view-overlays .line-numbers) {
       text-align: center;
@@ -545,8 +545,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
-      color: #666;
+      gap: var(--space-6);
+      color: var(--color-text-secondary);
     }
 
     .monaco-container {

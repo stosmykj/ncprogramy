@@ -619,24 +619,24 @@
   .gcode-preview {
     display: flex;
     flex-direction: column;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.375rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
   .preview-toolbar {
     display: flex;
-    gap: 1rem;
-    padding: 0.5rem 0.75rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border-light);
 
     .toolbar-group {
       display: flex;
-      gap: 0.25rem;
-      padding: 0 0.5rem;
-      border-right: 1px solid #dfe3e8;
+      gap: var(--space-2);
+      padding: 0 var(--space-4);
+      border-right: 1px solid var(--color-border-light);
 
       &:first-child {
         padding-left: 0;
@@ -651,18 +651,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.25rem 0.5rem;
+      padding: var(--space-2) var(--space-4);
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 0.25rem;
-      color: #666;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-secondary);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all var(--transition-base);
 
       &:hover:not(:disabled) {
-        background: #e3f2fd;
-        border-color: #285597;
-        color: #285597;
+        background: var(--color-primary-light);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
       }
 
       &:active:not(:disabled) {
@@ -670,9 +670,9 @@
       }
 
       &.active {
-        background: #285597;
-        border-color: #285597;
-        color: #fff;
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: var(--color-text-on-primary);
       }
 
       &:disabled {
@@ -687,7 +687,7 @@
     flex: 1;
     min-height: 0;
     cursor: move;
-    background: #fafafa;
+    background: var(--color-bg-subtle);
 
     .loading {
       position: absolute;
@@ -697,8 +697,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
-      color: #666;
+      gap: var(--space-6);
+      color: var(--color-text-secondary);
       z-index: 10;
     }
 
@@ -711,7 +711,7 @@
 
   :global(.gcode-preview .loading svg) {
     animation: spin 1s linear infinite;
-    color: #285597;
+    color: var(--color-primary);
   }
 
   @keyframes spin {

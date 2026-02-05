@@ -180,46 +180,46 @@
 
 <style lang="scss">
   .condition-group {
-    border: 1px solid #ddd;
-    border-radius: 0.375rem;
-    padding: 0.75rem;
-    background: #fff;
-    margin-bottom: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    background: var(--color-bg);
+    margin-bottom: var(--space-3);
 
     &[data-level='1'] {
-      background: #f8f9fa;
-      border-color: #ccc;
+      background: var(--color-bg-subtle);
+      border-color: var(--color-border);
     }
 
     &[data-level='2'] {
-      background: #f0f0f0;
-      border-color: #bbb;
+      background: var(--color-bg-muted);
+      border-color: var(--color-border);
     }
 
     &[data-level='3'] {
-      background: #e8e8e8;
-      border-color: #aaa;
+      background: var(--color-border-light);
+      border-color: var(--color-border);
     }
   }
 
   .group-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
 
     .logic-toggle {
-      padding: 0.25rem 0.75rem;
-      background: #183868;
-      color: white;
+      padding: var(--space-2) var(--space-4);
+      background: var(--color-primary-dark);
+      color: var(--color-text-on-primary);
       border: none;
-      border-radius: 0.25rem;
+      border-radius: var(--radius-sm);
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background var(--transition-base);
 
       &:hover {
-        background: #0d2847;
+        background: var(--color-primary-hover);
       }
     }
   }
@@ -227,24 +227,24 @@
   .conditions-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .condition-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 0.25rem;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
 
     .logic-label {
-      padding: 0.25rem 0.5rem;
-      background: #183868;
-      color: white;
-      border-radius: 3px;
-      font-size: 0.6875rem;
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-primary-dark);
+      color: var(--color-text-on-primary);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-2xs);
       font-weight: bold;
       min-width: 2.5rem;
       text-align: center;
@@ -253,53 +253,55 @@
     .condition-select {
       flex: 1;
       min-width: 120px;
-      padding: 0.375rem 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.25rem;
-      font-size: 0.8125rem;
+      padding: var(--space-2) var(--space-3);
+      border: var(--input-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
 
       &:focus {
         outline: none;
-        border-color: #183868;
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
     }
 
     .condition-input {
       flex: 1;
       min-width: 150px;
-      padding: 0.375rem 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.25rem;
-      font-size: 0.8125rem;
+      padding: var(--space-2) var(--space-3);
+      border: var(--input-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
 
       &:focus {
         outline: none;
-        border-color: #183868;
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
     }
   }
 
   .group-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
   }
 
   .btn-small {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.375rem 0.625rem;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg);
+    border: var(--input-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 
     &:hover {
-      background: #f5f5f5;
-      border-color: #183868;
+      background: var(--color-bg-muted);
+      border-color: var(--color-primary);
     }
   }
 
@@ -307,37 +309,37 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem;
+    padding: var(--space-2);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 
     &.btn-danger {
-      color: #dc3545;
+      color: var(--color-danger);
 
       &:hover {
-        background: #dc3545;
-        color: white;
-        border-color: #dc3545;
+        background: var(--color-danger);
+        color: var(--color-text-on-primary);
+        border-color: var(--color-danger);
       }
     }
   }
 
   .nested-groups {
-    margin-top: 0.75rem;
-    margin-left: 1.25rem;
-    padding-left: 0.75rem;
-    border-left: 2px solid #183868;
+    margin-top: var(--space-4);
+    margin-left: var(--space-8);
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--color-primary-dark);
 
     .logic-connector {
-      padding: 0.25rem 0.5rem;
-      margin-bottom: 0.5rem;
-      background: #183868;
-      color: white;
-      border-radius: 3px;
-      font-size: 0.6875rem;
+      padding: var(--space-1) var(--space-3);
+      margin-bottom: var(--space-3);
+      background: var(--color-primary-dark);
+      color: var(--color-text-on-primary);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-2xs);
       font-weight: bold;
       display: inline-block;
     }

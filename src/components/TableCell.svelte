@@ -228,19 +228,17 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <style lang="scss">
-  $primary-color: #4a90e2;
-  $border-color: #a8a8a8;
-
   td {
     display: flex;
     position: relative;
     width: 100%;
-    height: 2rem;
-    padding: 0 0.5rem;
+    height: var(--table-row-height);
+    padding: 0 var(--space-3);
+    font-size: var(--font-size-sm);
     text-align: left;
     align-items: center;
     white-space: nowrap;
-    border-right: 1px solid $border-color;
+    border-right: 1px solid var(--color-border);
     overflow: hidden;
 
     &.preview {
@@ -248,10 +246,10 @@
     }
 
     &.focused {
-      border: 2px solid $border-color;
+      border: 2px solid var(--color-border);
       &.editable {
-        border: 2px solid $primary-color;
-        background: rgba($primary-color, 0.05);
+        border: 2px solid var(--color-primary);
+        background: rgba(40, 85, 151, 0.05);
       }
     }
 
