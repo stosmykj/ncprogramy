@@ -4,7 +4,7 @@
  */
 
 import type * as monaco from 'monaco-editor';
-import { G_CODES, M_CODES, MIKROPROG_EXTENSIONS } from './commands';
+import { G_CODES, M_CODES, MIKROPROG_EXTENSIONS, type GCodeCommand } from './commands';
 import { GCodeParser } from './parser';
 import { GCodeValidator } from './validator';
 import { SNIPPETS } from '../snippetsProcessor.svelte';
@@ -206,12 +206,10 @@ export function createCompletionProvider(
       if (gCodeMatch) {
         const gCodeNum = gCodeMatch[1];
         // Try multiple formats: G01, G1, G100 (with and without leading zero)
-        const allGCodes = { ...G_CODES, ...MIKROPROG_EXTENSIONS };
+        const allGCodes = { ...G_CODES, ...MIKROPROG_EXTENSIONS } as Record<string, GCodeCommand>;
         const gCodeKeyPadded = `G${gCodeNum.includes('.') ? gCodeNum : gCodeNum.padStart(2, '0')}`;
         const gCodeKeyRaw = `G${gCodeNum}`;
-        const gCode = (allGCodes[gCodeKeyPadded] || allGCodes[gCodeKeyRaw]) as
-          | (typeof G_CODES)[keyof typeof G_CODES]
-          | undefined;
+        const gCode = allGCodes[gCodeKeyPadded] || allGCodes[gCodeKeyRaw];
         const gCodeKey = allGCodes[gCodeKeyPadded] ? gCodeKeyPadded : gCodeKeyRaw;
 
         if (gCode && gCode.parameters) {

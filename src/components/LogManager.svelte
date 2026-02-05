@@ -73,8 +73,9 @@
 </script>
 
 {#if SETTINGS_VARS.logManagerOpened}
-  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()}>
-    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()} role="presentation">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
       <div class="modal-header">
         <div class="header-left">
           <h2>Správa logů</h2>

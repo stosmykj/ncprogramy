@@ -331,7 +331,7 @@
     ctx.fillStyle = '#333';
     ctx.font = '12px monospace';
     stats.forEach((stat, i) => {
-      ctx.fillText(stat, 20, 30 + i * 18);
+      ctx!.fillText(stat, 20, 30 + i * 18);
     });
   }
 

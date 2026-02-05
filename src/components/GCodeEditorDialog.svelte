@@ -886,11 +886,6 @@ M30 ; konec programu`;
       border-top: 1px solid var(--color-border);
       background: var(--color-bg);
 
-      .dialog-body.vertical & {
-        border-top: none;
-        border-left: 1px solid var(--color-border);
-      }
-
       .preview-header {
         display: flex;
         align-items: center;

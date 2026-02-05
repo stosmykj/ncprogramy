@@ -336,26 +336,6 @@
       color: var(--color-text);
     }
 
-    .close-button {
-      width: 1.5rem;
-      height: 1.5rem;
-      padding: 0;
-      border: none;
-      background: transparent;
-      color: var(--color-text-secondary);
-      font-size: var(--font-size-xl);
-      line-height: 1;
-      cursor: pointer;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &:hover {
-        background: var(--color-bg-muted);
-        color: var(--color-text);
-      }
-    }
   }
 
   .filter-body {

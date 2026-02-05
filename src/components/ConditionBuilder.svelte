@@ -138,7 +138,7 @@
                 placeholder="Hodnota"
               />
             {:else if getColumnType(condition.column) === 'date'}
-              <DatePicker bind:value={condition.value} type="date" class="condition-input" />
+              <DatePicker bind:value={condition.value as Date | null} type="date" class="condition-input" />
             {:else}
               <input
                 type="text"
@@ -208,20 +208,6 @@
     gap: var(--space-3);
     margin-bottom: var(--space-4);
 
-    .logic-toggle {
-      padding: var(--space-2) var(--space-4);
-      background: var(--color-primary-dark);
-      color: var(--color-text-on-primary);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-weight: bold;
-      cursor: pointer;
-      transition: background var(--transition-base);
-
-      &:hover {
-        background: var(--color-primary-hover);
-      }
-    }
   }
 
   .conditions-list {
@@ -285,46 +271,6 @@
     display: flex;
     gap: var(--space-3);
     margin-top: var(--space-4);
-  }
-
-  .btn-small {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    background: var(--color-bg);
-    border: var(--input-border);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    cursor: pointer;
-    transition: all var(--transition-base);
-
-    &:hover {
-      background: var(--color-bg-muted);
-      border-color: var(--color-primary);
-    }
-  }
-
-  .btn-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-base);
-
-    &.btn-danger {
-      color: var(--color-danger);
-
-      &:hover {
-        background: var(--color-danger);
-        color: var(--color-text-on-primary);
-        border-color: var(--color-danger);
-      }
-    }
   }
 
   .nested-groups {

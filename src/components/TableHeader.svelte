@@ -243,8 +243,7 @@
 
   <!-- Context Menu -->
   {#if showContextMenu}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="context-menu-overlay" onclick={closeContextMenu}></div>
+    <div class="context-menu-overlay" onclick={closeContextMenu} onkeydown={(e) => e.key === 'Escape' && closeContextMenu()} role="presentation"></div>
     <div
       class="context-menu"
       style="top: {contextMenuPos.y}px; left: {contextMenuPos.x}px;"

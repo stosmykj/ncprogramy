@@ -508,12 +508,6 @@
           transform: scale(0.95);
         }
 
-        &.active {
-          background: var(--color-primary);
-          border-color: var(--color-primary);
-          color: var(--color-text-on-primary);
-        }
-
         &:disabled {
           opacity: 0.4;
           cursor: not-allowed;

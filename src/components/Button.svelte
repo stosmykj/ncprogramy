@@ -20,6 +20,7 @@
     success?: boolean;
     warning?: boolean;
     selected?: boolean;
+    small?: boolean;
     tabIndex?: number;
   } = $props();
 
@@ -64,6 +65,7 @@
   class:disabled={props.disabled}
   class:warning={props.warning}
   class:selected={props.selected}
+  class:small={props.small}
   tabindex={props.tabIndex}
   {onclick}
 >
@@ -163,6 +165,12 @@
       &.selected {
         background: var(--color-warning-hover);
       }
+    }
+
+    &.small {
+      height: 1.5rem;
+      font-size: var(--font-size-xs);
+      padding: 0 var(--space-3);
     }
 
     &.disabled {

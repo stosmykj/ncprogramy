@@ -80,6 +80,9 @@ import {
   mdiSortAscending,
   mdiSortDescending,
   mdiSortVariantRemove,
+  mdiFileDocument,
+  mdiTextBoxOutline,
+  mdiCalendarRemove,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -164,6 +167,9 @@ export const iconMap = {
   mdiSortAscending,
   mdiSortDescending,
   mdiSortVariantRemove,
+  mdiFileDocument,
+  mdiTextBoxOutline,
+  mdiCalendarRemove,
 } as const;
 
 export type IconName = keyof typeof iconMap;

@@ -80,37 +80,6 @@
 </Button>
 
 <style lang="scss">
-  .shortcuts-indicator {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-6);
-    background: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-md);
-    color: var(--color-text-on-primary);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    transition: all var(--transition-base);
-
-    &:hover {
-      background: var(--color-primary-hover);
-      border-color: var(--color-primary);
-      color: var(--color-text-on-primary);
-    }
-
-    kbd {
-      padding: var(--space-1) var(--space-3);
-      background: var(--color-primary-hover);
-      border: 1px solid var(--color-primary);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-size-xs);
-      font-family: var(--font-mono);
-      color: var(--color-text-on-primary);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-
   .shortcuts-modal-overlay {
     position: fixed;
     top: 0;
@@ -170,24 +139,6 @@
       font-weight: 600;
     }
 
-    .close-btn {
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      border-radius: var(--radius-md);
-      color: var(--color-text-on-primary);
-      cursor: pointer;
-      transition: all var(--transition-base);
-
-      &:hover {
-        background: var(--color-primary-hover);
-        color: var(--color-text-on-primary);
-      }
-    }
   }
 
   .shortcuts-list {

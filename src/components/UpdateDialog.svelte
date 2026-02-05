@@ -436,10 +436,6 @@
     div {
       display: flex;
       gap: var(--space-6);
-
-      button {
-        height: 60px;
-      }
     }
   }
 </style>

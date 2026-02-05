@@ -221,9 +221,6 @@
     animation: slideIn var(--transition-base) ease-out;
     pointer-events: auto;
 
-    &.preview {
-      border-top-right-radius: 0;
-    }
   }
 
   @keyframes slideIn {

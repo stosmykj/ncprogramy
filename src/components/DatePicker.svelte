@@ -176,28 +176,6 @@
         color: var(--color-primary);
       }
 
-      &.selected {
-        background: var(--color-primary) !important;
-        color: var(--color-text-on-primary) !important;
-        font-weight: 600;
-      }
-
-      &.today {
-        border: 1px solid var(--color-primary);
-        font-weight: 600;
-      }
-
-      &.disabled {
-        color: var(--color-border);
-        cursor: not-allowed;
-        &:hover {
-          background: transparent;
-        }
-      }
-
-      &.outside-month {
-        color: var(--color-text-muted);
-      }
     }
 
     // Time picker section

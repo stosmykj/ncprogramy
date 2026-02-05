@@ -98,50 +98,55 @@ export class FormattingRule {
       value = value.toISOString().split('T')[0]; // YYYY-MM-DD format
     }
 
+    // Normalize condition value to string for comparisons
+    const condValue = condition.value instanceof Date
+      ? condition.value.toISOString().split('T')[0]
+      : condition.value;
+
     switch (condition.operator) {
       case 'equals':
-        return String(value) === condition.value;
+        return String(value) === condValue;
       case 'notEquals':
-        return String(value) !== condition.value;
+        return String(value) !== condValue;
       case 'gt':
         // For dates and numbers
         if (
           typeof value === 'string' &&
-          condition.value &&
-          condition.value.match(/^\d{4}-\d{2}-\d{2}/)
+          typeof condValue === 'string' &&
+          condValue.match(/^\d{4}-\d{2}-\d{2}/)
         ) {
-          return value > condition.value;
+          return value > condValue;
         }
-        return Number(value) > Number(condition.value);
+        return Number(value) > Number(condValue);
       case 'gte':
         if (
           typeof value === 'string' &&
-          condition.value &&
-          condition.value.match(/^\d{4}-\d{2}-\d{2}/)
+          typeof condValue === 'string' &&
+          condValue.match(/^\d{4}-\d{2}-\d{2}/)
         ) {
-          return value >= condition.value;
+          return value >= condValue;
         }
-        return Number(value) >= Number(condition.value);
+        return Number(value) >= Number(condValue);
       case 'lt':
         if (
           typeof value === 'string' &&
-          condition.value &&
-          condition.value.match(/^\d{4}-\d{2}-\d{2}/)
+          typeof condValue === 'string' &&
+          condValue.match(/^\d{4}-\d{2}-\d{2}/)
         ) {
-          return value < condition.value;
+          return value < condValue;
         }
-        return Number(value) < Number(condition.value);
+        return Number(value) < Number(condValue);
       case 'lte':
         if (
           typeof value === 'string' &&
-          condition.value &&
-          condition.value.match(/^\d{4}-\d{2}-\d{2}/)
+          typeof condValue === 'string' &&
+          condValue.match(/^\d{4}-\d{2}-\d{2}/)
         ) {
-          return value <= condition.value;
+          return value <= condValue;
         }
-        return Number(value) <= Number(condition.value);
+        return Number(value) <= Number(condValue);
       case 'contains':
-        return String(value).includes(condition.value || '');
+        return String(value).includes(String(condValue || ''));
       case 'empty':
         return value === null || value === undefined || value === '';
       case 'notEmpty':

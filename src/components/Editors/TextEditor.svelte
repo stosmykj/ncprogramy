@@ -182,27 +182,6 @@
       overflow-y: auto;
       z-index: var(--z-dropdown);
 
-      .suggestion-item {
-        width: 100%;
-        padding: var(--space-3) var(--space-4);
-        background: none;
-        border: none;
-        text-align: left;
-        cursor: pointer;
-        font-size: var(--font-size-sm);
-        color: var(--color-text);
-        transition: var(--transition-fast);
-
-        &:hover,
-        &.selected {
-          background: var(--color-primary-lighter);
-          color: var(--color-primary);
-        }
-
-        &:not(:last-child) {
-          border-bottom: 1px solid var(--color-border-lighter);
-        }
-      }
     }
   }
 </style>

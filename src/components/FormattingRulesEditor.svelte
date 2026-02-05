@@ -470,20 +470,6 @@
       color: var(--color-primary-dark);
     }
 
-    .btn-close {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-2);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: var(--color-text-secondary);
-
-      &:hover {
-        color: var(--color-text);
-      }
-    }
   }
 
   .editor-content {

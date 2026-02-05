@@ -4,12 +4,12 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 // and cannot be tested in isolation without complex mocking
 describe.skip('Toast System', () => {
   const TOASTS: any[] = [];
-  const showToast = () => {};
-  const showSuccess = () => {};
-  const showError = () => {};
-  const showWarning = () => {};
-  const showInfo = () => {};
-  const removeToast = () => {};
+  const showToast = (_message: string, _type?: string, _duration?: number) => {};
+  const showSuccess = (_message: string, _duration?: number) => {};
+  const showError = (_message: string, _duration?: number) => {};
+  const showWarning = (_message: string, _duration?: number) => {};
+  const showInfo = (_message: string, _duration?: number) => {};
+  const removeToast = (_id: string) => {};
   beforeEach(() => {
     // Clear toasts before each test
     TOASTS.length = 0;

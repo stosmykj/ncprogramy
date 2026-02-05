@@ -139,8 +139,9 @@
 </script>
 
 {#if SETTINGS_VARS.backupManagerOpened}
-  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()}>
-    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()} role="presentation">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
       <div class="modal-header">
         <div class="header-left">
           <h2>Správa záloh</h2>
@@ -218,8 +219,9 @@
 
   <!-- Clear Confirmation Dialog -->
   {#if showClearDialog}
-    <div class="dialog-overlay" onclick={closeClearDialog}>
-      <div class="dialog" onclick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true">
+    <div class="dialog-overlay" onclick={closeClearDialog} onkeydown={(e) => e.key === 'Escape' && closeClearDialog()} role="presentation">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <div class="dialog" onclick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" tabindex="-1">
         <div class="dialog-header">
           <Icon name="mdiAlertCircle" size={24} color="#ef4444" />
           <h3>Vyčistit zálohy</h3>
