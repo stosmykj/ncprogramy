@@ -8,6 +8,7 @@ import { G_CODES, M_CODES, MIKROPROG_EXTENSIONS, type GCodeCommand } from './com
 import { GCodeParser } from './parser';
 import { GCodeValidator } from './validator';
 import { SNIPPETS } from '../snippetsProcessor.svelte';
+import { logger } from '../logger';
 
 export const GCODE_LANGUAGE_ID = 'gcode';
 
@@ -555,21 +556,21 @@ let isLanguageRegistered = false;
 
 // Register G-code language with Monaco
 export function registerGCodeLanguage(monacoInstance: typeof monaco): void {
-  console.log('[monaco-config] registerGCodeLanguage started');
+  logger.debug('[monaco-config] registerGCodeLanguage started');
 
   // Prevent duplicate registration
   if (isLanguageRegistered) {
-    console.log('[monaco-config] Language already registered, skipping');
+    logger.debug('[monaco-config] Language already registered, skipping');
     return;
   }
 
   // Register language
-  console.log('[monaco-config] Registering language...');
+  logger.debug('[monaco-config] Registering language...');
   monacoInstance.languages.register({ id: GCODE_LANGUAGE_ID });
   isLanguageRegistered = true;
 
   // Set language configuration
-  console.log('[monaco-config] Setting language configuration...');
+  logger.debug('[monaco-config] Setting language configuration...');
   monacoInstance.languages.setLanguageConfiguration(GCODE_LANGUAGE_ID, {
     comments: {
       lineComment: ';',
@@ -580,32 +581,32 @@ export function registerGCodeLanguage(monacoInstance: typeof monaco): void {
   });
 
   // Set tokens provider
-  console.log('[monaco-config] Setting tokens provider...');
+  logger.debug('[monaco-config] Setting tokens provider...');
   monacoInstance.languages.setMonarchTokensProvider(GCODE_LANGUAGE_ID, gcodeLanguage);
 
   // Define theme
-  console.log('[monaco-config] Defining theme...');
+  logger.debug('[monaco-config] Defining theme...');
   monacoInstance.editor.defineTheme('gcode-theme', gcodeTheme);
 
   // Register completion provider
-  console.log('[monaco-config] Registering completion provider...');
+  logger.debug('[monaco-config] Registering completion provider...');
   monacoInstance.languages.registerCompletionItemProvider(
     GCODE_LANGUAGE_ID,
     createCompletionProvider(monacoInstance)
   );
 
   // Register hover provider
-  console.log('[monaco-config] Registering hover provider...');
+  logger.debug('[monaco-config] Registering hover provider...');
   monacoInstance.languages.registerHoverProvider(GCODE_LANGUAGE_ID, createHoverProvider());
 
   // Register code validation
-  console.log('[monaco-config] Setting up validation...');
+  logger.debug('[monaco-config] Setting up validation...');
   let validationTimeout: ReturnType<typeof setTimeout> | null = null;
 
   monacoInstance.editor.onDidCreateModel((model) => {
-    console.log('[monaco-config] onDidCreateModel called, language:', model.getLanguageId());
+    logger.debug('[monaco-config] onDidCreateModel called, language:', model.getLanguageId());
     if (model.getLanguageId() === GCODE_LANGUAGE_ID) {
-      console.log('[monaco-config] Setting up validation for G-code model');
+      logger.debug('[monaco-config] Setting up validation for G-code model');
 
       // Skip validation for very short content (loading placeholder)
       const shouldValidate = () => {
@@ -614,25 +615,25 @@ export function registerGCodeLanguage(monacoInstance: typeof monaco): void {
       };
 
       const validate = () => {
-        console.log('[monaco-config] validate() called');
+        logger.debug('[monaco-config] validate() called');
         if (!shouldValidate()) {
-          console.log('[monaco-config] Skipping validation for placeholder content');
+          logger.debug('[monaco-config] Skipping validation for placeholder content');
           return;
         }
 
         // Use setTimeout + requestAnimationFrame for maximum yielding
         setTimeout(() => {
           requestAnimationFrame(() => {
-            console.log('[monaco-config] Validation requestAnimationFrame callback');
+            logger.debug('[monaco-config] Validation requestAnimationFrame callback');
             try {
-              console.log('[monaco-config] Parsing for validation...');
+              logger.debug('[monaco-config] Parsing for validation...');
               const parser = new GCodeParser(model.getValue());
               const { ast, errors: parseErrors } = parser.parse();
-              console.log('[monaco-config] Parsed, running validator...');
+              logger.debug('[monaco-config] Parsed, running validator...');
 
               const validator = new GCodeValidator();
               const validationIssues = validator.validate(ast);
-              console.log('[monaco-config] Validation complete, issues:', validationIssues.length);
+              logger.debug('[monaco-config] Validation complete, issues:', validationIssues.length);
 
               // Combine parse errors and validation issues
               const allIssues = [
@@ -648,9 +649,9 @@ export function registerGCodeLanguage(monacoInstance: typeof monaco): void {
 
               const markers = createMarkersFromValidation(monacoInstance, model, allIssues);
               monacoInstance.editor.setModelMarkers(model, 'gcode-validator', markers);
-              console.log('[monaco-config] Markers set');
+              logger.debug('[monaco-config] Markers set');
             } catch (err) {
-              console.error('[monaco-config] G-code validation error:', err);
+              logger.error('[monaco-config] G-code validation error:', err);
             }
           });
         }, 100);
@@ -664,9 +665,9 @@ export function registerGCodeLanguage(monacoInstance: typeof monaco): void {
       });
 
       // Initial validation - deferred longer
-      console.log('[monaco-config] Scheduling initial validation in 1500ms');
+      logger.debug('[monaco-config] Scheduling initial validation in 1500ms');
       setTimeout(validate, 1500);
     }
   });
-  console.log('[monaco-config] registerGCodeLanguage complete');
+  logger.debug('[monaco-config] registerGCodeLanguage complete');
 }

@@ -45,6 +45,10 @@
         getBackupProgramCount(backup.filename).then((count) => {
           programCounts.set(backup.filename, count);
           programCounts = new Map(programCounts);
+        }).catch(() => {
+          // Mark as failed - remove the loading entry so it can be retried
+          programCounts.delete(backup.filename);
+          programCounts = new Map(programCounts);
         });
       }
     }

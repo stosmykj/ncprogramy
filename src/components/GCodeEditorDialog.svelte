@@ -6,6 +6,7 @@
   import { open, save } from '@tauri-apps/plugin-dialog';
   import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
   import { sendNotification } from '@tauri-apps/plugin-notification';
+  import { logger } from '$lib/logger';
 
   // Lazy load heavy components
   let GCodeEditor: typeof import('./GCodeEditor.svelte').default | null = $state(null);
@@ -44,46 +45,46 @@ M30`;
   }
 
   async function loadComponents() {
-    console.log('[GCodeEditorDialog] loadComponents called, componentsLoaded:', componentsLoaded);
+    logger.debug('[GCodeEditorDialog] loadComponents called, componentsLoaded:', componentsLoaded);
     if (componentsLoaded) {
-      console.log('[GCodeEditorDialog] Components already loaded, skipping');
+      logger.debug('[GCodeEditorDialog] Components already loaded, skipping');
       return;
     }
     loadError = null;
 
     try {
       loadingStatus = 'Načítání G-code editoru...';
-      console.log('[GCodeEditorDialog] Loading GCodeEditor module...');
+      logger.debug('[GCodeEditorDialog] Loading GCodeEditor module...');
       const editorModule = await import('./GCodeEditor.svelte');
-      console.log('[GCodeEditorDialog] GCodeEditor module imported');
+      logger.debug('[GCodeEditorDialog] GCodeEditor module imported');
       GCodeEditor = editorModule.default;
-      console.log('[GCodeEditorDialog] GCodeEditor assigned');
+      logger.debug('[GCodeEditorDialog] GCodeEditor assigned');
 
       loadingStatus = 'Načítání náhledu...';
-      console.log('[GCodeEditorDialog] Loading GCodePreview module...');
+      logger.debug('[GCodeEditorDialog] Loading GCodePreview module...');
       const previewModule = await import('./GCodePreview.svelte');
-      console.log('[GCodeEditorDialog] GCodePreview module imported');
+      logger.debug('[GCodeEditorDialog] GCodePreview module imported');
       GCodePreview = previewModule.default;
-      console.log('[GCodeEditorDialog] GCodePreview assigned');
+      logger.debug('[GCodeEditorDialog] GCodePreview assigned');
 
       loadingStatus = 'Hotovo';
-      console.log('[GCodeEditorDialog] Setting componentsLoaded = true');
+      logger.debug('[GCodeEditorDialog] Setting componentsLoaded = true');
       componentsLoaded = true;
-      console.log('[GCodeEditorDialog] All components loaded successfully');
+      logger.debug('[GCodeEditorDialog] All components loaded successfully');
 
       // Check if there's an external file to load
       const externalFile = SETTINGS_VARS.gcodeEditorFile;
       if (externalFile) {
-        console.log('[GCodeEditorDialog] External file provided, loading:', externalFile.Path);
+        logger.debug('[GCodeEditorDialog] External file provided, loading:', externalFile.Path);
         await loadExternalFile();
       } else {
         // Load full example code AFTER components are ready with a delay
         // to prevent UI blocking - use requestIdleCallback for best scheduling
-        console.log('[GCodeEditorDialog] Scheduling full example code load...');
+        logger.debug('[GCodeEditorDialog] Scheduling full example code load...');
         const loadCode = () => {
-          console.log('[GCodeEditorDialog] Loading full example code');
+          logger.debug('[GCodeEditorDialog] Loading full example code');
           code = getDefaultExampleCode();
-          console.log('[GCodeEditorDialog] Full example code set');
+          logger.debug('[GCodeEditorDialog] Full example code set');
         };
 
         // Schedule code load with a delay to avoid UI blocking
@@ -100,7 +101,7 @@ M30`;
         }, delay);
       }
     } catch (err) {
-      console.error('[GCodeEditorDialog] Failed to load components:', err);
+      logger.error('[GCodeEditorDialog] Failed to load components:', err);
       loadError = err instanceof Error ? err.message : 'Nepodařilo se načíst editor';
     }
   }
@@ -110,15 +111,15 @@ M30`;
     if (SETTINGS_VARS.gcodeEditorOpened) {
       const loaded = untrack(() => componentsLoaded);
       const error = untrack(() => loadError);
-      console.log('[GCodeEditorDialog] $effect triggered, gcodeEditorOpened: true, componentsLoaded:', loaded, 'loadError:', error);
+      logger.debug(`[GCodeEditorDialog] $effect triggered, gcodeEditorOpened: true, componentsLoaded: ${loaded}, loadError: ${error}`);
       if (!loaded && !error) {
-        console.log('[GCodeEditorDialog] Triggering loadComponents');
+        logger.debug('[GCodeEditorDialog] Triggering loadComponents');
         loadComponents();
       } else if (loaded) {
         // Components already loaded, check if we need to load an external file
         const externalFile = SETTINGS_VARS.gcodeEditorFile;
         if (externalFile) {
-          console.log('[GCodeEditorDialog] Components already loaded, loading external file:', externalFile.Path);
+          logger.debug('[GCodeEditorDialog] Components already loaded, loading external file:', externalFile.Path);
           loadExternalFile();
         } else {
           // Reset to default state for new file
@@ -166,7 +167,7 @@ M30`;
     try {
       // The file path is already absolute (from storage or original location)
       const filePath = externalFile.Path;
-      console.log('[GCodeEditorDialog] Loading external file from:', filePath);
+      logger.debug('[GCodeEditorDialog] Loading external file from:', filePath);
 
       const content = await readTextFile(filePath);
       code = content;
@@ -175,9 +176,9 @@ M30`;
       isSaved = true;
       isExternalFile = true;
 
-      console.log('[GCodeEditorDialog] External file loaded successfully');
+      logger.debug('[GCodeEditorDialog] External file loaded successfully');
     } catch (error) {
-      console.error('[GCodeEditorDialog] Error loading external file:', error);
+      logger.error('[GCodeEditorDialog] Error loading external file:', error);
       // Fall back to default example code
       code = getDefaultExampleCode();
       fileName = 'untitled.nc';
@@ -332,7 +333,7 @@ M30`,
         });
       }
     } catch (error) {
-      console.error('Chyba při otevírání souboru:', error);
+      logger.error('Chyba při otevírání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se otevřít soubor',
@@ -354,7 +355,7 @@ M30`,
         await saveFileAs();
       }
     } catch (error) {
-      console.error('Chyba při ukládání souboru:', error);
+      logger.error('Chyba při ukládání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se uložit soubor',
@@ -386,7 +387,7 @@ M30`,
         });
       }
     } catch (error) {
-      console.error('Chyba při ukládání souboru:', error);
+      logger.error('Chyba při ukládání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se uložit soubor',

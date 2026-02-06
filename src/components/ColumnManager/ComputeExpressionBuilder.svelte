@@ -296,7 +296,7 @@
       useCoalesce: !isComputed,
       coalesceDefault: '0',
       isComputed: isComputed,
-      computeExpression: isComputed ? (column as any).ComputeExpression : undefined,
+      computeExpression: isComputed ? column.ComputeExpression : undefined,
     });
     parts = [...parts];
   }

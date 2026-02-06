@@ -27,7 +27,7 @@
   $effect(() => {
     if (autoFocus && wrapperRef) {
       // Use setTimeout to ensure the DateInput component has rendered its internal input
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         const input = wrapperRef?.querySelector('input');
         if (input) {
           input.focus();
@@ -36,6 +36,8 @@
           input.click();
         }
       }, 50);
+
+      return () => clearTimeout(timeoutId);
     }
   });
 

@@ -122,7 +122,7 @@
         } catch (err) {
           error = 'Chyba při generování dráhy nástroje';
           toolpathData = null;
-          console.error('[GCodePreview] Error:', err);
+          logger.error('[GCodePreview] Error:', err);
         } finally {
           isLoading = false;
           logger.debug('[GCodePreview] Rendering final state...');

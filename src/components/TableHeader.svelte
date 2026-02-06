@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import type { TableColumn } from '../models/tableColumn';
   import { toggleSort, updateTableColumn, clearSort } from '$lib/tableColumnProcessor.svelte';
   import FilterPopover from './FilterPopover.svelte';
@@ -84,7 +85,9 @@
     DATA_VARS.reloadData = true;
   }
 
-  // Resize functionality
+  // Resize functionality - track active listeners for cleanup
+  let activeResizeCleanup: (() => void) | null = null;
+
   function startResize(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -104,12 +107,17 @@
       document.body.style.userSelect = 'none';
     };
 
-    const handleMouseUp = async () => {
-      isResizing = false;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+    const cleanup = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      activeResizeCleanup = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    const handleMouseUp = async () => {
+      isResizing = false;
+      cleanup();
 
       // Save to database
       try {
@@ -123,7 +131,13 @@
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+    activeResizeCleanup = cleanup;
   }
+
+  onDestroy(() => {
+    // Clean up any active resize listeners if component is destroyed mid-resize
+    activeResizeCleanup?.();
+  });
 
   // Drag and drop for reordering
   function handleDragStart(event: DragEvent) {
