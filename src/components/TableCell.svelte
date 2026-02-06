@@ -74,7 +74,7 @@
 
   // Close file preview when cell loses focus
   $effect(() => {
-    if (!focused && !hoverTimeout && showFilePreview) {
+    if (!focused && hoverTimeout === null && showFilePreview) {
       showFilePreview = false;
     }
   });

@@ -3,6 +3,7 @@
   import { applyFilter } from '$lib/tableColumnProcessor.svelte';
   import Button from './Button.svelte';
   import DatePicker from './DatePicker.svelte';
+  import { logger } from '$lib/logger';
   import { format } from 'date-fns';
 
   let {
@@ -174,17 +175,25 @@
   }
 
   async function handleApply() {
-    const filterString = buildFilterString();
-    await applyFilter(column.Key, filterString || undefined);
-    isOpen = false;
+    try {
+      const filterString = buildFilterString();
+      await applyFilter(column.Key, filterString || undefined);
+      isOpen = false;
+    } catch (error) {
+      logger.error('Failed to apply filter', error);
+    }
   }
 
   async function handleClear() {
-    filterValue = '';
-    filterValue2 = '';
-    filterOperator = column.Type === 'number' ? 'equals' : 'contains';
-    await applyFilter(column.Key, undefined);
-    isOpen = false;
+    try {
+      filterValue = '';
+      filterValue2 = '';
+      filterOperator = column.Type === 'number' ? 'equals' : 'contains';
+      await applyFilter(column.Key, undefined);
+      isOpen = false;
+    } catch (error) {
+      logger.error('Failed to clear filter', error);
+    }
   }
 
   function handleClickOutside(event: MouseEvent) {

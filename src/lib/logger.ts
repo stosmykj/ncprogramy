@@ -23,7 +23,7 @@ interface LogEntry {
 
 let currentLogFile: string | null = null;
 let logBuffer: string[] = [];
-let flushTimeout: number | null = null;
+let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let isFlushing = false;
 const FLUSH_INTERVAL = 1000; // Flush every 1 second
 const BUFFER_SIZE = 50; // Or when buffer reaches 50 entries
@@ -103,7 +103,7 @@ async function flushBuffer(): Promise<void> {
 function scheduleFlush(): void {
   if (flushTimeout !== null) return;
 
-  flushTimeout = window.setTimeout(async () => {
+  flushTimeout = setTimeout(async () => {
     flushTimeout = null;
     await flushBuffer();
   }, FLUSH_INTERVAL);

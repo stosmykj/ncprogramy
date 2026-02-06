@@ -64,7 +64,7 @@ export async function addSettings(settings: Settings): Promise<QueryResult> {
 
 export async function updateSettings(settings: Settings): Promise<QueryResult> {
   const db = await getDatabase();
-  const result = await db.execute(settings.toSqlUpdate(), [...settings.toArray(), settings.Id]);
+  const result = await db.execute(settings.toSqlUpdate(), settings.toArray());
   return result;
 }
 

@@ -21,7 +21,7 @@
 
   let parts = $state<ExpressionPart[]>([]);
   let parseError = $state<string | null>(null);
-  let hasParsed = $state(false);
+  let lastParsedExpression = $state('');
   let validationErrors = $state<ValidationError[]>([]);
 
   function validateExpression(): ValidationError[] {
@@ -163,14 +163,14 @@
   const columnKeys = $derived(availableColumns.map((col) => col.Key));
 
   $effect(() => {
-    if (expression && !hasParsed) {
+    if (expression && expression !== lastParsedExpression) {
       parseExpression(expression);
-      hasParsed = true;
+      lastParsedExpression = expression;
     }
   });
 
   $effect(() => {
-    if (parts.length > 0 && hasParsed) {
+    if (parts.length > 0 && lastParsedExpression) {
       expression = generateExpression();
     }
     validationErrors = validateExpression();
@@ -399,7 +399,7 @@
   function clearAll() {
     parts = [];
     expression = '';
-    hasParsed = false;
+    lastParsedExpression = '';
   }
 
   function getColumnLabel(key: string): string {

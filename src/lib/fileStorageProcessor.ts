@@ -16,6 +16,7 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
     }
   } catch (error) {
     logger.error(`Failed to create directory ${path}`, error);
+    throw error;
   }
 }
 

@@ -16,6 +16,7 @@
   let loadingStatus = $state('Příprava...');
   let codeLoadTimeout: number | null = null;
   let focusTimeout: number | null = null;
+  let idleCallbackId: number | null = null;
 
   function getDefaultExampleCode(): string {
     // Use a shorter example to reduce initial parsing load
@@ -94,7 +95,10 @@ M30`;
           codeLoadTimeout = null;
           if (!SETTINGS_VARS.gcodeEditorOpened) return;
           if (hasIdleCallback) {
-            (globalThis as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(loadCode);
+            idleCallbackId = (globalThis as unknown as { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(() => {
+              idleCallbackId = null;
+              loadCode();
+            });
           } else {
             loadCode();
           }
@@ -435,7 +439,7 @@ M30 ; konec programu`;
   }
 
   function close(): void {
-    // Clean up pending timeouts
+    // Clean up pending timeouts and callbacks
     if (codeLoadTimeout !== null) {
       clearTimeout(codeLoadTimeout);
       codeLoadTimeout = null;
@@ -443,6 +447,13 @@ M30 ; konec programu`;
     if (focusTimeout !== null) {
       clearTimeout(focusTimeout);
       focusTimeout = null;
+    }
+    if (idleCallbackId !== null) {
+      const hasCancelIdle = typeof (globalThis as Record<string, unknown>).cancelIdleCallback === 'function';
+      if (hasCancelIdle) {
+        (globalThis as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleCallbackId);
+      }
+      idleCallbackId = null;
     }
     SETTINGS_VARS.gcodeEditorOpened = false;
     // Clear external file state

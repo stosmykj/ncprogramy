@@ -104,7 +104,7 @@
           );
 
           // Add column to programs table if not computed
-          if (col.Type !== 'computed') {
+          if (col.Type !== 'computed' && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(col.Key)) {
             let sqlType = 'TEXT';
             if (col.Type === 'number') {
               sqlType = 'REAL';

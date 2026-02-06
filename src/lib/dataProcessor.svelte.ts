@@ -779,6 +779,6 @@ export async function generateIncrementalValue(
       .replace(/\{YY\}/g, now.getFullYear().toString().slice(-2))
       .replace(/\{MM\}/g, (now.getMonth() + 1).toString().padStart(2, '0'))
       .replace(/\{DD\}/g, now.getDate().toString().padStart(2, '0'))
-      .replace(/\{#+\}/g, '001');
+      .replace(/\{(#+)\}/g, (_match, hashes: string) => '1'.padStart(hashes.length, '0'));
   }
 }

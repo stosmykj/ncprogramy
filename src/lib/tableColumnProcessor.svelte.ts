@@ -116,7 +116,7 @@ async function removeSortInternal(key: ColumnKeys): Promise<void> {
     (a, b) => a.SortPosition - b.SortPosition
   );
   let removeSort = TABLECOLUMNS.find((c) => c.Key === key)?.SortPosition ?? 0;
-  if (removeSort == 0) {
+  if (removeSort === 0) {
     return;
   }
   for (const item of sorted) {
