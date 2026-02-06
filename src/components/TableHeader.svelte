@@ -175,7 +175,7 @@
         ]);
       }
 
-      DATA_VARS.refresh = true;
+      DATA_VARS.refresh = {};
     } catch (error) {
       logger.error('Failed to save column order', error);
     }

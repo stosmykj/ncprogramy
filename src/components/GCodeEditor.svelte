@@ -25,6 +25,7 @@
   } = $props();
 
   let editorContainer: HTMLDivElement;
+  let editorWrapper: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor | null = null;
   let monacoInstance: typeof monaco | null = null;
   let isLoading = $state(true);
@@ -271,12 +272,18 @@
     }
   }
 
-  function toggleFullscreen(): void {
-    const elem = editorContainer;
-    if (!document.fullscreenElement) {
-      elem.requestFullscreen();
-    } else {
-      document.exitFullscreen();
+  async function toggleFullscreen(): Promise<void> {
+    if (!editorWrapper) return;
+    try {
+      if (!document.fullscreenElement) {
+        await editorWrapper.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+      // Resize Monaco editor to fit new dimensions
+      setTimeout(() => editor?.layout(), 100);
+    } catch (error) {
+      logger.warn('Fullscreen not available', error);
     }
   }
 
@@ -317,7 +324,7 @@
   });
 </script>
 
-<div class="gcode-editor">
+<div bind:this={editorWrapper} class="gcode-editor">
   <div class="editor-toolbar">
     <div class="toolbar-left">
       <span class="filename">
@@ -433,6 +440,13 @@
     background: var(--color-bg);
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md);
+
+    &:fullscreen {
+      .editor-content {
+        height: 100% !important;
+        flex: 1;
+      }
+    }
     overflow: hidden;
   }
 
