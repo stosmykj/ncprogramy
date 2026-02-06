@@ -459,9 +459,11 @@ export async function addPrograms(programs: Array<Program>): Promise<void> {
 
     const totalCount = programs.length;
     let processedCount = 0;
+    // Work on a copy to avoid mutating the caller's array
+    const remaining = [...programs];
 
-    while (programs.length !== 0) {
-      const sliced = programs.splice(0, 50);
+    while (remaining.length !== 0) {
+      const sliced = remaining.splice(0, 50);
 
       // Build placeholders for batch insert
       const valuePlaceholders: string[] = [];

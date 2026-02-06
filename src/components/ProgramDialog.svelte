@@ -31,6 +31,7 @@
 
   // Initialize form data when dialog opens
   let lastOpenState = false;
+  let focusTimeout: number | null = null;
   $effect(() => {
     const isOpen = PROGRAM_DIALOG.isOpen;
     if (isOpen && !lastOpenState) {
@@ -39,9 +40,19 @@
         initFormData();
       });
       // Focus the appropriate input after a short delay for DOM to render
-      setTimeout(() => {
-        focusInput();
+      if (focusTimeout !== null) clearTimeout(focusTimeout);
+      focusTimeout = window.setTimeout(() => {
+        focusTimeout = null;
+        if (PROGRAM_DIALOG.isOpen) {
+          focusInput();
+        }
       }, 100);
+    } else if (!isOpen && lastOpenState) {
+      // Dialog closing - clean up timeout
+      if (focusTimeout !== null) {
+        clearTimeout(focusTimeout);
+        focusTimeout = null;
+      }
     }
     lastOpenState = isOpen;
   });
@@ -156,6 +167,10 @@
   async function handleSave() {
     saving = true;
     try {
+      if (PROGRAM_DIALOG.mode === 'edit' && !PROGRAM_DIALOG.program) {
+        logger.error('Edit mode requires a program reference');
+        return;
+      }
       const program = PROGRAM_DIALOG.mode === 'edit' && PROGRAM_DIALOG.program
         ? PROGRAM_DIALOG.program
         : new Program();

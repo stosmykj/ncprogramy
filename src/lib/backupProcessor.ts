@@ -154,9 +154,16 @@ async function getAllProgramsRaw(): Promise<Record<string, unknown>[]> {
 
 async function clearAllData(): Promise<void> {
   const db = await getDatabase();
-  await db.execute('DELETE FROM programs');
-  await db.execute('DELETE FROM formatting_rules');
-  await db.execute('DELETE FROM table_columns');
+  await db.execute('BEGIN TRANSACTION');
+  try {
+    await db.execute('DELETE FROM programs');
+    await db.execute('DELETE FROM formatting_rules');
+    await db.execute('DELETE FROM table_columns');
+    await db.execute('COMMIT');
+  } catch (error) {
+    await db.execute('ROLLBACK');
+    throw error;
+  }
 }
 
 async function restoreTableColumns(columns: BackupTableColumn[]): Promise<void> {

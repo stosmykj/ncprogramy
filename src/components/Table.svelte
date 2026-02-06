@@ -236,15 +236,17 @@
   }
 
   async function deleteRow() {
-    if (!focusedProgram) return;
+    // Capture reference before async operation to avoid stale derived value
+    const programToDelete = focusedProgram;
+    if (!programToDelete) return;
     tableBodyContextMenuData.opened = false;
 
     const result = await confirm('Opravdu smazat záznam?', {
-      title: `Smazání záznamu #${focusedProgram.Id}`,
+      title: `Smazání záznamu #${programToDelete.Id}`,
       kind: 'warning',
     });
     if (result) {
-      await removeProgram(focusedProgram);
+      await removeProgram(programToDelete);
     }
   }
 

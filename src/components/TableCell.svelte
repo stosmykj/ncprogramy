@@ -24,7 +24,7 @@
     cxMenuData: BodyContextMenuData;
   } = $props();
 
-  let columnWidth = $state(document.querySelector(`#header_${header.Key}`)?.clientWidth);
+  let columnWidth = $state<number | undefined>(undefined);
   // Not editable: system columns, computed columns, or columns with InlineEditable disabled
   const editable =
     !['id', 'createdAt', 'updatedAt'].includes(header.Key) &&
@@ -36,6 +36,13 @@
   let filePreviewRef: FilePreview | null = $state(null);
 
   const cellStyles = getCellStyles(program, header.Key);
+
+  // Initial column width measurement (deferred to avoid querying before DOM ready)
+  $effect(() => {
+    if (columnWidth === undefined) {
+      columnWidth = document.querySelector(`#header_${header.Key}`)?.clientWidth;
+    }
+  });
   const isFileColumn = $derived(header.Type === 'file');
   const isGcodeColumn = $derived(header.Type === 'gcode');
   const fileValue = $derived.by((): File | null => {
@@ -214,7 +221,7 @@
   aria-readonly={!editable}
   aria-selected={focused}
 >
-  <div class="content" style="justify-content: ${header.Align};">
+  <div class="content" style="justify-content: {header.Align};">
     {getDisplayValue(program, header)}
   </div>
   {#if DATA_VARS.isEditing && focused}

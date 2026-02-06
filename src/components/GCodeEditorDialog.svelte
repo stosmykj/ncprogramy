@@ -13,6 +13,8 @@
   let componentsLoaded = $state(false);
   let loadError = $state<string | null>(null);
   let loadingStatus = $state('Příprava...');
+  let codeLoadTimeout: number | null = null;
+  let focusTimeout: number | null = null;
 
   function getDefaultExampleCode(): string {
     // Use a shorter example to reduce initial parsing load
@@ -84,16 +86,18 @@ M30`;
           console.log('[GCodeEditorDialog] Full example code set');
         };
 
-        // Use requestIdleCallback if available, otherwise fall back to setTimeout
-        if ('requestIdleCallback' in window) {
-          console.log('[GCodeEditorDialog] Using requestIdleCallback');
-          setTimeout(() => {
-            (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(loadCode);
-          }, 1000);
-        } else {
-          console.log('[GCodeEditorDialog] Using setTimeout fallback');
-          setTimeout(loadCode, 1500);
-        }
+        // Schedule code load with a delay to avoid UI blocking
+        const hasIdleCallback = typeof (globalThis as Record<string, unknown>).requestIdleCallback === 'function';
+        const delay = hasIdleCallback ? 1000 : 1500;
+        codeLoadTimeout = window.setTimeout(() => {
+          codeLoadTimeout = null;
+          if (!SETTINGS_VARS.gcodeEditorOpened) return;
+          if (hasIdleCallback) {
+            (globalThis as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(loadCode);
+          } else {
+            loadCode();
+          }
+        }, delay);
       }
     } catch (err) {
       console.error('[GCodeEditorDialog] Failed to load components:', err);
@@ -132,8 +136,12 @@ M30`;
   $effect(() => {
     if (componentsLoaded && gcodeEditorRef) {
       // Delay focus to allow Monaco editor to fully initialize
-      setTimeout(() => {
-        gcodeEditorRef?.focus();
+      if (focusTimeout !== null) clearTimeout(focusTimeout);
+      focusTimeout = window.setTimeout(() => {
+        focusTimeout = null;
+        if (SETTINGS_VARS.gcodeEditorOpened) {
+          gcodeEditorRef?.focus();
+        }
       }, 500);
     }
   });
@@ -426,6 +434,15 @@ M30 ; konec programu`;
   }
 
   function close(): void {
+    // Clean up pending timeouts
+    if (codeLoadTimeout !== null) {
+      clearTimeout(codeLoadTimeout);
+      codeLoadTimeout = null;
+    }
+    if (focusTimeout !== null) {
+      clearTimeout(focusTimeout);
+      focusTimeout = null;
+    }
     SETTINGS_VARS.gcodeEditorOpened = false;
     // Clear external file state
     SETTINGS_VARS.gcodeEditorFile = null;

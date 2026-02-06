@@ -113,19 +113,19 @@ export async function saveTextZoomLevel(level: number): Promise<void> {
 
 export function zoomIn(): void {
   const newLevel = Math.min(MAX_ZOOM, SETTINGS_VARS.textZoomLevel + ZOOM_STEP);
-  saveTextZoomLevel(newLevel);
   applyZoomLevel(newLevel);
+  void saveTextZoomLevel(newLevel);
 }
 
 export function zoomOut(): void {
   const newLevel = Math.max(MIN_ZOOM, SETTINGS_VARS.textZoomLevel - ZOOM_STEP);
-  saveTextZoomLevel(newLevel);
   applyZoomLevel(newLevel);
+  void saveTextZoomLevel(newLevel);
 }
 
 export function zoomReset(): void {
-  saveTextZoomLevel(100);
   applyZoomLevel(100);
+  void saveTextZoomLevel(100);
 }
 
 export function applyZoomLevel(level: number): void {

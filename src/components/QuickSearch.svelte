@@ -6,25 +6,35 @@
 
   let inputElement: HTMLInputElement | null = $state(null);
   let searchValue = $state('');
+  let debounceTimeout: number | null = null;
 
   // Debounce search to avoid excessive queries
   $effect(() => {
     // Track searchValue changes
     const currentValue = searchValue;
 
-    const timeoutId = setTimeout(() => {
+    debounceTimeout = window.setTimeout(() => {
+      debounceTimeout = null;
       DATA_VARS.quickSearch = currentValue;
       DATA_VARS.reloadData = true;
     }, 300);
 
     // Cleanup function to clear timeout when effect re-runs
     return () => {
-      clearTimeout(timeoutId);
+      if (debounceTimeout !== null) {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = null;
+      }
     };
   });
 
   function clearSearch() {
     searchValue = '';
+    // Cancel pending debounce to avoid double query
+    if (debounceTimeout !== null) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = null;
+    }
     DATA_VARS.quickSearch = '';
     DATA_VARS.reloadData = true;
     inputElement?.focus();
@@ -38,7 +48,12 @@
       event.preventDefault();
       event.stopPropagation();
 
-      // Execute search immediately (the effect will handle the update)
+      // Cancel pending debounce to avoid double query
+      if (debounceTimeout !== null) {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = null;
+      }
+      // Execute search immediately
       DATA_VARS.quickSearch = searchValue;
       DATA_VARS.reloadData = true;
     }

@@ -110,7 +110,11 @@
               sqlType = 'REAL';
             }
 
-            await db.execute(`ALTER TABLE programs ADD COLUMN ${col.Key} ${sqlType}`);
+            try {
+              await db.execute(`ALTER TABLE programs ADD COLUMN ${col.Key} ${sqlType}`);
+            } catch {
+              // Column may already exist in the programs table, ignore
+            }
           }
         } else {
           // Update existing column

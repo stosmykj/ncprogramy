@@ -74,7 +74,7 @@
       }
 
       if (header.Type === 'number') {
-        const numValue = parseFloat(value as string);
+        const numValue = typeof value === 'number' ? value : parseFloat(String(value));
         if (!isNaN(numValue)) {
           program.set(key, numValue);
         }
