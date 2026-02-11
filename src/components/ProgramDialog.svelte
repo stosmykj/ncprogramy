@@ -7,6 +7,8 @@
     generateIncrementalValue,
   } from '$lib/dataProcessor.svelte';
   import { PROGRAM_DIALOG } from '$lib/programDialogState.svelte';
+  import { getSettingsByKey, addSettings, updateSettings } from '$lib/settingsProcessor.svelte';
+  import { Settings } from '../models/settings';
   import { Program } from '../models/program';
   import { File } from '../models/file';
   import type { TableColumn } from '../models/tableColumn';
@@ -17,9 +19,17 @@
   import GCodeFileEditor from './Editors/GCodeFileEditor.svelte';
   import { logger } from '$lib/logger';
 
+  const LAYOUT_SETTINGS_KEY = 'dialog_field_layout';
+
   // Form data keyed by column key
   let formData = $state<Record<string, string | number | Date | File | null>>({});
   let saving = $state(false);
+  let layoutMode = $state(false);
+  let fieldLayout = $state<string[]>([]); // Ordered list of visible field keys
+  let layoutLoaded = $state(false);
+  let draggedKey = $state<string | null>(null);
+  let dropTargetKey = $state<string | null>(null);
+  let dropTargetSidebar = $state(false);
 
   // Get editable columns (exclude system, actions, computed columns)
   const editableColumns = $derived.by(() => {
@@ -30,14 +40,65 @@
     );
   });
 
+  // Active fields based on layout order
+  const activeFields = $derived.by(() => {
+    if (!layoutLoaded || fieldLayout.length === 0) {
+      return editableColumns;
+    }
+    return fieldLayout
+      .map((key) => editableColumns.find((col) => col.Key === key))
+      .filter((col): col is TableColumn => col !== undefined);
+  });
+
+  // Sidebar fields - editable columns not in the active layout
+  const sidebarFields = $derived.by(() => {
+    if (!layoutLoaded || fieldLayout.length === 0) return [];
+    const activeKeys = new Set(fieldLayout);
+    return editableColumns.filter((col) => !activeKeys.has(col.Key));
+  });
+
+  // Load field layout from settings
+  async function loadFieldLayout() {
+    try {
+      const setting = await getSettingsByKey(LAYOUT_SETTINGS_KEY);
+      if (setting?.Value) {
+        const keys = JSON.parse(setting.Value) as string[];
+        // Filter to only include keys that still exist as editable columns
+        const validKeys = keys.filter((k) => editableColumns.some((col) => col.Key === k));
+        fieldLayout = validKeys;
+      }
+    } catch (error) {
+      logger.error('Failed to load field layout', error);
+    }
+    layoutLoaded = true;
+  }
+
+  // Save field layout to settings
+  async function saveFieldLayout() {
+    try {
+      const existing = await getSettingsByKey(LAYOUT_SETTINGS_KEY);
+      const value = JSON.stringify(fieldLayout);
+      if (existing) {
+        existing.Value = value;
+        await updateSettings(existing);
+      } else {
+        const setting = new Settings({ key: LAYOUT_SETTINGS_KEY, type: 'json', value });
+        await addSettings(setting);
+      }
+    } catch (error) {
+      logger.error('Failed to save field layout', error);
+    }
+  }
+
   // Initialize form data when dialog opens
   let lastOpenState = false;
   let focusTimeout: number | null = null;
   $effect(() => {
     const isOpen = PROGRAM_DIALOG.isOpen;
     if (isOpen && !lastOpenState) {
-      // Dialog just opened - initialize form
+      // Dialog just opened - initialize form and load layout
       untrack(() => {
+        loadFieldLayout();
         initFormData();
       });
       // Focus the appropriate input after a short delay for DOM to render
@@ -49,11 +110,12 @@
         }
       }, 100);
     } else if (!isOpen && lastOpenState) {
-      // Dialog closing - clean up timeout
+      // Dialog closing - clean up
       if (focusTimeout !== null) {
         clearTimeout(focusTimeout);
         focusTimeout = null;
       }
+      layoutMode = false;
     }
     lastOpenState = isOpen;
   });
@@ -62,17 +124,14 @@
     const focusColumn = PROGRAM_DIALOG.focusColumn;
 
     if (focusColumn) {
-      // Focus the specific column input
       const input = document.getElementById(`field_${focusColumn}`) as HTMLInputElement | null;
       if (input) {
         input.focus();
         input.select();
       }
-      // Clear focusColumn after use
       PROGRAM_DIALOG.focusColumn = null;
     } else {
-      // Focus first editable input
-      const firstCol = editableColumns[0];
+      const firstCol = activeFields[0];
       if (firstCol) {
         const input = document.getElementById(`field_${firstCol.Key}`) as HTMLInputElement | null;
         if (input) {
@@ -91,14 +150,12 @@
 
     for (const col of editableColumns) {
       if (isEditing && sourceProgram) {
-        // Editing existing program - populate with existing values
         const value = sourceProgram.get(col.Key);
         if (value instanceof File) {
           formData[col.Key] = value;
         } else if (value instanceof Date) {
           formData[col.Key] = value;
         } else if ((col.Type === 'date' || col.Type === 'datetime') && typeof value === 'string') {
-          // Date stored as ISO string in database
           formData[col.Key] = value;
         } else if (typeof value === 'number') {
           formData[col.Key] = value;
@@ -108,9 +165,7 @@
           formData[col.Key] = null;
         }
       } else if (isCopying && sourceProgram) {
-        // Copying from existing program
         if (col.Type === 'incremental' && col.IncrementalPattern) {
-          // Generate new incremental value for copies
           try {
             formData[col.Key] = await generateIncrementalValue(col.IncrementalPattern, col.Key);
           } catch (e) {
@@ -118,14 +173,12 @@
             formData[col.Key] = '';
           }
         } else if (col.Copyable !== false) {
-          // Copy value from source if column is copyable
           const value = sourceProgram.get(col.Key);
           if (value instanceof File) {
             formData[col.Key] = value;
           } else if (value instanceof Date) {
             formData[col.Key] = value;
           } else if ((col.Type === 'date' || col.Type === 'datetime') && typeof value === 'string') {
-            // Date stored as ISO string in database
             formData[col.Key] = value;
           } else if (typeof value === 'number') {
             formData[col.Key] = value;
@@ -135,13 +188,10 @@
             formData[col.Key] = null;
           }
         } else {
-          // Non-copyable column - use default
           formData[col.Key] = col.Type === 'number' ? null : '';
         }
       } else {
-        // Creating new program - initialize with defaults
         if (col.Type === 'incremental' && col.IncrementalPattern) {
-          // Generate incremental value
           try {
             formData[col.Key] = await generateIncrementalValue(col.IncrementalPattern, col.Key);
           } catch (e) {
@@ -176,7 +226,7 @@
         ? PROGRAM_DIALOG.program
         : new Program();
 
-      // Set all form values to the program
+      // Set all form values to the program (use editableColumns to save all fields, not just visible)
       for (const col of editableColumns) {
         const value = formData[col.Key];
 
@@ -191,7 +241,6 @@
           if (value instanceof Date) {
             program.set(col.Key, value);
           } else if (typeof value === 'string') {
-            // Convert string date back to Date object
             const dateValue = new Date(value);
             if (!isNaN(dateValue.getTime())) {
               program.set(col.Key, dateValue);
@@ -219,32 +268,16 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    // Only handle keys when dialog is open
     if (!PROGRAM_DIALOG.isOpen) return;
 
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
-      closeDialog();
-    }
-  }
-
-  function formatDateForInput(date: Date | string | null, type: 'date' | 'datetime'): string {
-    if (!date) return '';
-    // Convert string to Date if needed (database stores dates as ISO strings)
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(dateObj.getTime())) return '';
-    if (type === 'date') {
-      return dateObj.toISOString().split('T')[0];
-    }
-    return dateObj.toISOString().slice(0, 16);
-  }
-
-  function handleDateChange(col: TableColumn, value: string) {
-    if (!value) {
-      formData[col.Key] = null;
-    } else {
-      formData[col.Key] = new Date(value);
+      if (layoutMode) {
+        layoutMode = false;
+      } else {
+        closeDialog();
+      }
     }
   }
 
@@ -265,6 +298,110 @@
   function getColumnLabel(col: TableColumn): string {
     return col.Label || col.Key;
   }
+
+  // --- Drag and Drop ---
+
+  function handleDragStart(event: DragEvent, key: string) {
+    draggedKey = key;
+    event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.setData('text/plain', key);
+  }
+
+  function handleDragOverField(event: DragEvent, targetKey: string) {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = 'move';
+    dropTargetKey = targetKey;
+    dropTargetSidebar = false;
+  }
+
+  function handleDragOverSidebar(event: DragEvent) {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = 'move';
+    dropTargetKey = null;
+    dropTargetSidebar = true;
+  }
+
+  function handleDragLeave() {
+    dropTargetKey = null;
+    dropTargetSidebar = false;
+  }
+
+  function handleDropOnField(event: DragEvent, targetKey: string) {
+    event.preventDefault();
+    dropTargetKey = null;
+    dropTargetSidebar = false;
+    if (!draggedKey || draggedKey === targetKey) {
+      draggedKey = null;
+      return;
+    }
+
+    // Ensure we have a layout to work with
+    if (fieldLayout.length === 0) {
+      fieldLayout = editableColumns.map((c) => c.Key);
+    }
+
+    const newLayout = fieldLayout.filter((k) => k !== draggedKey);
+    const targetIndex = newLayout.indexOf(targetKey);
+    if (targetIndex !== -1) {
+      newLayout.splice(targetIndex, 0, draggedKey);
+    } else {
+      // Target is not in layout yet - add dragged before it
+      newLayout.push(draggedKey);
+    }
+
+    // If dragged from sidebar, it's now added to layout
+    if (!fieldLayout.includes(draggedKey)) {
+      // Already handled by the splice above
+    }
+
+    fieldLayout = newLayout;
+    draggedKey = null;
+    void saveFieldLayout();
+  }
+
+  function handleDropOnSidebar(event: DragEvent) {
+    event.preventDefault();
+    dropTargetKey = null;
+    dropTargetSidebar = false;
+    if (!draggedKey) return;
+
+    // Remove from active layout
+    if (fieldLayout.length === 0) {
+      fieldLayout = editableColumns.map((c) => c.Key);
+    }
+    fieldLayout = fieldLayout.filter((k) => k !== draggedKey);
+    draggedKey = null;
+    void saveFieldLayout();
+  }
+
+  function handleDragEnd() {
+    draggedKey = null;
+    dropTargetKey = null;
+    dropTargetSidebar = false;
+  }
+
+  function addFieldToLayout(key: string) {
+    if (fieldLayout.length === 0) {
+      fieldLayout = editableColumns.map((c) => c.Key);
+    }
+    if (!fieldLayout.includes(key)) {
+      fieldLayout = [...fieldLayout, key];
+      void saveFieldLayout();
+    }
+  }
+
+  function removeFieldFromLayout(key: string) {
+    if (fieldLayout.length === 0) {
+      fieldLayout = editableColumns.map((c) => c.Key);
+    }
+    fieldLayout = fieldLayout.filter((k) => k !== key);
+    void saveFieldLayout();
+  }
+
+  function resetLayout() {
+    fieldLayout = [];
+    void saveFieldLayout();
+  }
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
@@ -273,7 +410,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="modal-overlay" onclick={closeDialog}>
-    <div class="program-modal" onclick={(e) => e.stopPropagation()}>
+    <div class="program-modal" class:with-sidebar={layoutMode} onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
         <h2>
           {#if PROGRAM_DIALOG.mode === 'edit'}
@@ -284,95 +421,185 @@
             Nový záznam
           {/if}
         </h2>
-        <button class="close-btn" onclick={closeDialog} title="Zavřít (Esc)">
-          <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
-        </button>
+        <div class="header-actions">
+          <button
+            class="layout-btn"
+            class:active={layoutMode}
+            onclick={() => { layoutMode = !layoutMode; }}
+            title={layoutMode ? 'Ukončit úpravu rozložení' : 'Upravit rozložení polí'}
+          >
+            <Icon name={layoutMode ? 'mdiCheck' : 'mdiViewDashboardEdit'} size={20} color={layoutMode ? 'var(--color-success)' : 'var(--color-text-secondary)'} />
+          </button>
+          <button class="close-btn" onclick={closeDialog} title="Zavřít (Esc)">
+            <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
+          </button>
+        </div>
       </div>
 
-      <div class="modal-content">
-        <div class="form-grid">
-          {#each editableColumns as col}
-            <div class="form-field">
-              <label for="field_{col.Key}">
-                {getColumnLabel(col)}
-                {#if col.Type === 'incremental'}
-                  <span class="badge incremental">Auto</span>
-                {/if}
-              </label>
+      <div class="modal-body">
+        <div class="modal-content">
+          {#if layoutMode}
+            <div class="layout-hint">
+              <Icon name="mdiInformationOutline" size={16} color="var(--color-primary)" />
+              <span>Přetáhněte pole pro změnu pořadí. Přetáhněte do postranního panelu pro skrytí.</span>
+            </div>
+          {/if}
+          <div class="form-grid">
+            {#each activeFields as col (col.Key)}
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <div
+                class="form-field"
+                class:dragging={draggedKey === col.Key}
+                class:drop-target={dropTargetKey === col.Key}
+                class:layout-mode={layoutMode}
+                draggable={layoutMode ? 'true' : 'false'}
+                ondragstart={(e) => handleDragStart(e, col.Key)}
+                ondragover={(e) => handleDragOverField(e, col.Key)}
+                ondragleave={handleDragLeave}
+                ondrop={(e) => handleDropOnField(e, col.Key)}
+                ondragend={handleDragEnd}
+              >
+                <label for="field_{col.Key}">
+                  {#if layoutMode}
+                    <span class="drag-handle">
+                      <Icon name="mdiDragVertical" size={16} color="var(--color-text-muted)" />
+                    </span>
+                  {/if}
+                  {getColumnLabel(col)}
+                  {#if col.Type === 'incremental'}
+                    <span class="badge incremental">Auto</span>
+                  {/if}
+                  {#if layoutMode}
+                    <button class="remove-field-btn" onclick={() => removeFieldFromLayout(col.Key)} title="Skrýt pole">
+                      <Icon name="mdiClose" size={14} color="var(--color-text-muted)" />
+                    </button>
+                  {/if}
+                </label>
 
-              {#if col.Type === 'number'}
-                <input
-                  id="field_{col.Key}"
-                  type="number"
-                  step="any"
-                  value={formData[col.Key] ?? ''}
-                  oninput={(e) => formData[col.Key] = e.currentTarget.value}
-                  disabled={saving}
-                />
-              {:else if col.Type === 'date'}
-                <DatePicker
-                  value={getDateValue(col.Key)}
-                  type="date"
-                  disabled={saving}
-                  placeholder="Vyberte datum..."
-                  onchange={(date) => { formData[col.Key] = date; }}
-                />
-              {:else if col.Type === 'datetime'}
-                <DatePicker
-                  value={getDateValue(col.Key)}
-                  type="datetime"
-                  disabled={saving}
-                  placeholder="Vyberte datum a čas..."
-                  onchange={(date) => { formData[col.Key] = date; }}
-                />
-              {:else if col.Type === 'file'}
-                <div class="file-editor-wrapper">
-                  <FileEditor
-                    value={formData[col.Key] as File | null}
-                    onSave={(file) => handleFileChange(col, file as File | null)}
-                    onCancel={() => {}}
-                    inDialog
-                  />
+                {#if !layoutMode}
+                  {#if col.Type === 'number'}
+                    <input
+                      id="field_{col.Key}"
+                      type="number"
+                      step="any"
+                      value={formData[col.Key] ?? ''}
+                      oninput={(e) => formData[col.Key] = e.currentTarget.value}
+                      disabled={saving}
+                    />
+                  {:else if col.Type === 'date'}
+                    <DatePicker
+                      value={getDateValue(col.Key)}
+                      type="date"
+                      disabled={saving}
+                      placeholder="Vyberte datum..."
+                      onchange={(date) => { formData[col.Key] = date; }}
+                    />
+                  {:else if col.Type === 'datetime'}
+                    <DatePicker
+                      value={getDateValue(col.Key)}
+                      type="datetime"
+                      disabled={saving}
+                      placeholder="Vyberte datum a čas..."
+                      onchange={(date) => { formData[col.Key] = date; }}
+                    />
+                  {:else if col.Type === 'file'}
+                    <div class="file-editor-wrapper">
+                      <FileEditor
+                        value={formData[col.Key] as File | null}
+                        onSave={(file) => handleFileChange(col, file as File | null)}
+                        onCancel={() => {}}
+                        inDialog
+                      />
+                    </div>
+                  {:else if col.Type === 'gcode'}
+                    <div class="file-editor-wrapper">
+                      <GCodeFileEditor
+                        value={formData[col.Key] as File | null}
+                        programId={PROGRAM_DIALOG.program?.Id ?? undefined}
+                        columnKey={col.Key}
+                        onSave={(file) => handleFileChange(col, file as File | null)}
+                        onCancel={() => {}}
+                        inDialog
+                      />
+                    </div>
+                  {:else if col.Type === 'incremental'}
+                    <input
+                      id="field_{col.Key}"
+                      type="text"
+                      value={formData[col.Key] ?? ''}
+                      oninput={(e) => formData[col.Key] = e.currentTarget.value}
+                      disabled={saving || (!col.IncrementalRewritable && PROGRAM_DIALOG.mode === 'edit')}
+                      class:readonly={!col.IncrementalRewritable && PROGRAM_DIALOG.mode === 'edit'}
+                    />
+                  {:else}
+                    <input
+                      id="field_{col.Key}"
+                      type="text"
+                      value={formData[col.Key] ?? ''}
+                      oninput={(e) => formData[col.Key] = e.currentTarget.value}
+                      disabled={saving}
+                    />
+                  {/if}
+                {:else}
+                  <div class="field-placeholder">
+                    <span class="field-type-badge">{col.Type}</span>
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </div>
+
+        {#if layoutMode}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="sidebar"
+            class:drop-highlight={dropTargetSidebar}
+            ondragover={handleDragOverSidebar}
+            ondragleave={handleDragLeave}
+            ondrop={handleDropOnSidebar}
+          >
+            <div class="sidebar-header">
+              <span class="sidebar-title">Skrytá pole</span>
+              <button class="reset-btn" onclick={resetLayout} title="Obnovit výchozí rozložení">
+                <Icon name="mdiRestore" size={16} color="var(--color-text-secondary)" />
+                <span>Reset</span>
+              </button>
+            </div>
+            <div class="sidebar-fields">
+              {#if sidebarFields.length === 0}
+                <div class="sidebar-empty">
+                  <Icon name="mdiCheckAll" size={24} color="var(--color-text-muted)" />
+                  <span>Všechna pole jsou zobrazena</span>
                 </div>
-              {:else if col.Type === 'gcode'}
-                <div class="file-editor-wrapper">
-                  <GCodeFileEditor
-                    value={formData[col.Key] as File | null}
-                    programId={PROGRAM_DIALOG.program?.Id ?? undefined}
-                    columnKey={col.Key}
-                    onSave={(file) => handleFileChange(col, file as File | null)}
-                    onCancel={() => {}}
-                    inDialog
-                  />
-                </div>
-              {:else if col.Type === 'incremental'}
-                <input
-                  id="field_{col.Key}"
-                  type="text"
-                  value={formData[col.Key] ?? ''}
-                  oninput={(e) => formData[col.Key] = e.currentTarget.value}
-                  disabled={saving || (!col.IncrementalRewritable && PROGRAM_DIALOG.mode === 'edit')}
-                  class:readonly={!col.IncrementalRewritable && PROGRAM_DIALOG.mode === 'edit'}
-                />
               {:else}
-                <input
-                  id="field_{col.Key}"
-                  type="text"
-                  value={formData[col.Key] ?? ''}
-                  oninput={(e) => formData[col.Key] = e.currentTarget.value}
-                  disabled={saving}
-                />
+                {#each sidebarFields as col (col.Key)}
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    class="sidebar-field"
+                    draggable="true"
+                    ondragstart={(e) => handleDragStart(e, col.Key)}
+                    ondragend={handleDragEnd}
+                  >
+                    <Icon name="mdiDragVertical" size={14} color="var(--color-text-muted)" />
+                    <span class="sidebar-field-label">{getColumnLabel(col)}</span>
+                    <span class="sidebar-field-type">{col.Type}</span>
+                    <button class="add-field-btn" onclick={() => addFieldToLayout(col.Key)} title="Zobrazit pole">
+                      <Icon name="mdiPlus" size={14} color="var(--color-primary)" />
+                    </button>
+                  </div>
+                {/each}
               {/if}
             </div>
-          {/each}
-        </div>
+          </div>
+        {/if}
       </div>
 
       <div class="modal-actions">
         <Button onClick={closeDialog} disabled={saving}>
           Zrušit
         </Button>
-        <Button onClick={handleSave} primary disabled={saving}>
+        <Button onClick={handleSave} primary disabled={saving || layoutMode}>
           {#if saving}
             Ukládám...
           {:else if PROGRAM_DIALOG.mode === 'edit'}
@@ -418,6 +645,11 @@
     animation: slideUp var(--transition-slow);
     display: flex;
     flex-direction: column;
+    transition: max-width var(--transition-base);
+
+    &.with-sidebar {
+      max-width: 1050px;
+    }
   }
 
   @keyframes slideUp {
@@ -446,7 +678,13 @@
       font-weight: 600;
     }
 
-    .close-btn {
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .layout-btn, .close-btn {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -461,13 +699,37 @@
       &:hover {
         background: var(--color-border-light);
       }
+
+      &.active {
+        background: var(--color-success-light, rgba(40, 167, 69, 0.1));
+      }
     }
+  }
+
+  .modal-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
   }
 
   .modal-content {
     padding: var(--space-8);
     flex: 1;
     overflow-y: auto;
+    min-width: 0;
+  }
+
+  .layout-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    margin-bottom: var(--space-6);
+    background: var(--color-primary-lighter, rgba(40, 85, 151, 0.06));
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
   }
 
   .form-grid {
@@ -484,14 +746,62 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-lg);
+
+    &.layout-mode {
+      padding: var(--space-4);
+      border: 1px dashed var(--color-border);
+      cursor: grab;
+
+      &:hover {
+        border-color: var(--color-primary);
+        background: rgba(40, 85, 151, 0.02);
+      }
+    }
+
+    &.dragging {
+      opacity: 0.4;
+    }
+
+    &.drop-target {
+      border-color: var(--color-primary);
+      background: rgba(40, 85, 151, 0.06);
+      box-shadow: inset 0 0 0 2px var(--color-primary);
+    }
 
     label {
       display: flex;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--space-3);
       font-size: var(--font-size-base);
       font-weight: 500;
       color: var(--color-text);
+    }
+
+    .drag-handle {
+      display: flex;
+      cursor: grab;
+      opacity: 0.5;
+    }
+
+    .remove-field-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      width: 22px;
+      height: 22px;
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background: var(--color-danger-light);
+        border-color: var(--color-danger);
+      }
     }
 
     .badge {
@@ -504,6 +814,19 @@
       &.incremental {
         background: var(--color-primary-light);
         color: var(--color-primary-dark);
+      }
+    }
+
+    .field-placeholder {
+      padding: var(--space-4);
+      background: var(--color-bg-subtle);
+      border-radius: var(--radius-md);
+      text-align: center;
+
+      .field-type-badge {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
       }
     }
 
@@ -539,6 +862,127 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+  }
+
+  // Sidebar
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: background var(--transition-fast);
+
+    &.drop-highlight {
+      background: rgba(40, 85, 151, 0.06);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-border-lighter);
+
+    .sidebar-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .reset-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-2xs);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background: var(--color-bg);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  .sidebar-fields {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .sidebar-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  .sidebar-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-lighter);
+    border-radius: var(--radius-md);
+    cursor: grab;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-field-label {
+      flex: 1;
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-field-type {
+      font-size: var(--font-size-2xs);
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .add-field-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background: var(--color-primary-light);
+        border-color: var(--color-primary);
+      }
+    }
   }
 
   .modal-actions {
