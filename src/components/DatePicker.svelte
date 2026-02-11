@@ -10,6 +10,7 @@
     class: className = '',
     disabled = false,
     autoFocus = false,
+    onchange,
   }: {
     value: Date | null;
     type?: 'date' | 'datetime';
@@ -17,7 +18,13 @@
     class?: string;
     disabled?: boolean;
     autoFocus?: boolean;
+    onchange?: (value: Date | null) => void;
   } = $props();
+
+  // Notify parent of changes when onchange is provided
+  $effect(() => {
+    onchange?.(value);
+  });
 
   const format = type === 'date' ? 'dd. MM. yyyy' : 'dd. MM. yyyy HH:mm';
   const timePrecision = type === 'datetime' ? 'minute' : null;

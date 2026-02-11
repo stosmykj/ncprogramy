@@ -12,6 +12,7 @@
   import type { TableColumn } from '../models/tableColumn';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import DatePicker from './DatePicker.svelte';
   import FileEditor from './Editors/FileEditor.svelte';
   import GCodeFileEditor from './Editors/GCodeFileEditor.svelte';
   import { logger } from '$lib/logger';
@@ -247,6 +248,16 @@
     }
   }
 
+  function getDateValue(key: string): Date | null {
+    const val = formData[key];
+    if (val instanceof Date) return val;
+    if (typeof val === 'string' && val) {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    return null;
+  }
+
   function handleFileChange(col: TableColumn, file: File | null) {
     formData[col.Key] = file;
   }
@@ -299,20 +310,20 @@
                   disabled={saving}
                 />
               {:else if col.Type === 'date'}
-                <input
-                  id="field_{col.Key}"
+                <DatePicker
+                  value={getDateValue(col.Key)}
                   type="date"
-                  value={formatDateForInput(formData[col.Key] as Date | string | null, 'date')}
-                  oninput={(e) => handleDateChange(col, e.currentTarget.value)}
                   disabled={saving}
+                  placeholder="Vyberte datum..."
+                  onchange={(date) => { formData[col.Key] = date; }}
                 />
               {:else if col.Type === 'datetime'}
-                <input
-                  id="field_{col.Key}"
-                  type="datetime-local"
-                  value={formatDateForInput(formData[col.Key] as Date | string | null, 'datetime')}
-                  oninput={(e) => handleDateChange(col, e.currentTarget.value)}
+                <DatePicker
+                  value={getDateValue(col.Key)}
+                  type="datetime"
                   disabled={saving}
+                  placeholder="Vyberte datum a čas..."
+                  onchange={(date) => { formData[col.Key] = date; }}
                 />
               {:else if col.Type === 'file'}
                 <div class="file-editor-wrapper">

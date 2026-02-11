@@ -32,6 +32,7 @@
   let filterValue = $state<Date | string | null>(null);
   let filterValue2 = $state<Date | string | null>(null);
   let position = $state({ top: 0, left: 0 });
+  let justOpened = $state(false);
 
   // Parse existing filter when opening
   $effect(() => {
@@ -50,6 +51,12 @@
   $effect(() => {
     if (isOpen && anchorElement) {
       updatePosition();
+      // Skip the first click-outside check to prevent immediate closing
+      // when opened from a context menu button
+      justOpened = true;
+      requestAnimationFrame(() => {
+        justOpened = false;
+      });
     }
   });
 
@@ -197,13 +204,13 @@
   }
 
   function handleClickOutside(event: MouseEvent) {
-    if (isOpen && anchorElement) {
-      const target = event.target as Node;
-      const popover = document.querySelector('.filter-popover');
+    if (!isOpen || !anchorElement || justOpened) return;
 
-      if (popover && !popover.contains(target) && !anchorElement.contains(target)) {
-        isOpen = false;
-      }
+    const target = event.target as Node;
+    const popover = document.querySelector('.filter-popover');
+
+    if (popover && !popover.contains(target) && !anchorElement.contains(target)) {
+      isOpen = false;
     }
   }
 

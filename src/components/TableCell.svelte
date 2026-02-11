@@ -170,18 +170,14 @@
       return;
     }
 
-    if (editable) {
-      // If editing a different cell, close it first by updating focus
-      if (DATA_VARS.isEditing && !focused) {
-        DATA_VARS.isEditing = false;
-        // Change focus to this cell
-        DATA_VARS.columnPosition = position.column;
-        DATA_VARS.rowPosition = position.row;
-        cxMenuData.opened = false;
-      }
-      // Enter edit mode
-      DATA_VARS.isEditing = true;
+    // Double-click opens the full edit dialog
+    if (DATA_VARS.isEditing) {
+      DATA_VARS.isEditing = false;
     }
+    PROGRAM_DIALOG.mode = 'edit';
+    PROGRAM_DIALOG.program = program;
+    PROGRAM_DIALOG.focusColumn = header.Key;
+    PROGRAM_DIALOG.isOpen = true;
   }
 
   function handleMouseEnter() {

@@ -319,7 +319,7 @@
     <button class="menu-item" onclick={openEditDialog}>
       <Icon name="mdiPencil" size={16} color="var(--color-text)" />
       <span>Upravit</span>
-      <span class="shortcut">Enter</span>
+      <span class="shortcut">Ctrl+Enter</span>
     </button>
     <button class="menu-item" onclick={openCopyDialog}>
       <Icon name="mdiContentCopy" size={16} color="var(--color-text)" />
