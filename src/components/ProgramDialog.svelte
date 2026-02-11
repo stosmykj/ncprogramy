@@ -299,6 +299,20 @@
     return col.Label || col.Key;
   }
 
+  function getTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      string: 'Text',
+      number: 'Číslo',
+      date: 'Datum',
+      datetime: 'Datum a čas',
+      file: 'Soubor',
+      gcode: 'G-kód',
+      incremental: 'Automatické',
+      computed: 'Vypočítané',
+    };
+    return labels[type] ?? type;
+  }
+
   // --- Drag and Drop ---
 
   function handleDragStart(event: DragEvent, key: string) {
@@ -542,7 +556,7 @@
                   {/if}
                 {:else}
                   <div class="field-placeholder">
-                    <span class="field-type-badge">{col.Type}</span>
+                    <span class="field-type-badge">{getTypeLabel(col.Type)}</span>
                   </div>
                 {/if}
               </div>
@@ -583,7 +597,7 @@
                   >
                     <Icon name="mdiDragVertical" size={14} color="var(--color-text-muted)" />
                     <span class="sidebar-field-label">{getColumnLabel(col)}</span>
-                    <span class="sidebar-field-type">{col.Type}</span>
+                    <span class="sidebar-field-type">{getTypeLabel(col.Type)}</span>
                     <button class="add-field-btn" onclick={() => addFieldToLayout(col.Key)} title="Zobrazit pole">
                       <Icon name="mdiPlus" size={14} color="var(--color-primary)" />
                     </button>

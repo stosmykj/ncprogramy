@@ -55,19 +55,19 @@ export class TableColumn {
     this.position = position;
     this.sort = sort;
     this.sortPosition = sortPosition;
-    this.visible = visible ?? true;
+    this.visible = visible != null ? Boolean(visible) : true;
     this.width = width ?? 'auto';
     this.align = align ?? 'left';
     this.filter = filter ?? undefined;
     this.computeExpression = computeExpression ?? undefined;
-    this.archived = archived ?? false;
+    this.archived = archived != null ? Boolean(archived) : false;
     this.label = label ?? undefined;
-    this.sortable = sortable ?? true;
+    this.sortable = sortable != null ? Boolean(sortable) : true;
     this.dateFormat = dateFormat ?? undefined;
-    this.copyable = copyable ?? true;
-    this.inlineEditable = inlineEditable ?? true;
+    this.copyable = copyable != null ? Boolean(copyable) : true;
+    this.inlineEditable = inlineEditable != null ? Boolean(inlineEditable) : true;
     this.incrementalPattern = incrementalPattern ?? undefined;
-    this.incrementalRewritable = incrementalRewritable ?? false;
+    this.incrementalRewritable = incrementalRewritable != null ? Boolean(incrementalRewritable) : false;
   }
 
   get Key(): string {
