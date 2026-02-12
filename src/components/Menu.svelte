@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SETTINGS_VARS } from '$lib/settingsProcessor.svelte';
   import { exportBackup, importBackup } from '$lib/backupProcessor';
+  import { PROGRAM_DIALOG } from '$lib/programDialogState.svelte';
   import Button from './Button.svelte';
 
   async function btn_import() {
@@ -32,9 +33,20 @@
     SETTINGS_VARS.menuOpened = false;
     SETTINGS_VARS.gcodeEditorOpened = true;
   }
+
+  function btn_newProgram() {
+    SETTINGS_VARS.menuOpened = false;
+    PROGRAM_DIALOG.mode = 'create';
+    PROGRAM_DIALOG.program = null;
+    PROGRAM_DIALOG.isOpen = true;
+  }
 </script>
 
 <div class="menu" class:opened={SETTINGS_VARS.menuOpened}>
+  <Button onClick={btn_newProgram} primary icon="mdiPlus" class="full-total"
+    ><span>Nový program</span></Button
+  >
+  <div class="separator"></div>
   <Button onClick={btn_import} primary icon="mdiImport" class="full-total"
     ><span>Import</span></Button
   >
@@ -44,6 +56,7 @@
   <Button onClick={btn_backupManager} primary icon="mdiBackupRestore" class="full-total"
     ><span>Správa záloh</span></Button
   >
+  <div class="separator"></div>
   <Button onClick={btn_formattingRules} primary icon="mdiAlertCircle" class="full-total"
     ><span>Pravidla formátování</span></Button
   >
@@ -74,6 +87,10 @@
 
     &.opened {
       left: 0;
+    }
+
+    .separator {
+      border-top: 1px solid var(--color-primary);
     }
   }
 </style>
