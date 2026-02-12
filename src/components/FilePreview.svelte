@@ -4,8 +4,7 @@
   import Icon from './Icon.svelte';
   import KeyboardShortcut from './KeyboardShortcut.svelte';
   import FullFilePreviewDialog from './FullFilePreviewDialog.svelte';
-  import { revealItemInDir } from '@tauri-apps/plugin-opener';
-  import { open as shellOpen } from '@tauri-apps/plugin-shell';
+  import { openPath, revealItemInDir } from '@tauri-apps/plugin-opener';
   import { exists, stat } from '@tauri-apps/plugin-fs';
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { logger } from '$lib/logger';
@@ -110,7 +109,7 @@
     if (!file?.Path) return;
 
     try {
-      await shellOpen(file.Path);
+      await openPath(file.Path);
     } catch (error) {
       logger.error('Failed to open file', error);
     }
