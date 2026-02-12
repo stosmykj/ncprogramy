@@ -274,6 +274,7 @@
     }
     draggedIndex = index;
     event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.setData('text/plain', String(index));
   }
 
   function handleDragOver(event: DragEvent, index: number) {
