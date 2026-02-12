@@ -267,7 +267,7 @@
   <div class="formatting-rules-editor">
     <div class="editor-header">
       <h2>
-        <Icon name="mdiAlertCircle" size={24} color="#285597" />
+        <Icon name="mdiAlertCircle" size={24} color="var(--color-primary)" />
         Pravidla formátování
       </h2>
       <Button
@@ -458,38 +458,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
-    background: white;
+    padding: var(--space-6) var(--space-8);
+    background: var(--color-bg);
 
     h2 {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-4);
       margin: 0;
-      font-size: 1.25rem;
-      color: #183868;
+      font-size: var(--font-size-xl);
+      color: var(--color-primary-dark);
     }
 
-    .btn-close {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.25rem;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: #666;
-
-      &:hover {
-        color: #000;
-      }
-    }
   }
 
   .editor-content {
     flex: 1;
     overflow: auto;
-    padding: 1.25rem;
+    padding: var(--space-8);
   }
 
   .rules-list {
@@ -500,11 +486,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: var(--space-8);
 
       h3 {
         margin: 0;
-        color: #183868;
+        color: var(--color-primary-dark);
       }
     }
 
@@ -513,35 +499,35 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 3.75rem 1.25rem;
+      padding: 2.5rem var(--space-8);
       text-align: center;
-      color: #999;
+      color: var(--color-text-muted);
 
       p {
-        margin: 0.75rem 0 1.25rem;
-        font-size: 1rem;
+        margin: var(--space-6) 0 var(--space-8);
+        font-size: var(--font-size-md);
       }
     }
 
     .rules-table {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-3);
     }
 
     .rule-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 0.375rem;
-      transition: all 0.2s;
+      gap: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-base);
 
       &:hover {
-        border-color: #183868;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-color: var(--color-primary-dark);
+        box-shadow: var(--shadow-sm);
       }
 
       &.disabled {
@@ -553,12 +539,12 @@
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.125rem;
+          gap: var(--space-1);
 
           .priority-number {
-            font-size: 0.75rem;
+            font-size: var(--font-size-xs);
             font-weight: bold;
-            color: #183868;
+            color: var(--color-primary-dark);
           }
         }
       }
@@ -568,41 +554,41 @@
 
         .rule-name {
           font-weight: 500;
-          font-size: 0.9375rem;
-          margin-bottom: 0.25rem;
+          font-size: var(--font-size-base);
+          margin-bottom: var(--space-1);
         }
 
         .rule-details {
           display: flex;
-          gap: 0.5rem;
-          font-size: 0.75rem;
+          gap: var(--space-3);
+          font-size: var(--font-size-xs);
 
           .badge {
-            padding: 0.125rem 0.5rem;
-            background: #183868;
-            color: white;
-            border-radius: 3px;
+            padding: var(--space-1) var(--space-3);
+            background: var(--color-primary-dark);
+            color: var(--color-text-on-primary);
+            border-radius: var(--radius-sm);
           }
 
           .column-key {
-            padding: 0.125rem 0.5rem;
-            background: #e8e8e8;
-            border-radius: 3px;
-            font-family: monospace;
+            padding: var(--space-1) var(--space-3);
+            background: var(--color-bg-muted);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
           }
         }
       }
 
       .rule-preview {
-        padding: 0.375rem 1rem;
-        border: 1px solid #ddd;
-        border-radius: 0.25rem;
-        font-size: 0.8125rem;
+        padding: var(--space-3) var(--space-6);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
       }
 
       .rule-actions {
         display: flex;
-        gap: 0.25rem;
+        gap: var(--space-2);
       }
     }
   }
@@ -610,63 +596,63 @@
   .edit-form {
     max-width: 900px;
     margin: 0 auto;
-    background: white;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
 
     .form-header {
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-8);
 
       h3 {
         margin: 0;
-        color: #183868;
-        font-size: 1.125rem;
+        color: var(--color-primary-dark);
+        font-size: var(--font-size-lg);
       }
     }
 
     .form-section {
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-8);
 
       h4 {
-        margin: 0 0 0.75rem;
-        color: #183868;
-        font-size: 0.9375rem;
+        margin: 0 0 var(--space-4);
+        color: var(--color-primary-dark);
+        font-size: var(--font-size-base);
         font-weight: 600;
       }
 
       label {
         display: block;
-        margin-bottom: 0.75rem;
-        font-size: 0.8125rem;
+        margin-bottom: var(--space-4);
+        font-size: var(--font-size-sm);
         font-weight: 500;
-        color: #333;
+        color: var(--color-text);
       }
 
       .form-input,
       .form-select {
         width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #ccc;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+        padding: var(--space-3) var(--space-4);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-base);
+        margin-top: var(--space-2);
 
         &:focus {
           outline: none;
-          border-color: #183868;
+          border-color: var(--color-primary-dark);
         }
       }
 
       .style-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        gap: var(--space-6);
 
         .checkbox-label {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          margin-top: 0.25rem;
+          gap: var(--space-4);
+          margin-top: var(--space-2);
 
           input[type='checkbox'] {
             width: 18px;
@@ -677,21 +663,21 @@
       }
 
       .preview-box {
-        margin-top: 0.75rem;
-        padding: 1rem;
-        border: 1px solid #ddd;
-        border-radius: 0.25rem;
+        margin-top: var(--space-6);
+        padding: var(--space-6);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
         text-align: center;
-        font-size: 0.875rem;
+        font-size: var(--font-size-base);
       }
     }
 
     .form-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 0.75rem;
-      padding-top: 1rem;
-      border-top: 1px solid #eee;
+      gap: var(--space-4);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--color-border-lighter);
     }
   }
 </style>

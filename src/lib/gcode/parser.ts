@@ -49,7 +49,7 @@ export interface CommentNode {
 export interface ParameterNode {
   type: 'Parameter';
   name: string;
-  value: NumberNode | string;
+  value: number | string;
   position: Position;
 }
 

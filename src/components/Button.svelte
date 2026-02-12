@@ -20,6 +20,7 @@
     success?: boolean;
     warning?: boolean;
     selected?: boolean;
+    small?: boolean;
     tabIndex?: number;
   } = $props();
 
@@ -28,33 +29,16 @@
       return props.iconColor;
     }
     if (props.onlyIcon) {
-      if (props.primary) {
-        return '#285597';
-      }
-      if (props.danger) {
-        return '#dc3545';
-      }
-      if (props.success) {
-        return '#28a745';
-      }
-      if (props.warning) {
-        return '#ffc107';
-      }
+      if (props.primary) return 'var(--color-primary)';
+      if (props.danger) return 'var(--color-danger)';
+      if (props.success) return 'var(--color-success)';
+      if (props.warning) return 'var(--color-warning)';
     }
-    if (props.primary) {
-      return '#fff';
-    }
-    if (props.danger) {
-      return '#fff';
-    }
-    if (props.success) {
-      return '#fff';
-    }
-    if (props.warning) {
-      return '#fff';
+    if (props.primary || props.danger || props.success || props.warning) {
+      return 'var(--color-text-on-primary)';
     }
 
-    return '#333';
+    return 'var(--color-text)';
   });
 
   async function onclick(e: Event) {
@@ -81,6 +65,7 @@
   class:disabled={props.disabled}
   class:warning={props.warning}
   class:selected={props.selected}
+  class:small={props.small}
   tabindex={props.tabIndex}
   {onclick}
 >
@@ -100,32 +85,30 @@
     display: flex;
     align-items: center;
     justify-content: start;
-    height: 2.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #e0e0e0;
-    border: 2px solid #c0c0c0;
-    color: #333;
+    height: var(--btn-height);
+    padding: var(--btn-padding);
+    background: var(--color-bg-muted);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
     outline: none;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: bold;
-    font-family:
-      'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana,
-      sans-serif;
+    border-radius: var(--btn-radius);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: var(--font-family);
     cursor: pointer;
-    transition: 0.3s;
+    transition: var(--transition-base);
 
     &:hover {
-      background: #c0c0c0;
+      background: var(--color-border);
     }
 
     &:focus-visible {
-      outline: 2px solid #4a90e2;
-      outline-offset: 2px;
+      outline: 2px solid var(--color-primary);
+      outline-offset: 1px;
     }
 
     &.full {
-      width: calc(100% - 1.25rem);
+      width: calc(100% - 1rem);
 
       .content {
         justify-content: center;
@@ -141,51 +124,57 @@
     }
 
     &.primary {
-      color: #fff;
-      background: #285597;
-      border-color: #285597;
+      color: var(--color-text-on-primary);
+      background: var(--color-primary);
+      border-color: var(--color-primary);
 
       &:hover,
       &.selected {
-        background: #183868;
+        background: var(--color-primary-dark);
       }
     }
 
     &.danger {
-      color: #fff;
-      background: #dc3545;
-      border-color: #dc3545;
+      color: var(--color-text-on-primary);
+      background: var(--color-danger);
+      border-color: var(--color-danger);
 
       &:hover,
       &.selected {
-        background: #c82333;
+        background: var(--color-danger-hover);
       }
     }
 
     &.success {
-      color: #fff;
-      background: #28a745;
-      border-color: #28a745;
+      color: var(--color-text-on-primary);
+      background: var(--color-success);
+      border-color: var(--color-success);
 
       &:hover,
       &.selected {
-        background: #218838;
+        background: var(--color-success-hover);
       }
     }
 
     &.warning {
-      color: #fff;
-      background: #ffc107;
-      border-color: #ffc107;
+      color: var(--color-text-on-primary);
+      background: var(--color-warning);
+      border-color: var(--color-warning);
 
       &:hover,
       &.selected {
-        background: #e0a800;
+        background: var(--color-warning-hover);
       }
     }
 
+    &.small {
+      height: 1.5rem;
+      font-size: var(--font-size-xs);
+      padding: 0 var(--space-3);
+    }
+
     &.disabled {
-      opacity: 0.3;
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
@@ -194,25 +183,25 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--space-2);
     }
 
     &.icon {
       &.only-icon {
         padding: 0;
-        width: 1.5rem;
-        height: 1.5rem;
+        width: 1.25rem;
+        height: 1.25rem;
         background: none;
         border: none;
-        transition: 0.3s;
+        transition: var(--transition-base);
 
         &:hover {
-          scale: 0.8;
+          scale: 0.85;
         }
       }
 
       .content {
-        margin-left: 0.5rem;
+        margin-left: var(--space-3);
       }
     }
 

@@ -164,10 +164,10 @@
 
 <dialog bind:this={dialog} class="legacy-import-dialog">
   <div class="dialog-header">
-    <Icon name="mdiImport" size={28} color="#285597" />
+    <Icon name="mdiImport" size={28} color="var(--color-primary)" />
     <h2>Import ze staré aplikace</h2>
     <button class="close-button" onclick={closeDialog}>
-      <Icon name="mdiClose" size={24} color="#666" />
+      <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
     </button>
   </div>
 
@@ -175,7 +175,7 @@
     {#if currentStep === 'intro'}
       <div class="step-content">
         <div class="intro-icon">
-          <Icon name="mdiFileDocumentOutline" size={64} color="#285597" />
+          <Icon name="mdiFileDocumentOutline" size={64} color="var(--color-primary)" />
         </div>
         <h3>Vítejte v průvodci importem</h3>
         <p>
@@ -184,14 +184,14 @@
         </p>
         <div class="file-requirements">
           <div class="file-requirement">
-            <Icon name="mdiFileCodeOutline" size={24} color="#285597" />
+            <Icon name="mdiFileCodeOutline" size={24} color="var(--color-primary)" />
             <div>
               <strong>settings.pncs</strong>
               <span>Definice sloupců a pravidel formátování</span>
             </div>
           </div>
           <div class="file-requirement">
-            <Icon name="mdiFileDocumentOutline" size={24} color="#285597" />
+            <Icon name="mdiFileDocumentOutline" size={24} color="var(--color-primary)" />
             <div>
               <strong>programs.pnc</strong>
               <span>Data programů</span>
@@ -226,11 +226,11 @@
 
         <div class="loaded-summary">
           <div class="summary-item">
-            <Icon name="mdiViewColumn" size={20} color="#285597" />
+            <Icon name="mdiViewColumn" size={20} color="var(--color-primary)" />
             <span>{settingsData?.headerDef?.items?.length || 0} sloupců</span>
           </div>
           <div class="summary-item">
-            <Icon name="mdiFilter" size={20} color="#285597" />
+            <Icon name="mdiFilter" size={20} color="var(--color-primary)" />
             <span>{settingsData?.formats?.length || 0} pravidel formátování</span>
           </div>
         </div>
@@ -266,7 +266,7 @@
 
         <div class="loaded-summary">
           <div class="summary-item">
-            <Icon name="mdiTableLarge" size={20} color="#285597" />
+            <Icon name="mdiTableLarge" size={20} color="var(--color-primary)" />
             <span>{programsData?.items?.length || 0} záznamů k importu</span>
           </div>
         </div>
@@ -336,21 +336,21 @@
 
         <div class="result-summary">
           <div class="result-item">
-            <Icon name="mdiViewColumn" size={24} color="#285597" />
+            <Icon name="mdiViewColumn" size={24} color="var(--color-primary)" />
             <div>
               <strong>{importResult.columns}</strong>
               <span>sloupců</span>
             </div>
           </div>
           <div class="result-item">
-            <Icon name="mdiFilter" size={24} color="#285597" />
+            <Icon name="mdiFilter" size={24} color="var(--color-primary)" />
             <div>
               <strong>{importResult.rules}</strong>
               <span>pravidel</span>
             </div>
           </div>
           <div class="result-item">
-            <Icon name="mdiTableLarge" size={24} color="#285597" />
+            <Icon name="mdiTableLarge" size={24} color="var(--color-primary)" />
             <div>
               <strong>{importResult.programs}</strong>
               <span>záznamů</span>
@@ -386,15 +386,15 @@
 <style lang="scss">
   .legacy-import-dialog {
     border: none;
-    border-radius: 1rem;
+    border-radius: var(--radius-xl);
     padding: 0;
     width: 500px;
     max-width: 90vw;
-    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
     overflow: hidden;
 
     &::backdrop {
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--color-bg-overlay);
       backdrop-filter: blur(4px);
     }
   }
@@ -402,17 +402,17 @@
   .dialog-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-bottom: 1px solid #e2e8f0;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    background: linear-gradient(135deg, var(--color-bg-subtle) 0%, var(--color-bg-muted) 100%);
+    border-bottom: 1px solid var(--color-border-light);
 
     h2 {
       flex: 1;
       margin: 0;
-      font-size: 1.25rem;
+      font-size: var(--font-size-xl);
       font-weight: 600;
-      color: #1e293b;
+      color: var(--color-text);
     }
 
     .close-button {
@@ -423,9 +423,9 @@
       height: 2rem;
       background: transparent;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: var(--radius-lg);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background var(--transition-base);
 
       &:hover {
         background: rgba(0, 0, 0, 0.1);
@@ -434,50 +434,50 @@
   }
 
   .dialog-body {
-    padding: 1.5rem;
+    padding: var(--space-8);
   }
 
   .step-content {
-    min-height: 280px;
+    min-height: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 
     h3 {
-      margin: 1rem 0 0.5rem;
-      font-size: 1.25rem;
-      color: #1e293b;
+      margin: var(--space-6) 0 var(--space-3);
+      font-size: var(--font-size-xl);
+      color: var(--color-text);
     }
 
     p {
       margin: 0;
-      color: #64748b;
+      color: var(--color-text-secondary);
       line-height: 1.5;
     }
   }
 
   .intro-icon {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-4);
     opacity: 0.9;
   }
 
   .file-requirements {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
     width: 100%;
   }
 
   .file-requirement {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.625rem;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
     text-align: left;
 
     div {
@@ -485,13 +485,13 @@
       flex-direction: column;
 
       strong {
-        color: #1e293b;
-        font-size: 0.95rem;
+        color: var(--color-text);
+        font-size: var(--font-size-base);
       }
 
       span {
-        color: #64748b;
-        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
       }
     }
   }
@@ -500,7 +500,7 @@
     display: flex;
     align-items: center;
     gap: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-8);
   }
 
   .step {
@@ -510,44 +510,44 @@
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: #e2e8f0;
-    color: #64748b;
+    background: var(--color-bg-muted);
+    color: var(--color-text-secondary);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
 
     &.active {
-      background: #285597;
-      color: white;
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
     }
 
     &.completed {
-      background: #22c55e;
-      color: white;
+      background: var(--color-success);
+      color: var(--color-text-on-primary);
     }
   }
 
   .step-line {
     width: 2.5rem;
     height: 3px;
-    background: #e2e8f0;
+    background: var(--color-bg-muted);
 
     &.active {
-      background: linear-gradient(90deg, #22c55e 0%, #285597 100%);
+      background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
     }
 
     &.completed {
-      background: #22c55e;
+      background: var(--color-success);
     }
   }
 
   .file-loaded {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-8);
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
-    border-radius: 0.625rem;
+    border-radius: var(--radius-lg);
     width: 100%;
     text-align: left;
 
@@ -560,51 +560,51 @@
       }
 
       .file-name {
-        color: #64748b;
-        font-size: 0.85rem;
-        font-family: monospace;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
       }
     }
   }
 
   .loaded-summary {
     display: flex;
-    gap: 1.5rem;
-    margin-top: 1rem;
+    gap: var(--space-8);
+    margin-top: var(--space-6);
   }
 
   .summary-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #f1f5f9;
-    border-radius: 0.5rem;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-6);
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-lg);
 
     span {
-      color: #475569;
-      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
     }
   }
 
   .next-step-hint {
-    margin-top: 1.5rem !important;
+    margin-top: var(--space-8) !important;
     font-style: italic;
   }
 
   .import-warning {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding: 0.75rem 1rem;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+    padding: var(--space-6);
     background: #fef3c7;
     border: 1px solid #fcd34d;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-lg);
 
     span {
       color: #92400e;
-      font-size: 0.9rem;
+      font-size: var(--font-size-base);
     }
   }
 
@@ -613,14 +613,14 @@
   }
 
   .importing-animation {
-    margin: 1rem 0;
+    margin: var(--space-6) 0;
   }
 
   .spinner-large {
     width: 64px;
     height: 64px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #285597;
+    border: 4px solid var(--color-bg-muted);
+    border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -632,30 +632,30 @@
   }
 
   .phase-text {
-    font-size: 1rem;
-    color: #475569;
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
   }
 
   .progress-bar {
     width: 100%;
-    height: 0.5rem;
-    background: #e2e8f0;
-    border-radius: 0.25rem;
-    margin-top: 1.5rem;
+    height: var(--space-4);
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-8);
     overflow: hidden;
   }
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #285597 0%, #3b82f6 100%);
-    border-radius: 0.25rem;
-    transition: width 0.3s ease;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    border-radius: var(--radius-sm);
+    transition: width var(--transition-slow);
   }
 
   .progress-text {
-    margin-top: 0.5rem !important;
-    font-size: 0.85rem;
-    color: #94a3b8;
+    margin-top: var(--space-4) !important;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
   }
 
   .complete {
@@ -663,7 +663,7 @@
   }
 
   .success-icon {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-4);
     animation: bounce 0.5s ease;
   }
 
@@ -679,19 +679,19 @@
 
   .result-summary {
     display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
   }
 
   .result-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.625rem;
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-8);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
     min-width: 100px;
 
     div {
@@ -700,13 +700,13 @@
       align-items: center;
 
       strong {
-        font-size: 1.5rem;
-        color: #1e293b;
+        font-size: var(--font-size-xl);
+        color: var(--color-text);
       }
 
       span {
-        font-size: 0.8rem;
-        color: #64748b;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -716,17 +716,17 @@
   }
 
   .error-icon {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-4);
   }
 
   .error-message {
-    margin-top: 0.5rem !important;
-    padding: 1rem;
-    background: #fef2f2;
+    margin-top: var(--space-4) !important;
+    padding: var(--space-6);
+    background: var(--color-danger-light);
     border: 1px solid #fecaca;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-lg);
     color: #991b1b;
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
     max-width: 100%;
     word-break: break-word;
   }
@@ -734,9 +734,9 @@
   .dialog-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border-light);
   }
 </style>

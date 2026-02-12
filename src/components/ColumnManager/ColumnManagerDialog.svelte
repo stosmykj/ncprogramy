@@ -104,13 +104,17 @@
           );
 
           // Add column to programs table if not computed
-          if (col.Type !== 'computed') {
+          if (col.Type !== 'computed' && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(col.Key)) {
             let sqlType = 'TEXT';
             if (col.Type === 'number') {
               sqlType = 'REAL';
             }
 
-            await db.execute(`ALTER TABLE programs ADD COLUMN ${col.Key} ${sqlType}`);
+            try {
+              await db.execute(`ALTER TABLE programs ADD COLUMN ${col.Key} ${sqlType}`);
+            } catch {
+              // Column may already exist in the programs table, ignore
+            }
           }
         } else {
           // Update existing column
@@ -483,7 +487,7 @@
     {/if}
 
     <div class="instructions">
-      <Icon name="mdiInformationOutline" size={20} color="#285597" />
+      <Icon name="mdiInformationOutline" size={20} color="var(--color-primary)" />
       <span>Přetáhněte sloupce pro změnu pořadí. Klikněte na ikony pro úpravy.</span>
     </div>
 
@@ -631,7 +635,7 @@
             >
               <div class="drag-handle">
                 {#if !isProtected(column.Key) && !column.Archived}
-                  <Icon name="mdiDragVertical" size={20} color="#666" />
+                  <Icon name="mdiDragVertical" size={20} color="var(--color-text-secondary)" />
                 {:else}
                   <div style="width: 1.25rem;"></div>
                 {/if}
@@ -654,7 +658,7 @@
                     onclick={() => startEdit(index)}
                     title="Upravit sloupec"
                   >
-                    <Icon name="mdiPencil" size={20} color="#285597" />
+                    <Icon name="mdiPencil" size={20} color="var(--color-primary)" />
                   </button>
                 {/if}
 
@@ -682,7 +686,7 @@
                     <Icon
                       name={column.Archived ? 'mdiArchiveArrowUp' : 'mdiArchive'}
                       size={20}
-                      color={column.Archived ? '#ff9800' : '#666'}
+                      color={column.Archived ? '#ff9800' : 'var(--color-text-secondary)'}
                     />
                   </button>
                 {/if}
@@ -703,15 +707,15 @@
 <style lang="scss">
   .column-manager-dialog {
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-xl);
     padding: 0;
     width: 750px;
     max-width: 90vw;
     max-height: 85vh;
-    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
 
     &::backdrop {
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--color-bg-overlay);
       backdrop-filter: blur(4px);
     }
   }
@@ -720,57 +724,57 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #dfe3e8;
-    background: #f8f9fa;
-    border-radius: 12px 12px 0 0;
+    padding: var(--space-6) var(--space-8);
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 
     h2 {
       margin: 0;
-      font-size: 1.5rem;
-      color: #285597;
+      font-size: var(--font-size-xl);
+      color: var(--color-primary);
     }
 
     .header-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-3);
       align-items: center;
     }
   }
 
   .dialog-body {
-    padding: 1.5rem;
+    padding: var(--space-6) var(--space-8);
     overflow-y: auto;
     max-height: calc(85vh - 200px);
   }
 
   .edit-form,
   .edit-form-inline {
-    background: #e3f2fd;
-    border: 2px solid #285597;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: var(--color-primary-light);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
   }
 
   .computed-badge {
     display: inline-block;
-    padding: 0.2rem 0.5rem;
-    background: #4caf50;
-    color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-success);
+    color: var(--color-text-on-primary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
   }
 
   .incremental-badge {
     display: inline-block;
-    padding: 0.2rem 0.5rem;
-    background: #ff9800;
-    color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-warning);
+    color: var(--color-text-on-primary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
   }
@@ -778,16 +782,16 @@
   .form-row-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
     background: rgba(40, 85, 151, 0.05);
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
 
     &.inline {
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: var(--space-6);
     }
   }
 
@@ -799,14 +803,14 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
     cursor: pointer;
 
     input[type='checkbox'] {
       width: 18px;
       height: 18px;
       cursor: pointer;
-      accent-color: #285597;
+      accent-color: var(--color-primary);
     }
 
     span {
@@ -817,88 +821,89 @@
   .help-toggle {
     background: none;
     border: none;
-    color: #285597;
+    color: var(--color-primary);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     text-decoration: underline;
     padding: 0;
-    margin-top: 0.25rem;
+    margin-top: var(--space-2);
 
     &:hover {
-      color: #1e4177;
+      color: var(--color-primary-hover);
     }
   }
 
   .help-text {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
-    color: #666;
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
   }
 
   .type-warning {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
     color: #d97706;
     font-weight: 500;
   }
 
   .date-format-help {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    background: #f8f9fa;
-    border-radius: 0.375rem;
-    font-size: 0.85rem;
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
 
     p {
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 var(--space-3) 0;
     }
 
     ul {
-      margin: 0 0 0.75rem 0;
-      padding-left: 1.25rem;
+      margin: 0 0 var(--space-4) 0;
+      padding-left: var(--space-10);
     }
 
     li {
-      margin-bottom: 0.25rem;
+      margin-bottom: var(--space-1);
     }
 
     code {
-      background: #e3f2fd;
-      padding: 0.15rem 0.35rem;
-      border-radius: 3px;
-      font-family: monospace;
+      background: var(--color-primary-light);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
     }
   }
 
   .form-row {
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-6);
 
     label {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-3);
       font-weight: 600;
-      color: #333;
+      color: var(--color-text);
     }
 
     input[type='text'],
     select {
-      padding: 0.5rem;
-      border: 2px solid #ddd;
-      border-radius: 0.375rem;
-      font-size: 1rem;
+      padding: var(--space-3);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-md);
 
       &:focus {
         outline: none;
-        border-color: #285597;
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
     }
 
     small {
-      color: #666;
-      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
       font-weight: normal;
     }
   }
@@ -906,41 +911,41 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
   }
 
   .instructions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
     background: #fff3cd;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-8);
+    font-size: var(--font-size-base);
     color: #856404;
   }
 
   .columns-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .column-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg);
+    border: 2px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
 
     &:hover:not(.locked):not(.archived) {
-      border-color: #285597;
-      box-shadow: 0 2px 8px rgba(40, 85, 151, 0.1);
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
       cursor: grab;
     }
 
@@ -958,9 +963,9 @@
         left: 0;
         right: 0;
         top: -4px;
-        height: 0.25rem;
-        background: #4a90e2;
-        border-radius: 0.125rem;
+        height: var(--space-2);
+        background: var(--color-primary);
+        border-radius: var(--space-1);
       }
     }
 
@@ -973,30 +978,30 @@
         left: 0;
         right: 0;
         bottom: -4px;
-        height: 0.25rem;
-        background: #4a90e2;
-        border-radius: 0.125rem;
+        height: var(--space-2);
+        background: var(--color-primary);
+        border-radius: var(--space-1);
       }
     }
 
     &.hidden {
       opacity: 0.6;
-      background: #f5f5f5;
+      background: var(--color-bg-muted);
     }
 
     &.archived {
       background: #fff3e0;
-      border-color: #ff9800;
+      border-color: var(--color-warning);
       opacity: 0.7;
     }
 
     &.locked {
       cursor: default;
-      background: #fafafa;
+      background: var(--color-bg-subtle);
     }
 
     &.computed {
-      border-left: 4px solid #4caf50;
+      border-left: 4px solid var(--color-success);
     }
   }
 
@@ -1014,30 +1019,30 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .column-name-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .column-name {
     font-weight: 600;
-    font-size: 1rem;
-    color: #333;
+    font-size: var(--font-size-md);
+    color: var(--color-text);
   }
 
   .column-key {
-    font-size: 0.85rem;
-    color: #666;
-    font-family: monospace;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
   }
 
   .column-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .action-button,
@@ -1046,12 +1051,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    padding: var(--space-3);
     background: transparent;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background var(--transition-base);
 
     &:disabled {
       cursor: not-allowed;
@@ -1062,10 +1067,10 @@
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-top: 1px solid #dfe3e8;
-    background: #f8f9fa;
-    border-radius: 0 0 12px 0.75rem;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-8);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   }
 </style>

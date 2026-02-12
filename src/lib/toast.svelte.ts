@@ -14,6 +14,7 @@ export interface Toast {
 export const TOASTS = $state<Toast[]>([]);
 
 let toastCounter = 0;
+const toastTimeouts = new Map<string, number>();
 
 export function showToast(
   message: string,
@@ -32,13 +33,22 @@ export function showToast(
   TOASTS.push(toast);
 
   if (duration > 0) {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
+      toastTimeouts.delete(id);
       removeToast(id);
     }, duration);
+    toastTimeouts.set(id, timeoutId);
   }
 }
 
 export function removeToast(id: string): void {
+  // Clear any pending auto-dismiss timeout
+  const timeoutId = toastTimeouts.get(id);
+  if (timeoutId !== undefined) {
+    clearTimeout(timeoutId);
+    toastTimeouts.delete(id);
+  }
+
   const index = TOASTS.findIndex((t) => t.id === id);
   if (index !== -1) {
     TOASTS.splice(index, 1);

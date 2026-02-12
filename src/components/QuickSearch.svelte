@@ -6,25 +6,35 @@
 
   let inputElement: HTMLInputElement | null = $state(null);
   let searchValue = $state('');
+  let debounceTimeout: number | null = null;
 
   // Debounce search to avoid excessive queries
   $effect(() => {
     // Track searchValue changes
     const currentValue = searchValue;
 
-    const timeoutId = setTimeout(() => {
+    debounceTimeout = window.setTimeout(() => {
+      debounceTimeout = null;
       DATA_VARS.quickSearch = currentValue;
       DATA_VARS.reloadData = true;
     }, 300);
 
     // Cleanup function to clear timeout when effect re-runs
     return () => {
-      clearTimeout(timeoutId);
+      if (debounceTimeout !== null) {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = null;
+      }
     };
   });
 
   function clearSearch() {
     searchValue = '';
+    // Cancel pending debounce to avoid double query
+    if (debounceTimeout !== null) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = null;
+    }
     DATA_VARS.quickSearch = '';
     DATA_VARS.reloadData = true;
     inputElement?.focus();
@@ -38,7 +48,12 @@
       event.preventDefault();
       event.stopPropagation();
 
-      // Execute search immediately (the effect will handle the update)
+      // Cancel pending debounce to avoid double query
+      if (debounceTimeout !== null) {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = null;
+      }
+      // Execute search immediately
       DATA_VARS.quickSearch = searchValue;
       DATA_VARS.reloadData = true;
     }
@@ -80,7 +95,7 @@
       onClick={clearSearch}
       icon="mdiClose"
       primary
-      style="background: #1e4177; margin-right: 0.5rem; border-radius: 0.25rem; padding: 0.125rem; height: 23px"
+      style="background: var(--color-primary-hover); margin-right: var(--space-4); border-radius: var(--radius-sm); padding: var(--space-1); height: 23px"
     />
   {/if}
 
@@ -95,22 +110,22 @@
     width: 100%;
     max-width: 500px;
     margin: 0;
-    background: #285597;
-    border: 2px solid #285597;
-    border-radius: 0.5rem;
-    padding: 0 0.75rem;
-    transition: all 0.2s ease;
+    background: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    padding: 0 var(--space-4);
+    transition: all var(--transition-base);
 
     &:focus-within {
       border-color: #3c8be6;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      box-shadow: var(--input-focus-ring);
     }
 
     .search-icon {
       display: flex;
       align-items: center;
-      color: #fff;
-      margin-right: 0.5rem;
+      color: var(--color-text-on-primary);
+      margin-right: var(--space-3);
       flex-shrink: 0;
     }
 
@@ -118,14 +133,14 @@
       flex: 1;
       border: none;
       outline: none;
-      padding: 0.625rem 0;
-      font-size: 0.875rem;
+      padding: var(--space-3) 0;
+      font-size: var(--font-size-base);
       font-family: inherit;
       background: transparent;
-      color: #fff;
+      color: var(--color-text-on-primary);
 
       &::placeholder {
-        color: #fff;
+        color: var(--color-text-on-primary);
       }
     }
   }

@@ -10,6 +10,7 @@
     class: className = '',
     disabled = false,
     autoFocus = false,
+    onchange,
   }: {
     value: Date | null;
     type?: 'date' | 'datetime';
@@ -17,7 +18,13 @@
     class?: string;
     disabled?: boolean;
     autoFocus?: boolean;
+    onchange?: (value: Date | null) => void;
   } = $props();
+
+  // Notify parent of changes when onchange is provided
+  $effect(() => {
+    onchange?.(value);
+  });
 
   const format = type === 'date' ? 'dd. MM. yyyy' : 'dd. MM. yyyy HH:mm';
   const timePrecision = type === 'datetime' ? 'minute' : null;
@@ -27,7 +34,7 @@
   $effect(() => {
     if (autoFocus && wrapperRef) {
       // Use setTimeout to ensure the DateInput component has rendered its internal input
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         const input = wrapperRef?.querySelector('input');
         if (input) {
           input.focus();
@@ -36,6 +43,8 @@
           input.click();
         }
       }, 50);
+
+      return () => clearTimeout(timeoutId);
     }
   });
 
@@ -68,29 +77,29 @@
     // Style the input field
     :global(.date-time-field) {
       width: 100%;
-      height: 2.2rem;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
+      height: var(--input-height);
+      border: var(--input-border);
+      border-radius: var(--input-radius);
+      font-size: var(--font-size-base);
       font-family: inherit;
-      background: white;
+      background: var(--color-bg);
       box-sizing: border-box;
-      transition: all 0.2s ease;
+      transition: all var(--transition-base);
 
       &:focus {
         outline: none;
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
 
       &:disabled {
-        background: #f9fafb;
-        color: #98a2b3;
+        background: var(--color-bg-subtle);
+        color: var(--color-text-muted);
         cursor: not-allowed;
       }
 
       &::placeholder {
-        color: #98a2b3;
+        color: var(--color-text-muted);
       }
     }
 
@@ -102,12 +111,12 @@
     // Style the calendar popup
     :global(.date-time-picker) {
       height: 100%;
-      background: white;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      padding: 0.75rem;
-      z-index: 1001;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-6);
+      z-index: var(--z-modal-nested);
     }
 
     // Calendar header (month/year navigation)
@@ -115,25 +124,25 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 4px 0.75rem;
-      border-bottom: 1px solid #eaecf0;
-      margin-bottom: 0.75rem;
+      padding: var(--space-4) 4px var(--space-6);
+      border-bottom: 1px solid var(--color-border-lighter);
+      margin-bottom: var(--space-6);
     }
 
     :global(.picker-header button) {
       background: transparent;
       border: none;
-      color: #344054;
+      color: var(--color-text);
       cursor: pointer;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-base);
       font-weight: 500;
-      transition: all 0.2s ease;
+      transition: all var(--transition-base);
 
       &:hover {
-        background: #f2f4f7;
-        color: #4a90e2;
+        background: var(--color-bg-muted);
+        color: var(--color-primary);
       }
     }
 
@@ -141,96 +150,74 @@
     :global(.weekdays) {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 0.25rem;
-      margin-bottom: 0.25rem;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
     }
 
     :global(.weekday) {
       text-align: center;
-      font-size: 0.75rem;
+      font-size: var(--font-size-xs);
       font-weight: 600;
-      color: #667085;
-      padding: 0.25rem;
+      color: var(--color-text-secondary);
+      padding: var(--space-2);
     }
 
     // Calendar days
     :global(.days) {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 0.125rem;
+      gap: var(--space-1);
     }
 
     :global(.day) {
       aspect-ratio: 1;
       border: none;
       background: transparent;
-      border-radius: 0.375rem;
-      font-size: 0.8125rem;
-      color: #344054;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all var(--transition-base);
       font-weight: 400;
 
       &:hover {
-        background: #f2f4f7;
-        color: #4a90e2;
+        background: var(--color-bg-muted);
+        color: var(--color-primary);
       }
 
-      &.selected {
-        background: #4a90e2 !important;
-        color: white !important;
-        font-weight: 600;
-      }
-
-      &.today {
-        border: 1px solid #4a90e2;
-        font-weight: 600;
-      }
-
-      &.disabled {
-        color: #d0d5dd;
-        cursor: not-allowed;
-        &:hover {
-          background: transparent;
-        }
-      }
-
-      &.outside-month {
-        color: #98a2b3;
-      }
     }
 
     // Time picker section
     :global(.time-picker) {
-      border-top: 1px solid #eaecf0;
-      padding-top: 0.75rem;
-      margin-top: 0.75rem;
+      border-top: 1px solid var(--color-border-lighter);
+      padding-top: var(--space-6);
+      margin-top: var(--space-6);
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-4);
       align-items: center;
       justify-content: center;
     }
 
     :global(.time-picker input) {
       width: 60px;
-      padding: 0.375rem 0.5rem;
-      border: 1px solid #d0d5dd;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-base);
       text-align: center;
       font-family: inherit;
 
       &:focus {
         outline: none;
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: var(--input-focus-ring);
       }
     }
 
     :global(.time-separator) {
-      font-size: 1rem;
+      font-size: var(--font-size-md);
       font-weight: 600;
-      color: #667085;
+      color: var(--color-text-secondary);
     }
 
     .clear-button {
@@ -239,7 +226,7 @@
       justify-content: center;
       position: absolute;
       top: 0;
-      right: 0.5rem;
+      right: var(--space-4);
       height: 100%;
       z-index: 10;
     }

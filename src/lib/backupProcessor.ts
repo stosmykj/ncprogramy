@@ -21,6 +21,11 @@ import { markAppAsInitialized } from './settingsProcessor.svelte';
 
 const BACKUP_FOLDER = 'backups';
 
+// Validate column name is a safe SQL identifier (alphanumeric + underscore, starts with letter/underscore)
+function isValidColumnName(name: string): boolean {
+  return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -154,9 +159,16 @@ async function getAllProgramsRaw(): Promise<Record<string, unknown>[]> {
 
 async function clearAllData(): Promise<void> {
   const db = await getDatabase();
-  await db.execute('DELETE FROM programs');
-  await db.execute('DELETE FROM formatting_rules');
-  await db.execute('DELETE FROM table_columns');
+  await db.execute('BEGIN TRANSACTION');
+  try {
+    await db.execute('DELETE FROM programs');
+    await db.execute('DELETE FROM formatting_rules');
+    await db.execute('DELETE FROM table_columns');
+    await db.execute('COMMIT');
+  } catch (error) {
+    await db.execute('ROLLBACK');
+    throw error;
+  }
 }
 
 async function restoreTableColumns(columns: BackupTableColumn[]): Promise<void> {
@@ -190,7 +202,7 @@ async function restoreTableColumns(columns: BackupTableColumn[]): Promise<void> 
     // Add column to programs table if it doesn't exist and is not computed/actions
     if (col.type !== 'computed' && col.key !== 'actions') {
       const systemColumns = ['id', 'createdAt', 'updatedAt'];
-      if (!systemColumns.includes(col.key)) {
+      if (!systemColumns.includes(col.key) && isValidColumnName(col.key)) {
         try {
           let sqlType = 'TEXT';
           if (col.type === 'number') sqlType = 'REAL';
@@ -321,14 +333,26 @@ export async function restoreBackup(filename: string): Promise<boolean> {
 
     DATA_VARS.isImporting = true;
 
-    // Clear existing data
-    await clearAllData();
+    // Wrap entire restore in a single transaction for atomicity
+    const db = await getDatabase();
+    await db.execute('BEGIN TRANSACTION');
+    try {
+      // Clear existing data
+      await db.execute('DELETE FROM programs');
+      await db.execute('DELETE FROM formatting_rules');
+      await db.execute('DELETE FROM table_columns');
 
-    // Restore all data (columns first, then programs)
-    await restoreTableColumns(backupData.tableColumns || []);
-    await restoreFormattingRules(backupData.formattingRules || []);
-    await restoreSettings(backupData.settings || []);
-    await restorePrograms(backupData.programs || [], backupData.tableColumns || []);
+      // Restore all data (columns first, then programs)
+      await restoreTableColumns(backupData.tableColumns || []);
+      await restoreFormattingRules(backupData.formattingRules || []);
+      await restoreSettings(backupData.settings || []);
+      await restorePrograms(backupData.programs || [], backupData.tableColumns || []);
+
+      await db.execute('COMMIT');
+    } catch (error) {
+      await db.execute('ROLLBACK');
+      throw error;
+    }
 
     // Reload UI state
     await initTableColumns();
@@ -385,7 +409,7 @@ export async function clearDuplicateBackups(): Promise<boolean> {
     for (const file of files) {
       const date = parseBackupDate(file);
       if (date) {
-        const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        const dayKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
         if (!seenDays.has(dayKey)) {
           seenDays.add(dayKey);
           keepFiles.add(file);
@@ -412,19 +436,19 @@ export async function clearDuplicateBackups(): Promise<boolean> {
 }
 
 function parseBackupDate(filename: string): Date | null {
-  // Format: backup_YYYY-MM-DDTHH-MM-SS.json
+  // Format: backup_YYYY-MM-DDTHH-MM-SS.json (timestamps are in UTC from toISOString)
   const match = filename.match(/backup_(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})\.json/);
   if (!match) return null;
 
   const [, year, month, day, hour, minute, second] = match;
-  return new Date(
+  return new Date(Date.UTC(
     parseInt(year),
     parseInt(month) - 1,
     parseInt(day),
     parseInt(hour),
     parseInt(minute),
     parseInt(second)
-  );
+  ));
 }
 
 async function createBackupData(): Promise<BackupData> {
@@ -559,14 +583,26 @@ export async function importBackup(): Promise<void> {
 
     DATA_VARS.isImporting = true;
 
-    // Clear existing data
-    await clearAllData();
+    // Wrap entire import in a single transaction for atomicity
+    const db = await getDatabase();
+    await db.execute('BEGIN TRANSACTION');
+    try {
+      // Clear existing data
+      await db.execute('DELETE FROM programs');
+      await db.execute('DELETE FROM formatting_rules');
+      await db.execute('DELETE FROM table_columns');
 
-    // Restore all data (columns first, then programs)
-    await restoreTableColumns(backupData.tableColumns || []);
-    await restoreFormattingRules(backupData.formattingRules || []);
-    await restoreSettings(backupData.settings || []);
-    await restorePrograms(backupData.programs || [], backupData.tableColumns || []);
+      // Restore all data (columns first, then programs)
+      await restoreTableColumns(backupData.tableColumns || []);
+      await restoreFormattingRules(backupData.formattingRules || []);
+      await restoreSettings(backupData.settings || []);
+      await restorePrograms(backupData.programs || [], backupData.tableColumns || []);
+
+      await db.execute('COMMIT');
+    } catch (error) {
+      await db.execute('ROLLBACK');
+      throw error;
+    }
 
     // Reload UI state
     await initTableColumns();

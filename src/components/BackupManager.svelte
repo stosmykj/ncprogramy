@@ -45,6 +45,10 @@
         getBackupProgramCount(backup.filename).then((count) => {
           programCounts.set(backup.filename, count);
           programCounts = new Map(programCounts);
+        }).catch(() => {
+          // Mark as failed - remove the loading entry so it can be retried
+          programCounts.delete(backup.filename);
+          programCounts = new Map(programCounts);
         });
       }
     }
@@ -139,8 +143,9 @@
 </script>
 
 {#if SETTINGS_VARS.backupManagerOpened}
-  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()}>
-    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+  <div class="modal-overlay" onclick={close} onkeydown={(e) => e.key === 'Escape' && close()} role="presentation">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
       <div class="modal-header">
         <div class="header-left">
           <h2>Správa záloh</h2>
@@ -150,7 +155,7 @@
           {/if}
         </div>
         <button class="close-btn" onclick={close} aria-label="Zavřít">
-          <Icon name="mdiClose" size={24} color="#666" />
+          <Icon name="mdiClose" size={24} color="var(--color-text-secondary)" />
         </button>
       </div>
 
@@ -218,8 +223,9 @@
 
   <!-- Clear Confirmation Dialog -->
   {#if showClearDialog}
-    <div class="dialog-overlay" onclick={closeClearDialog}>
-      <div class="dialog" onclick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true">
+    <div class="dialog-overlay" onclick={closeClearDialog} onkeydown={(e) => e.key === 'Escape' && closeClearDialog()} role="presentation">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <div class="dialog" onclick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" tabindex="-1">
         <div class="dialog-header">
           <Icon name="mdiAlertCircle" size={24} color="#ef4444" />
           <h3>Vyčistit zálohy</h3>
@@ -234,7 +240,7 @@
               class:selected={clearAction === 'duplicates'}
               onclick={() => (clearAction = 'duplicates')}
             >
-              <Icon name="mdiCalendarRemove" size={20} color={clearAction === 'duplicates' ? '#285597' : '#6b7280'} />
+              <Icon name="mdiCalendarRemove" size={20} color={clearAction === 'duplicates' ? 'var(--color-primary)' : 'var(--color-text-secondary)'} />
               <div class="option-text">
                 <strong>Ponechat 1 za den</strong>
                 <span>Smaže duplicitní zálohy, ponechá nejnovější zálohu z každého dne</span>
@@ -246,7 +252,7 @@
               class:selected={clearAction === 'all'}
               onclick={() => (clearAction = 'all')}
             >
-              <Icon name="mdiTrashCan" size={20} color={clearAction === 'all' ? '#ef4444' : '#6b7280'} />
+              <Icon name="mdiTrashCan" size={20} color={clearAction === 'all' ? 'var(--color-danger)' : 'var(--color-text-secondary)'} />
               <div class="option-text">
                 <strong>Smazat vše</strong>
                 <span>Smaže všechny zálohy ({allBackups.length})</span>
@@ -275,59 +281,59 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-bg-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--z-modal);
   }
 
   .modal {
-    background: #fff;
-    border-radius: 0.75rem;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
     width: 800px;
     max-width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-xl);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-border-light);
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-4);
     }
 
     h2 {
       margin: 0;
-      font-size: 1.125rem;
+      font-size: var(--font-size-lg);
       font-weight: 600;
-      color: #183868;
+      color: var(--color-primary-dark);
     }
 
     .backup-count {
-      font-size: 0.8125rem;
-      color: #285597;
-      background: #eff6ff;
-      padding: 0.25rem 0.625rem;
-      border-radius: 0.375rem;
+      font-size: var(--font-size-sm);
+      color: var(--color-primary);
+      background: var(--color-primary-lighter);
+      padding: var(--space-2) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 500;
     }
 
     .total-size {
-      font-size: 0.8125rem;
-      color: #6b7280;
-      background: #f3f4f6;
-      padding: 0.25rem 0.625rem;
-      border-radius: 0.375rem;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      background: var(--color-bg-muted);
+      padding: var(--space-2) var(--space-5);
+      border-radius: var(--radius-md);
     }
 
     .close-btn {
@@ -338,12 +344,12 @@
       height: 2rem;
       border: none;
       background: transparent;
-      border-radius: 0.375rem;
+      border-radius: var(--radius-md);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--transition-base);
 
       &:hover {
-        background: #f3f4f6;
+        background: var(--color-bg-muted);
       }
     }
   }
@@ -351,13 +357,13 @@
   .modal-content {
     flex: 1;
     overflow-y: auto;
-    padding: 1.25rem;
+    padding: var(--space-6);
   }
 
   .actions-bar {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
 
     .spacer {
       flex: 1;
@@ -368,27 +374,27 @@
   .empty {
     text-align: center;
     padding: 2.5rem;
-    color: #6b7280;
+    color: var(--color-text-secondary);
   }
 
   .backup-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-4);
   }
 
   .backup-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    transition: border-color 0.15s;
+    padding: var(--space-6);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-base);
 
     &:hover {
-      border-color: #285597;
+      border-color: var(--color-primary);
     }
   }
 
@@ -399,44 +405,44 @@
 
   .backup-date {
     font-weight: 600;
-    color: #183868;
-    margin-bottom: 0.25rem;
+    color: var(--color-primary-dark);
+    margin-bottom: var(--space-2);
   }
 
   .backup-meta {
     display: flex;
-    gap: 0.75rem;
-    font-size: 0.8125rem;
-    color: #6b7280;
+    gap: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
   }
 
   .program-count {
-    color: #285597;
+    color: var(--color-primary);
     font-weight: 500;
   }
 
   .backup-size {
-    color: #059669;
+    color: var(--color-success);
     font-weight: 500;
   }
 
   .filename {
-    color: #9ca3af;
-    font-family: monospace;
-    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
   }
 
   .backup-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-4);
     flex-shrink: 0;
   }
 
   .load-more {
     text-align: center;
-    padding: 1rem;
-    color: #9ca3af;
-    font-size: 0.8125rem;
+    padding: var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
   }
 
   // Dialog styles
@@ -446,77 +452,77 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-bg-overlay-blur);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1100;
+    z-index: var(--z-modal-nested);
   }
 
   .dialog {
-    background: #fff;
-    border-radius: 0.75rem;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
     width: 450px;
     max-width: 90vw;
-    box-shadow: 0 20px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
   }
 
   .dialog-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-border-light);
 
     h3 {
       margin: 0;
-      font-size: 1rem;
+      font-size: var(--font-size-md);
       font-weight: 600;
-      color: #1f2937;
+      color: var(--color-text);
     }
   }
 
   .dialog-content {
-    padding: 1.25rem;
+    padding: var(--space-6);
 
     p {
-      margin: 0 0 1rem;
-      color: #6b7280;
-      font-size: 0.875rem;
+      margin: 0 0 var(--space-6);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
     }
   }
 
   .dialog-options {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    gap: var(--space-5);
   }
 
   .option-btn {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.875rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.5rem;
-    background: #fff;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border: 2px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
     cursor: pointer;
     text-align: left;
-    transition: all 0.15s;
+    transition: all var(--transition-base);
 
     &:hover {
-      border-color: #285597;
-      background: #f8fafc;
+      border-color: var(--color-primary);
+      background: var(--color-bg-subtle);
     }
 
     &.selected {
-      border-color: #285597;
-      background: #eff6ff;
+      border-color: var(--color-primary);
+      background: var(--color-primary-lighter);
     }
 
     &.danger.selected {
-      border-color: #ef4444;
-      background: #fef2f2;
+      border-color: var(--color-danger);
+      background: var(--color-danger-light);
     }
 
     .option-text {
@@ -524,15 +530,15 @@
 
       strong {
         display: block;
-        color: #1f2937;
-        font-size: 0.875rem;
-        margin-bottom: 0.125rem;
+        color: var(--color-text);
+        font-size: var(--font-size-base);
+        margin-bottom: var(--space-1);
       }
 
       span {
         display: block;
-        color: #6b7280;
-        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-xs);
       }
     }
   }
@@ -540,10 +546,10 @@
   .dialog-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.625rem;
-    padding: 1rem 1.25rem;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 0 0 12px 0.75rem;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   }
 </style>

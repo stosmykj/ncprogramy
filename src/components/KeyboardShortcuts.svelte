@@ -80,49 +80,18 @@
 </Button>
 
 <style lang="scss">
-  .shortcuts-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    background: #285597;
-    border: 1px solid #285597;
-    border-radius: 0.375rem;
-    color: #fff;
-    font-size: 0.8125rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #1e4177;
-      border-color: #285597;
-      color: #fff;
-    }
-
-    kbd {
-      padding: 0.125rem 0.375rem;
-      background: #1e4177;
-      border: 1px solid #285597;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      font-family: monospace;
-      color: #fff;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-  }
-
   .shortcuts-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-bg-overlay-blur);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.2s ease;
+    z-index: var(--z-top);
+    animation: fadeIn var(--transition-base);
   }
 
   @keyframes fadeIn {
@@ -135,14 +104,14 @@
   }
 
   .shortcuts-modal {
-    background: #285597;
-    border-radius: 1rem;
+    background: var(--color-primary);
+    border-radius: var(--radius-xl);
     width: 90%;
     max-width: 600px;
     max-height: 80vh;
     overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp var(--transition-slow);
   }
 
   @keyframes slideUp {
@@ -160,38 +129,20 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 1.75rem;
-    border-bottom: 1px solid #285597;
+    padding: var(--space-8) var(--space-10);
+    border-bottom: 1px solid var(--color-primary);
 
     h2 {
       margin: 0;
-      font-size: 1.25rem;
-      color: #fff;
+      font-size: var(--font-size-xl);
+      color: var(--color-text-on-primary);
       font-weight: 600;
     }
 
-    .close-btn {
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      border-radius: 0.375rem;
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      &:hover {
-        background: #1e4177;
-        color: #fff;
-      }
-    }
   }
 
   .shortcuts-list {
-    padding: 1.25rem 1.75rem;
+    padding: var(--space-10);
     max-height: 60vh;
     overflow-y: auto;
   }
@@ -200,8 +151,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.875rem 0;
-    border-bottom: 1px solid #285597;
+    padding: var(--space-6) 0;
+    border-bottom: 1px solid var(--color-primary);
 
     &:last-child {
       border-bottom: none;
@@ -210,25 +161,25 @@
     .shortcut-keys {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
+      gap: var(--space-3);
 
       .key {
-        padding: 0.375rem 0.625rem;
-        background: #1e4177;
-        border: 1px solid #285597;
-        border-radius: 0.375rem;
-        font-size: 0.8125rem;
-        font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-        color: #fff;
+        padding: var(--space-3) var(--space-5);
+        background: var(--color-primary-hover);
+        border: 1px solid var(--color-primary);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        color: var(--color-text-on-primary);
         font-weight: 500;
         min-width: 2rem;
         text-align: center;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
       }
 
       .plus {
-        color: #fff;
-        font-size: 0.75rem;
+        color: var(--color-text-on-primary);
+        font-size: var(--font-size-xs);
         font-weight: 600;
       }
     }
@@ -236,50 +187,50 @@
     .shortcut-description {
       flex: 1;
       text-align: right;
-      font-size: 0.875rem;
-      color: #eee;
-      padding-left: 1.25rem;
+      font-size: var(--font-size-base);
+      color: var(--color-border-light);
+      padding-left: var(--space-10);
     }
   }
 
   .modal-footer {
-    padding: 1rem 1.75rem;
-    background: #285597;
-    border-top: 1px solid #285597;
+    padding: var(--space-8) var(--space-10);
+    background: var(--color-primary);
+    border-top: 1px solid var(--color-primary);
 
     .help-text {
       margin: 0;
-      font-size: 0.8125rem;
-      color: #fff;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-on-primary);
       text-align: center;
 
       kbd {
-        padding: 3px 0.375rem;
-        background: #1e4177;
-        border: 1px solid #285597;
-        border-radius: 0.25rem;
-        font-size: 0.75rem;
-        font-family: monospace;
-        color: #fff;
+        padding: var(--space-1) var(--space-3);
+        background: var(--color-primary-hover);
+        border: 1px solid var(--color-primary);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        font-family: var(--font-mono);
+        color: var(--color-text-on-primary);
       }
     }
   }
 
   /* Scrollbar styling */
   .shortcuts-list::-webkit-scrollbar {
-    width: 0.5rem;
+    width: var(--space-4);
   }
 
   .shortcuts-list::-webkit-scrollbar-track {
-    background: #285597;
+    background: var(--color-primary);
   }
 
   .shortcuts-list::-webkit-scrollbar-thumb {
-    background: #285597;
-    border-radius: 0.25rem;
+    background: var(--color-primary);
+    border-radius: var(--radius-sm);
 
     &:hover {
-      background: #1e4177;
+      background: var(--color-primary-hover);
     }
   }
 </style>

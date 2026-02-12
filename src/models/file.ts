@@ -1,5 +1,3 @@
-import type { ImportFile } from '$lib/importProcessor.svelte';
-
 export type FileExtension =
   | 'PDF'
   | 'pdf'
@@ -93,11 +91,4 @@ export class File {
     return JSON.stringify(this);
   }
 
-  static fromImportFile(file: ImportFile): File {
-    return new File({
-      extension: file.ext,
-      name: file.name,
-      path: file.path,
-    });
-  }
 }

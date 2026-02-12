@@ -59,18 +59,18 @@
   .menu {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
     position: absolute;
-    left: -20rem;
-    top: 4rem;
-    width: 20rem;
-    padding: 1rem;
-    background: #183868;
-    border-top: 2px solid #285597;
-    border-bottom-right-radius: 0.5rem;
-    color: #fff;
-    transition: 0.4s;
-    z-index: 10;
+    left: -18rem;
+    top: var(--topbar-height);
+    width: 18rem;
+    padding: var(--space-6);
+    background: var(--color-primary-dark);
+    border-top: 2px solid var(--color-primary);
+    border-bottom-right-radius: var(--radius-lg);
+    color: var(--color-text-on-primary);
+    transition: var(--transition-slow);
+    z-index: var(--z-overlay);
 
     &.opened {
       left: 0;

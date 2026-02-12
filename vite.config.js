@@ -42,7 +42,7 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(/** @type {string} */ id) {
           // Split large vendor libraries (Tauri APIs are external, skip them)
           if (id.includes('node_modules')) {
             if (id.includes('@mdi/js')) {

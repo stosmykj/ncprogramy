@@ -236,15 +236,17 @@
   }
 
   async function deleteRow() {
-    if (!focusedProgram) return;
+    // Capture reference before async operation to avoid stale derived value
+    const programToDelete = focusedProgram;
+    if (!programToDelete) return;
     tableBodyContextMenuData.opened = false;
 
     const result = await confirm('Opravdu smazat záznam?', {
-      title: `Smazání záznamu #${focusedProgram.Id}`,
+      title: `Smazání záznamu #${programToDelete.Id}`,
       kind: 'warning',
     });
     if (result) {
-      await removeProgram(focusedProgram);
+      await removeProgram(programToDelete);
     }
   }
 
@@ -315,17 +317,17 @@
     role="menu"
   >
     <button class="menu-item" onclick={openEditDialog}>
-      <Icon name="mdiPencil" size={16} color="#374151" />
+      <Icon name="mdiPencil" size={16} color="var(--color-text)" />
       <span>Upravit</span>
-      <span class="shortcut">Enter</span>
+      <span class="shortcut">Ctrl+Enter</span>
     </button>
     <button class="menu-item" onclick={openCopyDialog}>
-      <Icon name="mdiContentCopy" size={16} color="#374151" />
+      <Icon name="mdiContentCopy" size={16} color="var(--color-text)" />
       <span>Duplikovat</span>
       <span class="shortcut">Ctrl+D</span>
     </button>
     <button class="menu-item" onclick={copyCurrentCell}>
-      <Icon name="mdiContentSave" size={16} color="#374151" />
+      <Icon name="mdiContentSave" size={16} color="var(--color-text)" />
       <span>Kopírovat hodnotu</span>
       <span class="shortcut">Ctrl+C</span>
     </button>
@@ -341,13 +343,11 @@
 <ProgramDialog />
 
 <style lang="scss">
-  $primary-bg: #285597;
-
   table {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: calc(100vh - 7rem);
+    height: calc(100vh - var(--topbar-height) - var(--table-footer-height));
     border-collapse: separate;
     border-spacing: 0;
     overflow-y: auto;
@@ -355,21 +355,15 @@
   }
 
   thead {
-    background: $primary-bg;
+    background: var(--color-primary);
     position: sticky;
     top: 0;
-    z-index: 1;
-    color: #fff;
+    z-index: var(--z-sticky);
+    color: var(--color-text-on-primary);
 
     tr {
       display: flex;
       min-width: max-content;
-    }
-
-    .checkbox-header {
-      width: 50px;
-      flex-shrink: 0;
-      background: $primary-bg;
     }
   }
 
@@ -377,53 +371,61 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 3rem;
-    font-size: 1.2rem;
-    background: $primary-bg;
-    color: #fff;
+    height: var(--table-footer-height);
+    font-size: var(--font-size-sm);
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+
     .pages {
       display: flex;
       min-width: 1rem;
-      margin: 0.8rem 0.4rem;
+      margin: var(--space-3) var(--space-2);
+
       .page {
-        margin: 0 0.3rem;
+        margin: 0 var(--space-1);
         background: transparent;
         border: none;
         color: #8aa4cc;
-        font-size: 1.2rem;
+        font-size: var(--font-size-sm);
+
         &.selected {
-          font-size: 1.3rem;
-          color: #fff;
+          font-size: var(--font-size-base);
+          color: var(--color-text-on-primary);
+          font-weight: 600;
         }
+
         &:hover {
           cursor: pointer;
-          color: #fff;
+          color: var(--color-text-on-primary);
         }
       }
     }
+
     .info {
       display: flex;
-      margin: 0.8rem;
+      align-items: center;
+      margin: 0 var(--space-6);
     }
   }
+
   .context-menu-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
+    z-index: var(--z-overlay);
   }
 
   .context-menu {
     position: fixed;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    padding: 0.25rem;
-    min-width: 180px;
-    z-index: 1000;
-    animation: fadeIn 0.1s ease;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-2);
+    min-width: 170px;
+    z-index: var(--z-modal);
+    animation: fadeIn var(--transition-fast);
 
     @keyframes fadeIn {
       from {
@@ -439,41 +441,41 @@
     .menu-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-3);
       width: 100%;
-      padding: 0.5rem 0.75rem;
+      padding: var(--space-3) var(--space-4);
       border: none;
       background: none;
-      font-size: 0.8125rem;
-      color: #374151;
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
       cursor: pointer;
-      border-radius: 0.25rem;
+      border-radius: var(--radius-sm);
       text-align: left;
-      transition: background 0.1s;
+      transition: background var(--transition-fast);
 
       &:hover {
-        background: #f3f4f6;
+        background: var(--color-bg-muted);
       }
 
       &.danger {
-        color: #dc2626;
+        color: var(--color-danger);
 
         &:hover {
-          background: #fef2f2;
+          background: var(--color-danger-light);
         }
       }
 
       .shortcut {
         margin-left: auto;
-        font-size: 0.6875rem;
-        color: #9ca3af;
+        font-size: var(--font-size-2xs);
+        color: var(--color-text-muted);
       }
     }
 
     .menu-divider {
       height: 1px;
-      background: #e5e7eb;
-      margin: 0.25rem 0;
+      background: var(--color-border-light);
+      margin: var(--space-2) 0;
     }
   }
 </style>

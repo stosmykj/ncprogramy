@@ -5,6 +5,7 @@
   import { GCodeParser } from '../lib/gcode/parser';
   import { GCodeValidator } from '../lib/gcode/validator';
   import { SETTINGS_VARS } from '../lib/settingsProcessor.svelte';
+  import { logger } from '../lib/logger';
   import Icon from './Icon.svelte';
 
   let {
@@ -24,6 +25,7 @@
   } = $props();
 
   let editorContainer: HTMLDivElement;
+  let editorWrapper: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor | null = null;
   let monacoInstance: typeof monaco | null = null;
   let isLoading = $state(true);
@@ -48,33 +50,33 @@
   }
 
   onMount(async () => {
-    console.log('[GCodeEditor] onMount started');
+    logger.debug('[GCodeEditor] onMount started');
     try {
       // Delay Monaco import to let UI render first
-      console.log('[GCodeEditor] Waiting 100ms before Monaco import...');
+      logger.debug('[GCodeEditor] Waiting 100ms before Monaco import...');
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Dynamically import Monaco with proper worker setup for SvelteKit
-      console.log('[GCodeEditor] Importing monaco-setup...');
+      logger.debug('[GCodeEditor] Importing monaco-setup...');
       monacoInstance = (await import('../lib/gcode/monaco-setup')).default;
-      console.log('[GCodeEditor] Monaco imported successfully');
+      logger.debug('[GCodeEditor] Monaco imported successfully');
 
       // Register G-code language
-      console.log('[GCodeEditor] Registering G-code language...');
+      logger.debug('[GCodeEditor] Registering G-code language...');
       registerGCodeLanguage(monacoInstance);
-      console.log('[GCodeEditor] G-code language registered');
+      logger.debug('[GCodeEditor] G-code language registered');
 
       // Use requestAnimationFrame to yield to browser before heavy editor creation
-      console.log('[GCodeEditor] Scheduling editor creation via requestAnimationFrame...');
+      logger.debug('[GCodeEditor] Scheduling editor creation via requestAnimationFrame...');
       requestAnimationFrame(() => {
-        console.log('[GCodeEditor] requestAnimationFrame callback started');
+        logger.debug('[GCodeEditor] requestAnimationFrame callback started');
         if (!monacoInstance || !editorContainer) {
-          console.log('[GCodeEditor] Missing monacoInstance or editorContainer, aborting');
+          logger.debug('[GCodeEditor] Missing monacoInstance or editorContainer, aborting');
           return;
         }
 
         // Create editor with minimal features first to prevent blocking
-        console.log('[GCodeEditor] Creating Monaco editor...');
+        logger.debug('[GCodeEditor] Creating Monaco editor...');
         // Use plaintext initially to avoid heavy processing during load
         editor = monacoInstance.editor.create(editorContainer, {
           value: code,
@@ -121,10 +123,10 @@
           cursorSmoothCaretAnimation: 'off',
           smoothScrolling: false,
         });
-        console.log('[GCodeEditor] Monaco editor created');
+        logger.debug('[GCodeEditor] Monaco editor created');
 
         // Handle content changes
-        console.log('[GCodeEditor] Setting up event handlers...');
+        logger.debug('[GCodeEditor] Setting up event handlers...');
         editor.onDidChangeModelContent(() => {
           // Skip if we're programmatically updating from code prop
           if (isUpdatingFromCode) return;
@@ -158,22 +160,22 @@
         editor.addCommand(monacoInstance!.KeyMod.CtrlCmd | monacoInstance!.KeyCode.Slash, () => {
           editor?.getAction('editor.action.commentLine')?.run();
         });
-        console.log('[GCodeEditor] Event handlers set up');
+        logger.debug('[GCodeEditor] Event handlers set up');
 
         // Initial validation - deferred to allow UI to render first
-        console.log('[GCodeEditor] Setting isLoading = false');
+        logger.debug('[GCodeEditor] Setting isLoading = false');
         isLoading = false;
-        console.log('[GCodeEditor] Setup complete');
+        logger.debug('[GCodeEditor] Setup complete');
 
         // Switch to gcode language after a delay to avoid blocking
-        console.log('[GCodeEditor] Scheduling language switch to gcode...');
+        logger.debug('[GCodeEditor] Scheduling language switch to gcode...');
         languageSwitchTimeout = setTimeout(() => {
           if (editor && monacoInstance) {
-            console.log('[GCodeEditor] Switching to gcode language...');
+            logger.debug('[GCodeEditor] Switching to gcode language...');
             const model = editor.getModel();
             if (model) {
               monacoInstance.editor.setModelLanguage(model, GCODE_LANGUAGE_ID);
-              console.log('[GCodeEditor] Language switched to gcode');
+              logger.debug('[GCodeEditor] Language switched to gcode');
               // Now schedule validation
               debouncedValidation(500);
             }
@@ -181,7 +183,7 @@
         }, 1500);
       });
     } catch (error) {
-      console.error('[GCodeEditor] Failed to load Monaco Editor:', error);
+      logger.error('[GCodeEditor] Failed to load Monaco Editor:', error);
       isLoading = false;
     }
   });
@@ -270,12 +272,18 @@
     }
   }
 
-  function toggleFullscreen(): void {
-    const elem = editorContainer;
-    if (!document.fullscreenElement) {
-      elem.requestFullscreen();
-    } else {
-      document.exitFullscreen();
+  async function toggleFullscreen(): Promise<void> {
+    if (!editorWrapper) return;
+    try {
+      if (!document.fullscreenElement) {
+        await editorWrapper.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+      // Resize Monaco editor to fit new dimensions
+      setTimeout(() => editor?.layout(), 100);
+    } catch (error) {
+      logger.warn('Fullscreen not available', error);
     }
   }
 
@@ -316,7 +324,7 @@
   });
 </script>
 
-<div class="gcode-editor">
+<div bind:this={editorWrapper} class="gcode-editor">
   <div class="editor-toolbar">
     <div class="toolbar-left">
       <span class="filename">
@@ -429,9 +437,16 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.375rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+
+    &:fullscreen {
+      .editor-content {
+        height: 100% !important;
+        flex: 1;
+      }
+    }
     overflow: hidden;
   }
 
@@ -439,45 +454,45 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border-light);
 
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      color: #333;
-      font-size: 0.8125rem;
+      gap: var(--space-8);
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
 
       .filename {
         display: flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: var(--space-3);
         font-weight: 500;
-        color: #285597;
+        color: var(--color-primary);
 
         .modified-indicator {
-          color: #ff9800;
-          font-size: 1rem;
+          color: var(--color-warning);
+          font-size: var(--font-size-md);
         }
       }
 
       .position {
-        color: #666;
+        color: var(--color-text-secondary);
       }
     }
 
     .toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-6);
 
       .action-group {
         display: flex;
-        gap: 0.25rem;
-        padding: 0 0.5rem;
-        border-right: 1px solid #dfe3e8;
+        gap: var(--space-2);
+        padding: 0 var(--space-4);
+        border-right: 1px solid var(--color-border-light);
 
         &:last-child {
           border-right: none;
@@ -488,29 +503,23 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.25rem 0.5rem;
+        padding: var(--space-2) var(--space-4);
         background: transparent;
         border: 1px solid transparent;
-        border-radius: 0.25rem;
-        color: #666;
+        border-radius: var(--radius-sm);
+        color: var(--color-text-secondary);
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all var(--transition-base);
         position: relative;
 
         &:hover:not(:disabled) {
-          background: #e3f2fd;
-          border-color: #285597;
-          color: #285597;
+          background: var(--color-primary-light);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
         }
 
         &:active:not(:disabled) {
           transform: scale(0.95);
-        }
-
-        &.active {
-          background: #285597;
-          border-color: #285597;
-          color: #fff;
         }
 
         &:disabled {
@@ -530,7 +539,7 @@
 
     // Center line numbers in Monaco editor
     :global(.monaco-editor .lines-content .view-lines) {
-      padding-left: 0.3125rem;
+      padding-left: var(--space-3);
     }
     :global(.monaco-editor .margin-view-overlays .line-numbers) {
       text-align: center;
@@ -545,8 +554,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
-      color: #666;
+      gap: var(--space-6);
+      color: var(--color-text-secondary);
     }
 
     .monaco-container {

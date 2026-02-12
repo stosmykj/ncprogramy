@@ -23,7 +23,8 @@ interface LogEntry {
 
 let currentLogFile: string | null = null;
 let logBuffer: string[] = [];
-let flushTimeout: number | null = null;
+let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+let isFlushing = false;
 const FLUSH_INTERVAL = 1000; // Flush every 1 second
 const BUFFER_SIZE = 50; // Or when buffer reaches 50 entries
 
@@ -57,13 +58,16 @@ function formatLogEntry(entry: LogEntry): string {
 }
 
 async function flushBuffer(): Promise<void> {
-  if (logBuffer.length === 0) return;
+  if (logBuffer.length === 0 || isFlushing) return;
 
+  isFlushing = true;
   try {
     await ensureLogDirectoryExists();
     const logFile = getLogFileName();
-    const content = logBuffer.join('');
+    // Grab current entries and clear buffer atomically
+    const entries = logBuffer;
     logBuffer = [];
+    const content = entries.join('');
 
     // Append to log file
     const filePath = `${LOG_FOLDER}/${logFile}`;
@@ -87,13 +91,19 @@ async function flushBuffer(): Promise<void> {
   } catch (error) {
     // Fallback to console if logging fails
     console.error('Failed to write to log file:', error);
+  } finally {
+    isFlushing = false;
+    // If new entries accumulated during flush, schedule another flush
+    if (logBuffer.length > 0) {
+      scheduleFlush();
+    }
   }
 }
 
 function scheduleFlush(): void {
   if (flushTimeout !== null) return;
 
-  flushTimeout = window.setTimeout(async () => {
+  flushTimeout = setTimeout(async () => {
     flushTimeout = null;
     await flushBuffer();
   }, FLUSH_INTERVAL);

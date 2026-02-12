@@ -459,9 +459,11 @@ export async function addPrograms(programs: Array<Program>): Promise<void> {
 
     const totalCount = programs.length;
     let processedCount = 0;
+    // Work on a copy to avoid mutating the caller's array
+    const remaining = [...programs];
 
-    while (programs.length !== 0) {
-      const sliced = programs.splice(0, 50);
+    while (remaining.length !== 0) {
+      const sliced = remaining.splice(0, 50);
 
       // Build placeholders for batch insert
       const valuePlaceholders: string[] = [];
@@ -515,11 +517,10 @@ export async function updateProgram(program: Program): Promise<void> {
     if (result.rowsAffected > 0) {
       const item = await getProgramById(program.Id);
       if (item) {
-        PROGRAMS.splice(
-          PROGRAMS.findIndex((p) => p.Id === program.Id),
-          1,
-          item
-        );
+        const index = PROGRAMS.findIndex((p) => p.Id === program.Id);
+        if (index !== -1) {
+          PROGRAMS.splice(index, 1, item);
+        }
       }
       DATA_VARS.refresh = {};
       showSuccess('Program byl úspěšně aktualizován');
@@ -536,10 +537,10 @@ export async function removeProgram(program: Program): Promise<void> {
     const db = await getDatabase();
     const result = await db.execute(program.toSqlDelete(), [program.Id]);
     if (result.rowsAffected > 0) {
-      PROGRAMS.splice(
-        PROGRAMS.findIndex((p) => p.Id === program.Id),
-        1
-      );
+      const index = PROGRAMS.findIndex((p) => p.Id === program.Id);
+      if (index !== -1) {
+        PROGRAMS.splice(index, 1);
+      }
       DATA_VARS.refresh = {};
       showSuccess('Program byl úspěšně smazán');
     }
@@ -778,6 +779,6 @@ export async function generateIncrementalValue(
       .replace(/\{YY\}/g, now.getFullYear().toString().slice(-2))
       .replace(/\{MM\}/g, (now.getMonth() + 1).toString().padStart(2, '0'))
       .replace(/\{DD\}/g, now.getDate().toString().padStart(2, '0'))
-      .replace(/\{#+\}/g, '001');
+      .replace(/\{(#+)\}/g, (_match, hashes: string) => '1'.padStart(hashes.length, '0'));
   }
 }

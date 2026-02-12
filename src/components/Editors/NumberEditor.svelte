@@ -97,7 +97,7 @@
 
     &.has-error {
       input {
-        background: #fef2f2;
+        background: var(--color-danger-light);
         color: #991b1b;
       }
     }
@@ -105,7 +105,7 @@
     input {
       width: 100%;
       height: 100%;
-      padding: 0.5rem;
+      padding: var(--space-3);
       border: none;
       outline: none;
       font-family: inherit;
@@ -121,8 +121,8 @@
       position: absolute;
       bottom: -20px;
       left: 0;
-      font-size: 0.6875rem;
-      color: #dc2626;
+      font-size: var(--font-size-2xs);
+      color: var(--color-danger);
       white-space: nowrap;
     }
   }

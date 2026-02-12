@@ -307,7 +307,7 @@ export async function createColumnsFromLegacy(
     );
 
     // Add column to programs table if it's not computed or actions
-    if (col.type !== 'computed' && col.key !== 'actions') {
+    if (col.type !== 'computed' && col.key !== 'actions' && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(col.key)) {
       let sqlType = 'TEXT';
       if (col.type === 'number') sqlType = 'REAL';
 

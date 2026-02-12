@@ -1,7 +1,9 @@
-import Database, { type QueryResult } from '@tauri-apps/plugin-sql';
+import { type QueryResult } from '@tauri-apps/plugin-sql';
 import { Settings } from '../models/settings';
 import type { DbSettings } from '../models/dbSettings';
 import type { File } from '../models/file';
+import { getDatabase } from './database';
+import { logger } from './logger';
 
 export const SETTINGS_VARS = $state({
   menuOpened: false,
@@ -21,7 +23,7 @@ export const SETTINGS_VARS = $state({
 const APP_INITIALIZED_KEY = 'app_initialized';
 
 export async function checkAppInitialized(): Promise<boolean> {
-  const db = await Database.load('sqlite:data.db');
+  const db = await getDatabase();
   const result = await db.select<Array<{ value: string }>>(
     'SELECT value FROM settings WHERE key = ?',
     [APP_INITIALIZED_KEY]
@@ -32,7 +34,7 @@ export async function checkAppInitialized(): Promise<boolean> {
 }
 
 export async function markAppAsInitialized(): Promise<void> {
-  const db = await Database.load('sqlite:data.db');
+  const db = await getDatabase();
   await db.execute('INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)', [
     APP_INITIALIZED_KEY,
     'boolean',
@@ -42,27 +44,27 @@ export async function markAppAsInitialized(): Promise<void> {
 }
 
 export async function getSettings(): Promise<Array<Settings>> {
-  const db = await Database.load('sqlite:data.db');
+  const db = await getDatabase();
   return (await db.select<Array<DbSettings>>('SELECT * FROM settings')).map(
     (row: DbSettings) => new Settings(row)
   );
 }
 
 export async function getSettingsByKey(key: string): Promise<Settings | null> {
-  const db = await Database.load('sqlite:data.db');
+  const db = await getDatabase();
   const result = await db.select<Array<DbSettings>>('SELECT * FROM settings WHERE key = ?', [key]);
   return result.length > 0 ? new Settings(result[0]) : null;
 }
 
 export async function addSettings(settings: Settings): Promise<QueryResult> {
-  const db = await Database.load('sqlite:data.db');
+  const db = await getDatabase();
   const result = await db.execute(settings.toSqlInsert(), settings.toArray());
   return result;
 }
 
 export async function updateSettings(settings: Settings): Promise<QueryResult> {
-  const db = await Database.load('sqlite:data.db');
-  const result = await db.execute(settings.toSqlUpdate(), [...settings.toArray(), settings.Id]);
+  const db = await getDatabase();
+  const result = await db.execute(settings.toSqlUpdate(), settings.toArray());
   return result;
 }
 
@@ -74,7 +76,7 @@ const ZOOM_STEP = 10;
 
 export async function loadTextZoomLevel(): Promise<number> {
   try {
-    const db = await Database.load('sqlite:data.db');
+    const db = await getDatabase();
     const result = await db.select<Array<{ value: string }>>(
       'SELECT value FROM settings WHERE key = ?',
       [ZOOM_LEVEL_KEY]
@@ -86,8 +88,8 @@ export async function loadTextZoomLevel(): Promise<number> {
         return level;
       }
     }
-  } catch {
-    // Default to 100%
+  } catch (error) {
+    logger.warn('Failed to load zoom level, using default', error);
   }
   SETTINGS_VARS.textZoomLevel = 100;
   return 100;
@@ -98,32 +100,32 @@ export async function saveTextZoomLevel(level: number): Promise<void> {
   SETTINGS_VARS.textZoomLevel = clampedLevel;
 
   try {
-    const db = await Database.load('sqlite:data.db');
+    const db = await getDatabase();
     await db.execute('INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)', [
       ZOOM_LEVEL_KEY,
       'number',
       clampedLevel.toString(),
     ]);
-  } catch {
-    // Silently fail, zoom is still applied in memory
+  } catch (error) {
+    logger.warn('Failed to save zoom level to database', error);
   }
 }
 
 export function zoomIn(): void {
   const newLevel = Math.min(MAX_ZOOM, SETTINGS_VARS.textZoomLevel + ZOOM_STEP);
-  saveTextZoomLevel(newLevel);
   applyZoomLevel(newLevel);
+  void saveTextZoomLevel(newLevel);
 }
 
 export function zoomOut(): void {
   const newLevel = Math.max(MIN_ZOOM, SETTINGS_VARS.textZoomLevel - ZOOM_STEP);
-  saveTextZoomLevel(newLevel);
   applyZoomLevel(newLevel);
+  void saveTextZoomLevel(newLevel);
 }
 
 export function zoomReset(): void {
-  saveTextZoomLevel(100);
   applyZoomLevel(100);
+  void saveTextZoomLevel(100);
 }
 
 export function applyZoomLevel(level: number): void {

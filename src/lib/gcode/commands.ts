@@ -774,10 +774,10 @@ export const ALL_G_CODES = { ...G_CODES, ...MIKROPROG_EXTENSIONS };
 // Function to get command info
 export function getGCodeInfo(code: string): GCodeCommand | undefined {
   const upperCode = code.toUpperCase();
-  return ALL_G_CODES[upperCode];
+  return (ALL_G_CODES as Record<string, GCodeCommand>)[upperCode];
 }
 
 export function getMCodeInfo(code: string): MCodeCommand | undefined {
   const upperCode = code.toUpperCase();
-  return M_CODES[upperCode];
+  return (M_CODES as Record<string, MCodeCommand>)[upperCode];
 }

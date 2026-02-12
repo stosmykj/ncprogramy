@@ -24,7 +24,7 @@
     cxMenuData: BodyContextMenuData;
   } = $props();
 
-  let columnWidth = $state(document.querySelector(`#header_${header.Key}`)?.clientWidth);
+  let columnWidth = $state<number | undefined>(undefined);
   // Not editable: system columns, computed columns, or columns with InlineEditable disabled
   const editable =
     !['id', 'createdAt', 'updatedAt'].includes(header.Key) &&
@@ -36,6 +36,13 @@
   let filePreviewRef: FilePreview | null = $state(null);
 
   const cellStyles = getCellStyles(program, header.Key);
+
+  // Initial column width measurement (deferred to avoid querying before DOM ready)
+  $effect(() => {
+    if (columnWidth === undefined) {
+      columnWidth = document.querySelector(`#header_${header.Key}`)?.clientWidth;
+    }
+  });
   const isFileColumn = $derived(header.Type === 'file');
   const isGcodeColumn = $derived(header.Type === 'gcode');
   const fileValue = $derived.by((): File | null => {
@@ -67,7 +74,7 @@
 
   // Close file preview when cell loses focus
   $effect(() => {
-    if (!focused && !hoverTimeout && showFilePreview) {
+    if (!focused && hoverTimeout === null && showFilePreview) {
       showFilePreview = false;
     }
   });
@@ -163,18 +170,14 @@
       return;
     }
 
-    if (editable) {
-      // If editing a different cell, close it first by updating focus
-      if (DATA_VARS.isEditing && !focused) {
-        DATA_VARS.isEditing = false;
-        // Change focus to this cell
-        DATA_VARS.columnPosition = position.column;
-        DATA_VARS.rowPosition = position.row;
-        cxMenuData.opened = false;
-      }
-      // Enter edit mode
-      DATA_VARS.isEditing = true;
+    // Double-click opens the full edit dialog
+    if (DATA_VARS.isEditing) {
+      DATA_VARS.isEditing = false;
     }
+    PROGRAM_DIALOG.mode = 'edit';
+    PROGRAM_DIALOG.program = program;
+    PROGRAM_DIALOG.focusColumn = header.Key;
+    PROGRAM_DIALOG.isOpen = true;
   }
 
   function handleMouseEnter() {
@@ -214,7 +217,7 @@
   aria-readonly={!editable}
   aria-selected={focused}
 >
-  <div class="content" style="justify-content: ${header.Align};">
+  <div class="content" style="justify-content: {header.Align};">
     {getDisplayValue(program, header)}
   </div>
   {#if DATA_VARS.isEditing && focused}
@@ -228,19 +231,17 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <style lang="scss">
-  $primary-color: #4a90e2;
-  $border-color: #a8a8a8;
-
   td {
     display: flex;
     position: relative;
     width: 100%;
-    height: 2rem;
-    padding: 0 0.5rem;
+    height: var(--table-row-height);
+    padding: 0 var(--space-3);
+    font-size: var(--font-size-sm);
     text-align: left;
     align-items: center;
     white-space: nowrap;
-    border-right: 1px solid $border-color;
+    border-right: 1px solid var(--color-border);
     overflow: hidden;
 
     &.preview {
@@ -248,10 +249,10 @@
     }
 
     &.focused {
-      border: 2px solid $border-color;
+      border: 2px solid var(--color-border);
       &.editable {
-        border: 2px solid $primary-color;
-        background: rgba($primary-color, 0.05);
+        border: 2px solid var(--color-primary);
+        background: rgba(40, 85, 151, 0.05);
       }
     }
 

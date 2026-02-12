@@ -6,6 +6,7 @@
   import { open, save } from '@tauri-apps/plugin-dialog';
   import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
   import { sendNotification } from '@tauri-apps/plugin-notification';
+  import { logger } from '$lib/logger';
 
   // Lazy load heavy components
   let GCodeEditor: typeof import('./GCodeEditor.svelte').default | null = $state(null);
@@ -13,6 +14,9 @@
   let componentsLoaded = $state(false);
   let loadError = $state<string | null>(null);
   let loadingStatus = $state('Příprava...');
+  let codeLoadTimeout: number | null = null;
+  let focusTimeout: number | null = null;
+  let idleCallbackId: number | null = null;
 
   function getDefaultExampleCode(): string {
     // Use a shorter example to reduce initial parsing load
@@ -42,61 +46,66 @@ M30`;
   }
 
   async function loadComponents() {
-    console.log('[GCodeEditorDialog] loadComponents called, componentsLoaded:', componentsLoaded);
+    logger.debug('[GCodeEditorDialog] loadComponents called, componentsLoaded:', componentsLoaded);
     if (componentsLoaded) {
-      console.log('[GCodeEditorDialog] Components already loaded, skipping');
+      logger.debug('[GCodeEditorDialog] Components already loaded, skipping');
       return;
     }
     loadError = null;
 
     try {
       loadingStatus = 'Načítání G-code editoru...';
-      console.log('[GCodeEditorDialog] Loading GCodeEditor module...');
+      logger.debug('[GCodeEditorDialog] Loading GCodeEditor module...');
       const editorModule = await import('./GCodeEditor.svelte');
-      console.log('[GCodeEditorDialog] GCodeEditor module imported');
+      logger.debug('[GCodeEditorDialog] GCodeEditor module imported');
       GCodeEditor = editorModule.default;
-      console.log('[GCodeEditorDialog] GCodeEditor assigned');
+      logger.debug('[GCodeEditorDialog] GCodeEditor assigned');
 
       loadingStatus = 'Načítání náhledu...';
-      console.log('[GCodeEditorDialog] Loading GCodePreview module...');
+      logger.debug('[GCodeEditorDialog] Loading GCodePreview module...');
       const previewModule = await import('./GCodePreview.svelte');
-      console.log('[GCodeEditorDialog] GCodePreview module imported');
+      logger.debug('[GCodeEditorDialog] GCodePreview module imported');
       GCodePreview = previewModule.default;
-      console.log('[GCodeEditorDialog] GCodePreview assigned');
+      logger.debug('[GCodeEditorDialog] GCodePreview assigned');
 
       loadingStatus = 'Hotovo';
-      console.log('[GCodeEditorDialog] Setting componentsLoaded = true');
+      logger.debug('[GCodeEditorDialog] Setting componentsLoaded = true');
       componentsLoaded = true;
-      console.log('[GCodeEditorDialog] All components loaded successfully');
+      logger.debug('[GCodeEditorDialog] All components loaded successfully');
 
       // Check if there's an external file to load
       const externalFile = SETTINGS_VARS.gcodeEditorFile;
       if (externalFile) {
-        console.log('[GCodeEditorDialog] External file provided, loading:', externalFile.Path);
+        logger.debug('[GCodeEditorDialog] External file provided, loading:', externalFile.Path);
         await loadExternalFile();
       } else {
         // Load full example code AFTER components are ready with a delay
         // to prevent UI blocking - use requestIdleCallback for best scheduling
-        console.log('[GCodeEditorDialog] Scheduling full example code load...');
+        logger.debug('[GCodeEditorDialog] Scheduling full example code load...');
         const loadCode = () => {
-          console.log('[GCodeEditorDialog] Loading full example code');
+          logger.debug('[GCodeEditorDialog] Loading full example code');
           code = getDefaultExampleCode();
-          console.log('[GCodeEditorDialog] Full example code set');
+          logger.debug('[GCodeEditorDialog] Full example code set');
         };
 
-        // Use requestIdleCallback if available, otherwise fall back to setTimeout
-        if ('requestIdleCallback' in window) {
-          console.log('[GCodeEditorDialog] Using requestIdleCallback');
-          setTimeout(() => {
-            (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(loadCode);
-          }, 1000);
-        } else {
-          console.log('[GCodeEditorDialog] Using setTimeout fallback');
-          setTimeout(loadCode, 1500);
-        }
+        // Schedule code load with a delay to avoid UI blocking
+        const hasIdleCallback = typeof (globalThis as Record<string, unknown>).requestIdleCallback === 'function';
+        const delay = hasIdleCallback ? 1000 : 1500;
+        codeLoadTimeout = window.setTimeout(() => {
+          codeLoadTimeout = null;
+          if (!SETTINGS_VARS.gcodeEditorOpened) return;
+          if (hasIdleCallback) {
+            idleCallbackId = (globalThis as unknown as { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(() => {
+              idleCallbackId = null;
+              loadCode();
+            });
+          } else {
+            loadCode();
+          }
+        }, delay);
       }
     } catch (err) {
-      console.error('[GCodeEditorDialog] Failed to load components:', err);
+      logger.error('[GCodeEditorDialog] Failed to load components:', err);
       loadError = err instanceof Error ? err.message : 'Nepodařilo se načíst editor';
     }
   }
@@ -106,15 +115,15 @@ M30`;
     if (SETTINGS_VARS.gcodeEditorOpened) {
       const loaded = untrack(() => componentsLoaded);
       const error = untrack(() => loadError);
-      console.log('[GCodeEditorDialog] $effect triggered, gcodeEditorOpened: true, componentsLoaded:', loaded, 'loadError:', error);
+      logger.debug(`[GCodeEditorDialog] $effect triggered, gcodeEditorOpened: true, componentsLoaded: ${loaded}, loadError: ${error}`);
       if (!loaded && !error) {
-        console.log('[GCodeEditorDialog] Triggering loadComponents');
+        logger.debug('[GCodeEditorDialog] Triggering loadComponents');
         loadComponents();
       } else if (loaded) {
         // Components already loaded, check if we need to load an external file
         const externalFile = SETTINGS_VARS.gcodeEditorFile;
         if (externalFile) {
-          console.log('[GCodeEditorDialog] Components already loaded, loading external file:', externalFile.Path);
+          logger.debug('[GCodeEditorDialog] Components already loaded, loading external file:', externalFile.Path);
           loadExternalFile();
         } else {
           // Reset to default state for new file
@@ -132,8 +141,12 @@ M30`;
   $effect(() => {
     if (componentsLoaded && gcodeEditorRef) {
       // Delay focus to allow Monaco editor to fully initialize
-      setTimeout(() => {
-        gcodeEditorRef?.focus();
+      if (focusTimeout !== null) clearTimeout(focusTimeout);
+      focusTimeout = window.setTimeout(() => {
+        focusTimeout = null;
+        if (SETTINGS_VARS.gcodeEditorOpened) {
+          gcodeEditorRef?.focus();
+        }
       }, 500);
     }
   });
@@ -158,7 +171,7 @@ M30`;
     try {
       // The file path is already absolute (from storage or original location)
       const filePath = externalFile.Path;
-      console.log('[GCodeEditorDialog] Loading external file from:', filePath);
+      logger.debug('[GCodeEditorDialog] Loading external file from:', filePath);
 
       const content = await readTextFile(filePath);
       code = content;
@@ -167,9 +180,9 @@ M30`;
       isSaved = true;
       isExternalFile = true;
 
-      console.log('[GCodeEditorDialog] External file loaded successfully');
+      logger.debug('[GCodeEditorDialog] External file loaded successfully');
     } catch (error) {
-      console.error('[GCodeEditorDialog] Error loading external file:', error);
+      logger.error('[GCodeEditorDialog] Error loading external file:', error);
       // Fall back to default example code
       code = getDefaultExampleCode();
       fileName = 'untitled.nc';
@@ -324,7 +337,7 @@ M30`,
         });
       }
     } catch (error) {
-      console.error('Chyba při otevírání souboru:', error);
+      logger.error('Chyba při otevírání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se otevřít soubor',
@@ -346,7 +359,7 @@ M30`,
         await saveFileAs();
       }
     } catch (error) {
-      console.error('Chyba při ukládání souboru:', error);
+      logger.error('Chyba při ukládání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se uložit soubor',
@@ -378,7 +391,7 @@ M30`,
         });
       }
     } catch (error) {
-      console.error('Chyba při ukládání souboru:', error);
+      logger.error('Chyba při ukládání souboru:', error);
       await sendNotification({
         title: 'Chyba',
         body: 'Nepodařilo se uložit soubor',
@@ -426,6 +439,22 @@ M30 ; konec programu`;
   }
 
   function close(): void {
+    // Clean up pending timeouts and callbacks
+    if (codeLoadTimeout !== null) {
+      clearTimeout(codeLoadTimeout);
+      codeLoadTimeout = null;
+    }
+    if (focusTimeout !== null) {
+      clearTimeout(focusTimeout);
+      focusTimeout = null;
+    }
+    if (idleCallbackId !== null) {
+      const hasCancelIdle = typeof (globalThis as Record<string, unknown>).cancelIdleCallback === 'function';
+      if (hasCancelIdle) {
+        (globalThis as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleCallbackId);
+      }
+      idleCallbackId = null;
+    }
     SETTINGS_VARS.gcodeEditorOpened = false;
     // Clear external file state
     SETTINGS_VARS.gcodeEditorFile = null;
@@ -577,7 +606,7 @@ M30 ; konec programu`;
                 <div class="error-list">
                   {#if previewError}
                     <div class="error-item error">
-                      <Icon name="mdiAlertCircle" size={16} color="#dc3545" />
+                      <Icon name="mdiAlertCircle" size={16} color="var(--color-danger)" />
                       <span class="line-num">Náhled:</span>
                       <span class="error-msg">{previewError}</span>
                     </div>
@@ -587,7 +616,7 @@ M30 ; konec programu`;
                       <Icon
                         name={error.severity === 'error' ? 'mdiAlertCircle' : error.severity === 'warning' ? 'mdiAlert' : 'mdiInformation'}
                         size={16}
-                        color={error.severity === 'error' ? '#dc3545' : error.severity === 'warning' ? '#ffc107' : '#17a2b8'}
+                        color={error.severity === 'error' ? 'var(--color-danger)' : error.severity === 'warning' ? 'var(--color-warning)' : '#17a2b8'}
                       />
                       <span class="line-num">Řádek {error.line}:</span>
                       <span class="error-msg">{error.message}</span>
@@ -643,13 +672,13 @@ M30 ; konec programu`;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-bg-overlay);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 1.5rem;
+    z-index: var(--z-top);
+    padding: var(--space-10);
     animation: fadeIn 0.2s ease-out;
   }
 
@@ -663,15 +692,15 @@ M30 ; konec programu`;
   }
 
   .dialog-content {
-    background: #fff;
-    border-radius: 0.75rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 100%;
     height: 100%;
     max-width: 95vw;
     max-height: 95vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
     animation: slideUp 0.2s ease-out;
     overflow: hidden;
   }
@@ -691,38 +720,38 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    padding: var(--space-4) var(--space-8);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      color: #285597;
+      gap: var(--space-5);
+      color: var(--color-primary);
 
       .title {
-        font-size: 1rem;
+        font-size: var(--font-size-md);
         font-weight: 600;
       }
 
       .subtitle {
-        font-size: 0.75rem;
-        color: #666;
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
       }
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
+      gap: var(--space-3);
 
       .separator {
         width: 1px;
-        height: 1.25rem;
-        background: #dfe3e8;
-        margin: 0 0.375rem;
+        height: var(--space-10);
+        background: var(--color-border);
+        margin: 0 var(--space-3);
       }
     }
   }
@@ -730,31 +759,31 @@ M30 ; konec programu`;
   .examples-bar {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.5rem 1rem;
-    background: #e3f2fd;
-    border-bottom: 1px solid #dfe3e8;
+    gap: var(--space-5);
+    padding: var(--space-3) var(--space-8);
+    background: var(--color-primary-light);
+    border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 
     .examples-label {
-      font-size: 0.75rem;
-      color: #666;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
       font-weight: 500;
     }
 
     .example-btn {
-      padding: 0.25rem 0.625rem;
-      background: #285597;
-      border: 1px solid #285597;
-      border-radius: 0.25rem;
-      color: #fff;
-      font-size: 0.6875rem;
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-sm);
+      color: var(--color-bg);
+      font-size: var(--font-size-2xs);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all var(--transition-base);
 
       &:hover {
-        background: #1e3f6f;
-        border-color: #1e3f6f;
+        background: var(--color-primary-dark);
+        border-color: var(--color-primary-dark);
       }
     }
   }
@@ -764,7 +793,7 @@ M30 ; konec programu`;
     display: flex;
     overflow: hidden;
     min-height: 0;
-    background: #f5f5f5;
+    background: var(--color-bg-muted);
 
     &.split {
       &.horizontal {
@@ -788,42 +817,42 @@ M30 ; konec programu`;
         display: flex;
         flex-direction: column;
         max-height: 200px;
-        background: #fff;
-        border-top: 1px solid #dfe3e8;
+        background: var(--color-bg);
+        border-top: 1px solid var(--color-border);
         flex-shrink: 0;
 
         .error-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.5rem 0.75rem;
-          background: #f8f9fa;
-          border-bottom: 1px solid #dfe3e8;
-          color: #333;
-          font-size: 0.8125rem;
+          padding: var(--space-3) var(--space-6);
+          background: var(--color-bg-subtle);
+          border-bottom: 1px solid var(--color-border);
+          color: var(--color-text);
+          font-size: var(--font-size-sm);
           font-weight: 500;
 
           .error-title {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-4);
           }
 
           .copy-btn {
             background: transparent;
             border: none;
-            color: #666;
+            color: var(--color-text-secondary);
             cursor: pointer;
-            padding: 0.25rem;
+            padding: var(--space-2);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0.25rem;
-            transition: all 0.15s ease;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-base);
 
             &:hover {
-              color: #285597;
-              background: #e3f2fd;
+              color: var(--color-primary);
+              background: var(--color-primary-light);
             }
           }
         }
@@ -835,27 +864,27 @@ M30 ; konec programu`;
           .error-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
+            gap: var(--space-4);
+            padding: var(--space-2) var(--space-6);
             cursor: pointer;
-            transition: background 0.15s ease;
+            transition: background var(--transition-base);
 
             &:hover {
-              background: #f5f5f5;
+              background: var(--color-bg-muted);
             }
 
             .line-num {
-              color: #666;
-              font-size: 0.75rem;
+              color: var(--color-text-secondary);
+              font-size: var(--font-size-xs);
             }
 
             .error-msg {
-              color: #333;
-              font-size: 0.8125rem;
+              color: var(--color-text);
+              font-size: var(--font-size-sm);
             }
 
             &.error .error-msg {
-              color: #dc3545;
+              color: var(--color-danger);
             }
 
             &.warning .error-msg {
@@ -863,14 +892,14 @@ M30 ; konec programu`;
             }
 
             &.info .error-msg {
-              color: #285597;
+              color: var(--color-primary);
             }
           }
 
           .error-more {
-            padding: 0.375rem 0.75rem;
-            color: #666;
-            font-size: 0.75rem;
+            padding: var(--space-2) var(--space-6);
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
             font-style: italic;
           }
         }
@@ -883,30 +912,25 @@ M30 ; konec programu`;
       flex-direction: column;
       min-width: 0;
       min-height: 0;
-      border-top: 1px solid #dfe3e8;
-      background: #fff;
-
-      .dialog-body.vertical & {
-        border-top: none;
-        border-left: 1px solid #dfe3e8;
-      }
+      border-top: 1px solid var(--color-border);
+      background: var(--color-bg);
 
       .preview-header {
         display: flex;
         align-items: center;
-        padding: 0.5rem 0.75rem;
-        background: #f8f9fa;
-        border-bottom: 1px solid #dfe3e8;
+        padding: var(--space-3) var(--space-6);
+        background: var(--color-bg-subtle);
+        border-bottom: 1px solid var(--color-border);
         flex-shrink: 0;
 
         h3 {
           display: flex;
           align-items: center;
-          gap: 0.375rem;
+          gap: var(--space-3);
           margin: 0;
-          font-size: 0.8125rem;
+          font-size: var(--font-size-sm);
           font-weight: 500;
-          color: #285597;
+          color: var(--color-primary);
         }
       }
     }
@@ -916,22 +940,22 @@ M30 ; konec programu`;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem 0.5rem;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.25rem;
-    color: #333;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--transition-base);
 
     &.btn-icon {
-      padding: 0.25rem 0.375rem;
+      padding: var(--space-2) var(--space-3);
     }
 
     &:hover:not(:disabled) {
-      background: #f0f0f0;
-      border-color: #285597;
-      color: #285597;
+      background: var(--color-bg-muted);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
     }
 
     &:active:not(:disabled) {
@@ -939,9 +963,9 @@ M30 ; konec programu`;
     }
 
     &.active {
-      background: #285597;
-      border-color: #285597;
-      color: #fff;
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: var(--color-bg);
     }
 
     &:disabled {
@@ -956,26 +980,26 @@ M30 ; konec programu`;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    color: #666;
-    background: #fff;
+    gap: var(--space-8);
+    color: var(--color-text-secondary);
+    background: var(--color-bg);
 
     p {
       margin: 0;
-      font-size: 0.875rem;
+      font-size: var(--font-size-base);
     }
 
     :global(svg) {
       animation: spin 1s linear infinite;
-      color: #285597;
+      color: var(--color-primary);
     }
 
     &.error {
-      color: #dc3545;
+      color: var(--color-danger);
 
       :global(svg) {
         animation: none;
-        color: #dc3545;
+        color: var(--color-danger);
       }
     }
   }

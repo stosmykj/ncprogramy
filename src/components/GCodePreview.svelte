@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { GCodeParser } from '../lib/gcode/parser';
   import { ToolpathGenerator, type ToolpathData } from '../lib/gcode/toolpath';
+  import { logger } from '../lib/logger';
   import Icon from './Icon.svelte';
 
   let {
@@ -75,11 +76,11 @@
   }
 
   function generateToolpath(): void {
-    console.log('[GCodePreview] generateToolpath called');
+    logger.debug('[GCodePreview] generateToolpath called');
 
     // Skip processing for empty or placeholder content
     if (!code.trim() || code.startsWith('; Načítání')) {
-      console.log('[GCodePreview] No code or placeholder, clearing toolpath');
+      logger.debug('[GCodePreview] No code or placeholder, clearing toolpath');
       toolpathData = null;
       error = null;
       render();
@@ -88,45 +89,45 @@
 
     isLoading = true;
     error = null;
-    console.log('[GCodePreview] Rendering loading state...');
+    logger.debug('[GCodePreview] Rendering loading state...');
     render(); // Show loading state immediately
 
     // Use setTimeout with longer delay to let Monaco load first
-    console.log('[GCodePreview] Scheduling toolpath generation with setTimeout...');
+    logger.debug('[GCodePreview] Scheduling toolpath generation with setTimeout...');
     setTimeout(() => {
-      console.log('[GCodePreview] setTimeout callback started');
+      logger.debug('[GCodePreview] setTimeout callback started');
       // Use requestAnimationFrame to yield to browser
       requestAnimationFrame(() => {
-        console.log('[GCodePreview] requestAnimationFrame callback started');
+        logger.debug('[GCodePreview] requestAnimationFrame callback started');
         try {
-          console.log('[GCodePreview] Creating G-code parser...');
+          logger.debug('[GCodePreview] Creating G-code parser...');
           const parser = new GCodeParser(code);
-          console.log('[GCodePreview] Parser loaded...');
-          console.log('[GCodePreview] Parsing G-code...');
+          logger.debug('[GCodePreview] Parser loaded...');
+          logger.debug('[GCodePreview] Parsing G-code...');
           const { ast, errors } = parser.parse();
-          console.log('[GCodePreview] G-code parsed, errors:', errors.length);
+          logger.debug('[GCodePreview] G-code parsed, errors:', errors.length);
 
           if (errors.length > 0 && errors.some((e) => e.severity === 'error')) {
             error = 'Nelze vygenerovat dráhu nástroje - kód obsahuje chyby';
             toolpathData = null;
-            console.log('[GCodePreview] Parse errors found, skipping toolpath generation');
+            logger.debug('[GCodePreview] Parse errors found, skipping toolpath generation');
           } else {
-            console.log('[GCodePreview] Generating toolpath...');
+            logger.debug('[GCodePreview] Generating toolpath...');
             const generator = new ToolpathGenerator();
             toolpathData = generator.generate(ast);
-            console.log('[GCodePreview] Toolpath generated, segments:', toolpathData?.segments?.length);
+            logger.debug('[GCodePreview] Toolpath generated, segments:', toolpathData?.segments?.length);
             fitToView();
-            console.log('[GCodePreview] fitToView complete');
+            logger.debug('[GCodePreview] fitToView complete');
           }
         } catch (err) {
           error = 'Chyba při generování dráhy nástroje';
           toolpathData = null;
-          console.error('[GCodePreview] Error:', err);
+          logger.error('[GCodePreview] Error:', err);
         } finally {
           isLoading = false;
-          console.log('[GCodePreview] Rendering final state...');
+          logger.debug('[GCodePreview] Rendering final state...');
           render();
-          console.log('[GCodePreview] generateToolpath complete');
+          logger.debug('[GCodePreview] generateToolpath complete');
         }
       });
     }, 500); // Wait 500ms to let Monaco initialize first
@@ -330,7 +331,7 @@
     ctx.fillStyle = '#333';
     ctx.font = '12px monospace';
     stats.forEach((stat, i) => {
-      ctx.fillText(stat, 20, 30 + i * 18);
+      ctx!.fillText(stat, 20, 30 + i * 18);
     });
   }
 
@@ -422,7 +423,7 @@
 
     // Use longer delay on first render to let Monaco load first
     const delay = isFirstRender ? 1000 : 200;
-    console.log('[GCodePreview] $effect scheduling generateToolpath with delay:', delay);
+    logger.debug('[GCodePreview] $effect scheduling generateToolpath with delay:', delay);
 
     // Delay generation to let UI render first
     generateTimeout = setTimeout(() => {
@@ -619,24 +620,24 @@
   .gcode-preview {
     display: flex;
     flex-direction: column;
-    background: #fff;
-    border: 1px solid #dfe3e8;
-    border-radius: 0.375rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
   .preview-toolbar {
     display: flex;
-    gap: 1rem;
-    padding: 0.5rem 0.75rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dfe3e8;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border-light);
 
     .toolbar-group {
       display: flex;
-      gap: 0.25rem;
-      padding: 0 0.5rem;
-      border-right: 1px solid #dfe3e8;
+      gap: var(--space-2);
+      padding: 0 var(--space-4);
+      border-right: 1px solid var(--color-border-light);
 
       &:first-child {
         padding-left: 0;
@@ -651,18 +652,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.25rem 0.5rem;
+      padding: var(--space-2) var(--space-4);
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 0.25rem;
-      color: #666;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-secondary);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all var(--transition-base);
 
       &:hover:not(:disabled) {
-        background: #e3f2fd;
-        border-color: #285597;
-        color: #285597;
+        background: var(--color-primary-light);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
       }
 
       &:active:not(:disabled) {
@@ -670,9 +671,9 @@
       }
 
       &.active {
-        background: #285597;
-        border-color: #285597;
-        color: #fff;
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: var(--color-text-on-primary);
       }
 
       &:disabled {
@@ -687,7 +688,7 @@
     flex: 1;
     min-height: 0;
     cursor: move;
-    background: #fafafa;
+    background: var(--color-bg-subtle);
 
     .loading {
       position: absolute;
@@ -697,8 +698,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
-      color: #666;
+      gap: var(--space-6);
+      color: var(--color-text-secondary);
       z-index: 10;
     }
 
@@ -711,7 +712,7 @@
 
   :global(.gcode-preview .loading svg) {
     animation: spin 1s linear infinite;
-    color: #285597;
+    color: var(--color-primary);
   }
 
   @keyframes spin {

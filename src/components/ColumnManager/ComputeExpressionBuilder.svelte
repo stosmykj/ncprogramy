@@ -21,7 +21,7 @@
 
   let parts = $state<ExpressionPart[]>([]);
   let parseError = $state<string | null>(null);
-  let hasParsed = $state(false);
+  let lastParsedExpression = $state('');
   let validationErrors = $state<ValidationError[]>([]);
 
   function validateExpression(): ValidationError[] {
@@ -163,14 +163,14 @@
   const columnKeys = $derived(availableColumns.map((col) => col.Key));
 
   $effect(() => {
-    if (expression && !hasParsed) {
+    if (expression && expression !== lastParsedExpression) {
       parseExpression(expression);
-      hasParsed = true;
+      lastParsedExpression = expression;
     }
   });
 
   $effect(() => {
-    if (parts.length > 0 && hasParsed) {
+    if (parts.length > 0 && lastParsedExpression) {
       expression = generateExpression();
     }
     validationErrors = validateExpression();
@@ -296,7 +296,7 @@
       useCoalesce: !isComputed,
       coalesceDefault: '0',
       isComputed: isComputed,
-      computeExpression: isComputed ? (column as any).ComputeExpression : undefined,
+      computeExpression: isComputed ? column.ComputeExpression : undefined,
     });
     parts = [...parts];
   }
@@ -399,7 +399,7 @@
   function clearAll() {
     parts = [];
     expression = '';
-    hasParsed = false;
+    lastParsedExpression = '';
   }
 
   function getColumnLabel(key: string): string {
@@ -547,11 +547,11 @@
   .expression-builder {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border-light);
   }
 
   .builder-header {
@@ -561,43 +561,43 @@
 
     h4 {
       margin: 0;
-      color: #285597;
-      font-size: 1rem;
+      color: var(--color-primary);
+      font-size: var(--font-size-md);
     }
 
     .validation-valid {
-      font-size: 0.875rem;
+      font-size: var(--font-size-base);
       color: #16a34a;
       font-weight: 500;
     }
   }
 
   .validation-error-box {
-    padding: 0.75rem 1rem;
-    background: #fef2f2;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-danger-light);
     border: 1px solid #fecaca;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     color: #991b1b;
 
     .error-title {
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: var(--font-size-base);
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--space-3);
     }
 
     .error-detail {
-      font-size: 0.8rem;
+      font-size: var(--font-size-sm);
       display: block;
     }
 
     .error-list {
       margin: 0;
-      padding-left: 1.25rem;
-      font-size: 0.8rem;
+      padding-left: var(--space-10);
+      font-size: var(--font-size-sm);
 
       li {
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--space-1);
 
         &:last-child {
           margin-bottom: 0;
@@ -609,38 +609,38 @@
   .simple-mode {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-6);
   }
 
   .button-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-3);
 
     .group-label {
       font-weight: 600;
-      font-size: 0.875rem;
-      color: #374151;
+      font-size: var(--font-size-base);
+      color: var(--color-text);
     }
   }
 
   .column-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .add-button {
-    padding: 0.5rem 0.75rem;
-    background: white;
-    border: 1px solid #d0d5dd;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
 
     &:hover {
       background: #e0f2fe;
@@ -659,30 +659,30 @@
     }
 
     .computed-badge {
-      font-size: 0.75rem;
-      padding: 0.125rem 0.375rem;
+      font-size: var(--font-size-xs);
+      padding: var(--space-1) var(--space-3);
       background: #f59e0b;
-      color: white;
-      border-radius: 3px;
+      color: var(--color-text-on-primary);
+      border-radius: var(--radius-sm);
       font-weight: 600;
     }
   }
 
   .operator-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-3);
   }
 
   .operator-button {
     width: 2.5rem;
     height: 2.5rem;
-    background: white;
-    border: 2px solid #d0d5dd;
-    border-radius: 0.375rem;
-    font-size: 1.25rem;
+    background: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xl);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 
     &:hover {
       background: #fef3c7;
@@ -694,31 +694,31 @@
   .parts-display {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: white;
-    border-radius: 0.375rem;
-    border: 1px solid #e5e7eb;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-light);
   }
 
   .parts-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-3);
     align-items: center;
   }
 
   .part-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: #f3f4f6;
-    border-radius: 0.375rem;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-md);
     position: relative;
 
     &.is-column {
-      background: #dbeafe;
+      background: var(--color-primary-light);
       border: 1px solid #93c5fd;
     }
 
@@ -728,7 +728,7 @@
     }
 
     &.has-error {
-      background: #fef2f2;
+      background: var(--color-danger-light);
       border: 2px solid #ef4444;
       box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
     }
@@ -744,7 +744,7 @@
 
     .drag-handle {
       cursor: grab;
-      color: #9ca3af;
+      color: var(--color-text-muted);
       user-select: none;
 
       &:active {
@@ -756,76 +756,76 @@
   .column-part {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
 
     .column-name {
       font-weight: 600;
       color: #1e40af;
-      font-size: 0.875rem;
+      font-size: var(--font-size-base);
     }
 
     .computed-indicator {
-      font-size: 0.7rem;
+      font-size: var(--font-size-2xs);
       color: #92400e;
       font-style: italic;
     }
   }
 
   .operator {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
     font-weight: 600;
     color: #f59e0b;
   }
 
   .constant-input {
     width: 60px;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #d0d5dd;
-    border-radius: 0.25rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     text-align: center;
     font-weight: 600;
   }
 
   .function {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
     font-weight: 600;
     color: #8b5cf6;
   }
 
   .clear-all {
     align-self: flex-start;
-    padding: 0.5rem 1rem;
+    padding: var(--space-3) var(--space-6);
     background: #fee2e2;
     color: #991b1b;
     border: 1px solid #fecaca;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-3);
 
     &:hover {
       background: #fecaca;
     }
 
     &.is-trash-mode {
-      background: #f3f4f6;
+      background: var(--color-bg-muted);
       border: 2px dashed #d1d5db;
-      color: #6b7280;
+      color: var(--color-text-secondary);
       cursor: default;
 
       .trash-icon {
-        font-size: 1.25rem;
-        transition: transform 0.2s;
+        font-size: var(--font-size-xl);
+        transition: transform var(--transition-base);
       }
     }
 
     &.is-over {
       border-color: #ef4444;
-      background: #fef2f2;
+      background: var(--color-danger-light);
       color: #ef4444;
 
       .trash-icon {

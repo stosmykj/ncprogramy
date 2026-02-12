@@ -19,18 +19,18 @@
 
   let backupColor = $derived(
     backupSize >= SIZE_THRESHOLD_RED
-      ? '#ef4444' // red
+      ? 'var(--color-danger)'
       : backupSize >= SIZE_THRESHOLD_YELLOW
-        ? '#f59e0b' // yellow/orange
-        : '#10b981' // green
+        ? 'var(--color-warning)'
+        : 'var(--color-success)'
   );
 
   let logColor = $derived(
     logSize >= SIZE_THRESHOLD_RED
-      ? '#ef4444' // red
+      ? 'var(--color-danger)'
       : logSize >= SIZE_THRESHOLD_YELLOW
-        ? '#f59e0b' // yellow/orange
-        : '#10b981' // green
+        ? 'var(--color-warning)'
+        : 'var(--color-success)'
   );
 
   let showLogIndicator = $derived(logSize >= LOG_SHOW_THRESHOLD);
@@ -91,31 +91,31 @@
   <div class="section">
     <div class="zoom-controls">
       <button class="zoom-btn" onclick={zoomOut} title="Zmenšit (Ctrl+-)">
-        <Icon name="mdiMagnifyMinusOutline" size={18} color="#fff" />
+        <Icon name="mdiMagnifyMinusOutline" size={14} color="var(--color-text-on-primary)" />
       </button>
       <button class="zoom-display" onclick={zoomReset} title="Obnovit 100% (Ctrl+0)">
         {SETTINGS_VARS.textZoomLevel}%
       </button>
       <button class="zoom-btn" onclick={zoomIn} title="Zvětšit (Ctrl++)">
-        <Icon name="mdiMagnifyPlusOutline" size={18} color="#fff" />
+        <Icon name="mdiMagnifyPlusOutline" size={14} color="var(--color-text-on-primary)" />
       </button>
     </div>
     <KeyboardShortcuts />
     {#if showLogIndicator}
-      <button class="log-indicator" onclick={openLogManager} title="Správa logů">
-        <Icon name="mdiTextBoxOutline" size={18} color={logColor} />
-        <span class="log-size" style="color: {logColor}">{formatFileSize(logSize)}</span>
+      <button class="indicator-btn" onclick={openLogManager} title="Správa logů">
+        <Icon name="mdiTextBoxOutline" size={14} color={logColor} />
+        <span class="indicator-size" style="color: {logColor}">{formatFileSize(logSize)}</span>
       </button>
     {/if}
-    <button class="backup-indicator" onclick={openBackupManager} title="Správa záloh">
-      <Icon name="mdiBackupRestore" size={18} color={backupColor} />
-      <span class="backup-size" style="color: {backupColor}">{formatFileSize(backupSize)}</span>
+    <button class="indicator-btn" onclick={openBackupManager} title="Správa záloh">
+      <Icon name="mdiBackupRestore" size={14} color={backupColor} />
+      <span class="indicator-size" style="color: {backupColor}">{formatFileSize(backupSize)}</span>
     </button>
     <Button
       onClick={handleUpdateCheck}
       icon="mdiDownloadCircleOutline"
-      iconColor={UPDATE_STATE.available ? '#10b981' : '#fff'}
-      iconSize={28}
+      iconColor={UPDATE_STATE.available ? 'var(--color-success)' : 'var(--color-text-on-primary)'}
+      iconSize={22}
       onlyIcon
       primary
     >
@@ -131,16 +131,16 @@
 <style lang="scss" scoped>
   .top-bar {
     display: grid;
-    height: 4rem;
-    padding-left: 1rem;
+    height: var(--topbar-height);
+    padding-left: var(--space-6);
     grid-template-columns: 1fr 1fr 1fr;
-    background: #183868;
+    background: var(--color-primary-dark);
 
     .section {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1.25rem;
+      gap: var(--space-6);
 
       &:first-of-type {
         justify-content: start;
@@ -148,7 +148,7 @@
 
       &:last-of-type {
         justify-content: end;
-        padding: 0 1rem;
+        padding: 0 var(--space-6);
       }
     }
   }
@@ -157,19 +157,19 @@
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     overflow: hidden;
 
     .zoom-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 2rem;
-      height: 2rem;
+      width: 1.5rem;
+      height: 1.5rem;
       background: none;
       border: none;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--transition-base);
 
       &:hover {
         background: rgba(255, 255, 255, 0.15);
@@ -180,17 +180,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 50px;
-      height: 2rem;
+      min-width: 40px;
+      height: 1.5rem;
       background: none;
       border: none;
       border-left: 1px solid rgba(255, 255, 255, 0.2);
       border-right: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-size: 0.75rem;
+      color: var(--color-text-on-primary);
+      font-size: var(--font-size-2xs);
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background var(--transition-base);
 
       &:hover {
         background: rgba(255, 255, 255, 0.15);
@@ -198,50 +198,37 @@
     }
   }
 
-  .backup-indicator,
-  .log-indicator {
+  .indicator-btn {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
     background: rgba(255, 255, 255, 0.1);
     border: none;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background var(--transition-base);
 
     &:hover {
       background: rgba(255, 255, 255, 0.2);
     }
 
-    .backup-size,
-    .log-size {
-      font-size: 0.75rem;
-      color: #a0aec0;
+    .indicator-size {
+      font-size: var(--font-size-2xs);
       font-weight: 500;
     }
   }
 
   .update-badge {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 0.75rem;
-    height: 0.75rem;
-    background: #ef4444;
-    border: 2px solid #183868;
+    top: -3px;
+    right: -3px;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--color-danger);
+    border: 2px solid var(--color-primary-dark);
     border-radius: 50%;
     animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
-
-  @keyframes pulse {
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-    }
-    50% {
-      box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
-    }
   }
 
   @keyframes ping {
@@ -253,16 +240,6 @@
     100% {
       transform: scale(1.5);
       opacity: 0;
-    }
-  }
-
-  @keyframes bounce {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-4px);
     }
   }
 </style>

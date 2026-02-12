@@ -137,12 +137,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--color-bg-overlay-blur);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 1.5rem;
+    z-index: var(--z-top);
+    padding: var(--space-8);
     animation: fadeIn 0.2s ease-out;
   }
 
@@ -156,15 +156,15 @@
   }
 
   .dialog-content {
-    background: white;
-    border-radius: 0.75rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
     width: 100%;
     height: 100%;
     max-width: 80vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
     animation: slideUp 0.2s ease-out;
   }
 
@@ -183,30 +183,30 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #eaecf0;
+    padding: var(--space-6) var(--space-8);
+    border-bottom: 1px solid var(--color-border-lighter);
     flex-shrink: 0;
 
     .file-info {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-6);
 
       .extension-badge {
         display: inline-block;
-        padding: 0.25rem 0.5rem;
-        background: #4a90e2;
-        color: white;
-        font-size: 0.6875rem;
+        padding: var(--space-2) var(--space-4);
+        background: var(--color-primary);
+        color: var(--color-text-on-primary);
+        font-size: var(--font-size-2xs);
         font-weight: 700;
-        border-radius: 0.25rem;
+        border-radius: var(--radius-sm);
         text-transform: uppercase;
       }
 
       .file-name {
-        font-size: 1rem;
+        font-size: var(--font-size-md);
         font-weight: 600;
-        color: #101828;
+        color: var(--color-text);
       }
     }
   }
@@ -217,32 +217,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f9fafb;
-    padding: 1.5rem;
+    background: var(--color-bg-subtle);
+    padding: var(--space-8);
 
     .loading,
     .no-preview {
-      padding: 3rem;
+      padding: 2rem;
       text-align: center;
-      color: #667085;
-      font-size: 0.9375rem;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
     }
 
     .full-image {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
     }
 
     .full-pdf {
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 0.5rem;
-      background: white;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border-radius: var(--radius-lg);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-md);
     }
   }
 </style>
