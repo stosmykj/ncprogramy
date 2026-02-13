@@ -3,10 +3,18 @@
   import { exportBackup, importBackup } from '$lib/backupProcessor';
   import { PROGRAM_DIALOG } from '$lib/programDialogState.svelte';
   import Button from './Button.svelte';
+  import LegacyImportDialog from './LegacyImportDialog.svelte';
+
+  let legacyImportOpen = $state(false);
 
   async function btn_import() {
     SETTINGS_VARS.menuOpened = false;
     await importBackup();
+  }
+
+  function btn_legacyImport() {
+    SETTINGS_VARS.menuOpened = false;
+    legacyImportOpen = true;
   }
 
   async function btn_export() {
@@ -53,6 +61,9 @@
   <Button onClick={btn_export} primary icon="mdiExport" class="full-total"
     ><span>Export</span></Button
   >
+  <Button onClick={btn_legacyImport} primary icon="mdiHistory" class="full-total"
+    ><span>Import ze staré aplikace</span></Button
+  >
   <Button onClick={btn_backupManager} primary icon="mdiBackupRestore" class="full-total"
     ><span>Správa záloh</span></Button
   >
@@ -67,6 +78,8 @@
     ><span>G-code Editor</span></Button
   >
 </div>
+
+<LegacyImportDialog bind:open={legacyImportOpen} onComplete={() => {}} />
 
 <style lang="scss">
   .menu {
