@@ -256,7 +256,7 @@
     }
 
     &:hover {
-      background: rgba(40, 85, 151, 0.05);
+      background: var(--color-primary-alpha-05);
     }
   }
 

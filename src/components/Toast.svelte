@@ -17,16 +17,18 @@
     }
   };
 
+  // Must mirror the semantic color tokens in main.css. The Icon component
+  // passes `color` to an SVG fill attribute, where `var(--…)` is not resolved.
   const getIconColor = (type: string) => {
     switch (type) {
       case 'success':
-        return '#22aa44';
+        return '#28a745';
       case 'error':
-        return '#d32f2f';
+        return '#dc3545';
       case 'warning':
-        return '#ff9800';
+        return '#ffc107';
       default:
-        return '#2196f3';
+        return '#285597';
     }
   };
 </script>
@@ -43,7 +45,7 @@
         <Icon name={getIcon(toast.type)} size={24} color={getIconColor(toast.type)} />
       </div>
       <div class="toast-message">{toast.message}</div>
-      <Button onClick={() => removeToast(toast.id)} icon="mdiClose" iconColor="#666" onlyIcon />
+      <Button onClick={() => removeToast(toast.id)} icon="mdiClose" iconColor="#667085" onlyIcon />
     </div>
   {/each}
 </div>

@@ -400,7 +400,7 @@
     top: 0;
     height: 100%;
     background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
   }
 
   .spinner {

@@ -786,7 +786,7 @@
     gap: var(--space-3);
     margin-bottom: var(--space-6);
     padding: var(--space-4);
-    background: rgba(40, 85, 151, 0.05);
+    background: var(--color-primary-alpha-05);
     border-radius: var(--radius-md);
 
     &.inline {
@@ -966,7 +966,7 @@
         top: -4px;
         height: var(--space-2);
         background: var(--color-primary);
-        border-radius: var(--space-1);
+        border-radius: var(--radius-xs);
       }
     }
 
@@ -981,7 +981,7 @@
         bottom: -4px;
         height: var(--space-2);
         background: var(--color-primary);
-        border-radius: var(--space-1);
+        border-radius: var(--radius-xs);
       }
     }
 

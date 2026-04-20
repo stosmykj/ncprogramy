@@ -329,7 +329,7 @@
         top: -4px;
         height: var(--space-2);
         background: var(--color-primary);
-        border-radius: var(--space-1);
+        border-radius: var(--radius-xs);
       }
     }
 
@@ -344,7 +344,7 @@
         bottom: -4px;
         height: var(--space-2);
         background: var(--color-primary);
-        border-radius: var(--space-1);
+        border-radius: var(--radius-xs);
       }
     }
   }

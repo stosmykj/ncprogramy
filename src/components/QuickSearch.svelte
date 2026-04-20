@@ -117,7 +117,7 @@
     transition: all var(--transition-base);
 
     &:focus-within {
-      border-color: #3c8be6;
+      border-color: var(--color-primary);
       box-shadow: var(--input-focus-ring);
     }
 

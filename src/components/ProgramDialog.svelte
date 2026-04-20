@@ -655,7 +655,7 @@
     max-width: 800px;
     max-height: 90vh;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-dialog);
     animation: slideUp var(--transition-slow);
     display: flex;
     flex-direction: column;
@@ -713,10 +713,10 @@
       &:hover {
         background: var(--color-border-light);
       }
+    }
 
-      &.active {
-        background: var(--color-success-light, rgba(40, 167, 69, 0.1));
-      }
+    .layout-btn.active {
+      background: var(--color-success-light, rgba(40, 167, 69, 0.1));
     }
   }
 
@@ -740,7 +740,7 @@
     gap: var(--space-3);
     padding: var(--space-4) var(--space-6);
     margin-bottom: var(--space-6);
-    background: var(--color-primary-lighter, rgba(40, 85, 151, 0.06));
+    background: var(--color-primary-alpha-06);
     border-radius: var(--radius-lg);
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
@@ -770,7 +770,7 @@
 
       &:hover {
         border-color: var(--color-primary);
-        background: rgba(40, 85, 151, 0.02);
+        background: var(--color-primary-alpha-02);
       }
     }
 
@@ -780,7 +780,7 @@
 
     &.drop-target {
       border-color: var(--color-primary);
-      background: rgba(40, 85, 151, 0.06);
+      background: var(--color-primary-alpha-06);
       box-shadow: inset 0 0 0 2px var(--color-primary);
     }
 
@@ -890,7 +890,7 @@
     transition: background var(--transition-fast);
 
     &.drop-highlight {
-      background: rgba(40, 85, 151, 0.06);
+      background: var(--color-primary-alpha-06);
     }
   }
 

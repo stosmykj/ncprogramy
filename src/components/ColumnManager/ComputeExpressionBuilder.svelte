@@ -729,8 +729,8 @@
 
     &.has-error {
       background: var(--color-danger-light);
-      border: 2px solid #ef4444;
-      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+      border: 2px solid var(--color-danger);
+      box-shadow: var(--input-focus-ring-danger);
     }
 
     &.is-dragging {

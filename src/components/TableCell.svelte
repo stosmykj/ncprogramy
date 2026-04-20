@@ -252,7 +252,7 @@
       border: 2px solid var(--color-border);
       &.editable {
         border: 2px solid var(--color-primary);
-        background: rgba(40, 85, 151, 0.05);
+        background: var(--color-primary-alpha-05);
       }
     }
 
