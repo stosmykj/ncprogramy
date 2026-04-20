@@ -30,7 +30,8 @@
         "title": "ncprogramy",
         "fullscreen": false,
         "maximized": true,
-        "visible": false
+        "visible": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {
