@@ -48,6 +48,44 @@
     }
   });
 
+  // Auto-advance: when a digit unambiguously completes a segment
+  // (day>3, month>1, hour>2), pad with a leading zero and insert the
+  // following separator so the cursor jumps to the next segment.
+  // For ambiguous digits (e.g. 1–3 for day) the library's own
+  // missingPunctuation logic still handles segment completion after
+  // the second digit is typed.
+  $effect(() => {
+    if (!wrapperRef) return;
+    const input = wrapperRef.querySelector('input');
+    if (!input) return;
+
+    const isDateTime = type === 'datetime';
+
+    const handleBeforeInput = (e: Event) => {
+      const ev = e as InputEvent;
+      if (ev.inputType !== 'insertText' || !ev.data || !/^\d$/.test(ev.data)) return;
+      if (input.selectionStart !== input.selectionEnd) return;
+      const pos = input.selectionStart ?? 0;
+      if (pos !== input.value.length) return; // only auto-advance when typing at the end
+
+      const digit = parseInt(ev.data, 10);
+      let padded = '';
+      if (pos === 0 && digit > 3) padded = `0${digit}. `; // day
+      else if (pos === 4 && digit > 1) padded = `0${digit}. `; // month
+      else if (isDateTime && pos === 13 && digit > 2) padded = `0${digit}:`; // hour
+      else return;
+
+      ev.preventDefault();
+      input.value = input.value + padded;
+      input.setSelectionRange(input.value.length, input.value.length);
+      // Re-dispatch so the library's bind:value picks up the new text
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    input.addEventListener('beforeinput', handleBeforeInput);
+    return () => input.removeEventListener('beforeinput', handleBeforeInput);
+  });
+
   function clearDateTime() {
     value = null;
   }
