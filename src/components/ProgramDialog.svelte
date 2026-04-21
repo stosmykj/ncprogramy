@@ -423,9 +423,9 @@
 {#if PROGRAM_DIALOG.isOpen}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-overlay" onclick={closeDialog}>
+  <div class="dialog-backdrop" onclick={closeDialog}>
     <div class="program-modal" class:with-sidebar={layoutMode} onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
+      <div class="dialog-header">
         <h2>
           {#if PROGRAM_DIALOG.mode === 'edit'}
             Upravit záznam #{PROGRAM_DIALOG.program?.Id}
@@ -450,8 +450,8 @@
         </div>
       </div>
 
-      <div class="modal-body">
-        <div class="modal-content">
+      <div class="dialog-body">
+        <div class="fields-layout">
           {#if layoutMode}
             <div class="layout-hint">
               <Icon name="mdiInformationOutline" size={16} color="var(--color-primary)" />
@@ -609,7 +609,7 @@
         {/if}
       </div>
 
-      <div class="modal-actions">
+      <div class="dialog-footer">
         <Button onClick={closeDialog} disabled={saving}>
           Zrušit
         </Button>
@@ -628,7 +628,7 @@
 {/if}
 
 <style lang="scss">
-  .modal-overlay {
+  .dialog-backdrop {
     position: fixed;
     top: 0;
     left: 0;
@@ -677,7 +677,7 @@
     }
   }
 
-  .modal-header {
+  .dialog-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -720,14 +720,14 @@
     }
   }
 
-  .modal-body {
+  .dialog-body {
     display: flex;
     flex: 1;
     overflow: hidden;
     min-height: 0;
   }
 
-  .modal-content {
+  .fields-layout {
     padding: var(--space-8);
     flex: 1;
     overflow-y: auto;
@@ -999,7 +999,7 @@
     }
   }
 
-  .modal-actions {
+  .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: var(--space-6);

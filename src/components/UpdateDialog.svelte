@@ -42,9 +42,9 @@
 {#if UPDATE_STATE.showDialog}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-overlay" onclick={handleLater}>
+  <div class="dialog-backdrop" onclick={handleLater}>
     <div class="update-modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
+      <div class="dialog-header">
         <div class="icon-container">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
             <path
@@ -80,7 +80,7 @@
         </p>
       </div>
 
-      <div class="modal-content">
+      <div class="dialog-body">
         <div class="version-info">
           <div class="version-box current">
             <div class="label">Současná verze</div>
@@ -128,7 +128,7 @@
         {/if}
       </div>
 
-      <div class="modal-actions">
+      <div class="dialog-footer">
         {#if UPDATE_STATE.available}
           <div class="update-avail">
             <Button
@@ -178,7 +178,7 @@
 {/if}
 
 <style lang="scss">
-  .modal-overlay {
+  .dialog-backdrop {
     position: fixed;
     top: 0;
     left: 0;
@@ -225,7 +225,7 @@
     }
   }
 
-  .modal-header {
+  .dialog-header {
     padding: var(--space-10) var(--space-10) var(--space-8);
     text-align: center;
     border-bottom: 1px solid var(--color-border-light);
@@ -255,7 +255,7 @@
     }
   }
 
-  .modal-content {
+  .dialog-body {
     padding: var(--space-8) var(--space-10);
     flex: 1;
     overflow-y: auto;
@@ -425,7 +425,7 @@
     font-weight: 500;
   }
 
-  .modal-actions {
+  .dialog-footer {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
