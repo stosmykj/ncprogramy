@@ -7,6 +7,7 @@ import { showError, showSuccess } from './toast.svelte';
 import { getDatabase } from './database';
 import { formatDate, formatDateTime, formatWithCustomFormat } from './dateFormatter.svelte';
 import { copyFileToStorageIfNeeded } from './fileStorageProcessor';
+import { hasValidIncrementalPlaceholder } from './incrementalPattern';
 import { logger } from './logger';
 
 // Extract column references from a computed expression
@@ -707,6 +708,14 @@ export async function generateIncrementalValue(
   columnKey: string
 ): Promise<string> {
   try {
+    // Defense-in-depth: the column dialog now blocks patterns without a
+    // recognized placeholder, but older data may still contain one.
+    if (!hasValidIncrementalPlaceholder(pattern)) {
+      logger.warn('Incremental pattern has no recognized placeholder; returning it literally', {
+        pattern,
+        columnKey,
+      });
+    }
     const db = await getDatabase();
     const now = new Date();
     const year2 = now.getFullYear().toString().slice(-2);

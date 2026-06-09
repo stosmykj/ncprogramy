@@ -5,6 +5,8 @@
   import type { DbTableColumn } from '$models/dbTableColumn';
   import { getDatabase } from '$lib/database';
   import { DATA_VARS } from '$lib/dataProcessor.svelte';
+  import { hasValidIncrementalPlaceholder, previewIncrementalValue } from '$lib/incrementalPattern';
+  import { confirm } from '@tauri-apps/plugin-dialog';
   import Button from '$components/Button.svelte';
   import Icon from '$components/Icon.svelte';
   import ComputeExpressionBuilder from './ComputeExpressionBuilder.svelte';
@@ -44,8 +46,51 @@
   let isCreatingNew = $state(false);
   let refreshColumns = $state({});
   let pendingNewColumns = $state<Set<string>>(new Set());
+  // Keys of existing columns changed this session (edit / visibility / archive).
+  let dirtyKeys = $state<Set<string>>(new Set());
+  // Whether columns were reordered (no single key to attribute it to).
+  let orderDirty = $state(false);
 
   const protectedColumns = ['createdAt', 'updatedAt', 'actions', 'id'];
+
+  // Number of columns with unsaved changes, shown on the save button.
+  let pendingCount = $derived(pendingNewColumns.size + dirtyKeys.size);
+  let hasUnsavedChanges = $derived(pendingCount > 0 || orderDirty);
+
+  // Live preview / validation for the incremental pattern in the edit form.
+  // Both the new-column and existing-column forms bind to editFormData.
+  let incrementalPreview = $derived(
+    editFormData.type === 'incremental'
+      ? previewIncrementalValue(editFormData.incrementalPattern || '')
+      : null
+  );
+  let incrementalInvalid = $derived(
+    editFormData.type === 'incremental' &&
+      !hasValidIncrementalPlaceholder(editFormData.incrementalPattern || '')
+  );
+
+  function markDirty(col: TableColumn) {
+    if (!pendingNewColumns.has(col.Key)) {
+      dirtyKeys = new Set([...dirtyKeys, col.Key]);
+    }
+  }
+
+  async function requestClose() {
+    if (hasUnsavedChanges) {
+      const ok = await confirm('Máte neuložené změny. Opravdu zavřít bez uložení?', {
+        title: 'Neuložené změny',
+        kind: 'warning',
+      });
+      if (!ok) return;
+    }
+    closeDialog();
+  }
+
+  function handleCancel(event: Event) {
+    // Intercept the native <dialog> Esc/backdrop close so the guard can run.
+    event.preventDefault();
+    void requestClose();
+  }
 
   $effect(() => {
     if (SETTINGS_VARS.columnManagerOpened) {
@@ -66,6 +111,8 @@
     const rows = await db.select<Array<DbTableColumn>>(query);
     columns = rows.map((row) => new TableColumn(row));
     pendingNewColumns = new Set();
+    dirtyKeys = new Set();
+    orderDirty = false;
   }
 
   function closeDialog() {
@@ -140,6 +187,8 @@
       }
 
       pendingNewColumns = new Set();
+      dirtyKeys = new Set();
+      orderDirty = false;
       await markAppAsInitialized();
       await initTableColumns();
       DATA_VARS.reloadData = true;
@@ -152,6 +201,7 @@
 
   function toggleVisibility(index: number) {
     columns[index].Visible = !columns[index].Visible;
+    markDirty(columns[index]);
     refreshColumns = {};
   }
 
@@ -160,6 +210,7 @@
     if (columns[index].Archived) {
       columns[index].Visible = false;
     }
+    markDirty(columns[index]);
     refreshColumns = {};
   }
 
@@ -212,6 +263,13 @@
   }
 
   function saveEdit() {
+    // Block patterns that contain no recognized placeholder — they would be
+    // stored literally and silently fail to increment at generation time.
+    if (incrementalInvalid) {
+      alert('Inkrementální vzor musí obsahovat aspoň jeden zástupný symbol, např. {YY}{###}');
+      return;
+    }
+
     if (editingIndex !== null) {
       // Update existing column in local state
       const col = columns[editingIndex];
@@ -224,6 +282,7 @@
       col.InlineEditable = editFormData.inlineEditable;
       col.IncrementalPattern = editFormData.incrementalPattern || undefined;
       col.IncrementalRewritable = editFormData.incrementalRewritable;
+      markDirty(col);
       refreshColumns = {};
     } else if (isCreatingNew && editFormData.key) {
       // Check if key already exists in local columns
@@ -321,6 +380,7 @@
 
     newColumns.splice(newIndex, 0, draggedColumn);
     columns = newColumns;
+    orderDirty = true;
 
     draggedIndex = null;
     dropTargetIndex = null;
@@ -344,7 +404,7 @@
   }
 </script>
 
-<dialog bind:this={dialog} class="column-manager-dialog">
+<dialog bind:this={dialog} class="column-manager-dialog" oncancel={handleCancel}>
   <div class="dialog-header">
     <h2>Správa sloupců</h2>
     <div class="header-actions">
@@ -363,7 +423,7 @@
       >
         <span>{showArchived ? 'Skrýt archivované' : 'Zobrazit archivované'}</span>
       </Button>
-      <Button icon="mdiClose" onClick={closeDialog} onlyIcon />
+      <Button icon="mdiClose" onClick={requestClose} onlyIcon />
     </div>
   </div>
 
@@ -410,9 +470,18 @@
               Vzor (pattern):
               <input
                 type="text"
+                class:input-error={incrementalInvalid}
                 bind:value={editFormData.incrementalPattern}
                 placeholder="např. {'{YY}{###}'}"
               />
+              {#if incrementalInvalid}
+                <small class="pattern-error">
+                  Vzor musí obsahovat aspoň jeden zástupný symbol ve složených závorkách,
+                  např. {'{YY}{###}'}.
+                </small>
+              {:else if incrementalPreview}
+                <small class="pattern-preview">Náhled: <code>{incrementalPreview}</code></small>
+              {/if}
               <small class="help-text">
                 Použijte: {'{YY}'} = rok (2 číslice), {'{YYYY}'} = rok (4 číslice), {'{MM}'} = měsíc (01-12), {'{DD}'} = den (01-31), {'{###}'} = pořadí (3 číslice)
               </small>
@@ -482,7 +551,9 @@
         </div>
         <div class="form-actions">
           <Button onClick={cancelEdit}><span>Zrušit</span></Button>
-          <Button onClick={saveEdit} success><span>Vytvořit</span></Button>
+          <Button onClick={saveEdit} primary disabled={!editFormData.key.trim() || incrementalInvalid}>
+            <span>Přidat sloupec</span>
+          </Button>
         </div>
       </div>
     {/if}
@@ -576,9 +647,18 @@
                     Vzor (pattern):
                     <input
                       type="text"
+                      class:input-error={incrementalInvalid}
                       bind:value={editFormData.incrementalPattern}
                       placeholder="např. {'{YY}{###}'}"
                     />
+                    {#if incrementalInvalid}
+                      <small class="pattern-error">
+                        Vzor musí obsahovat aspoň jeden zástupný symbol ve složených závorkách,
+                        např. {'{YY}{###}'}.
+                      </small>
+                    {:else if incrementalPreview}
+                      <small class="pattern-preview">Náhled: <code>{incrementalPreview}</code></small>
+                    {/if}
                     <small class="help-text">
                       Použijte: {'{YY}'} = rok (2 číslice), {'{YYYY}'} = rok (4 číslice), {'{MM}'} = měsíc (01-12), {'{DD}'} = den (01-31), {'{###}'} = pořadí (3 číslice)
                     </small>
@@ -612,8 +692,10 @@
                 </div>
               </div>
               <div class="form-actions">
-                <Button icon="mdiCancel" onClick={cancelEdit} onlyIcon />
-                <Button icon="mdiCheck" onClick={saveEdit} success onlyIcon />
+                <Button onClick={cancelEdit}><span>Zrušit</span></Button>
+                <Button icon="mdiCheck" onClick={saveEdit} disabled={incrementalInvalid}>
+                  <span>Hotovo</span>
+                </Button>
               </div>
             </div>
           {:else}
@@ -626,6 +708,7 @@
               class:archived={column.Archived}
               class:locked={isProtected(column.Key)}
               class:computed={isComputed(column)}
+              class:unsaved={pendingNewColumns.has(column.Key) || dirtyKeys.has(column.Key)}
               role="listitem"
               draggable="true"
               ondragstart={(e) => handleDragStart(e, index)}
@@ -647,6 +730,11 @@
                   <span class="column-name">{getColumnLabel(column)}</span>
                   {#if isComputed(column)}
                     <span class="computed-badge">Vypočítaný</span>
+                  {/if}
+                  {#if pendingNewColumns.has(column.Key)}
+                    <span class="unsaved-badge new">nový</span>
+                  {:else if dirtyKeys.has(column.Key)}
+                    <span class="unsaved-badge edited">upraveno</span>
                   {/if}
                 </div>
                 <span class="column-key">{column.Key} ({column.Type})</span>
@@ -700,8 +788,16 @@
   </div>
 
   <div class="dialog-footer">
-    <Button onClick={closeDialog}>Zrušit</Button>
-    <Button onClick={saveChanges} primary>Uložit změny</Button>
+    {#if hasUnsavedChanges}
+      <span class="unsaved-hint">
+        <Icon name="mdiAlertCircle" size={16} color="#d97706" />
+        Neuložené změny
+      </span>
+    {/if}
+    <Button onClick={requestClose}>Zrušit</Button>
+    <Button onClick={saveChanges} primary disabled={!hasUnsavedChanges}>
+      Uložit změny{pendingCount > 0 ? ` (${pendingCount})` : ''}
+    </Button>
   </div>
 </dialog>
 
@@ -778,6 +874,57 @@
     font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
+  }
+
+  .unsaved-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.new {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+    }
+
+    &.edited {
+      background: var(--color-warning);
+      color: var(--color-text-on-primary);
+    }
+  }
+
+  // Accent the left edge of rows with pending (unsaved) changes.
+  .column-item.unsaved {
+    border-left: 3px solid var(--color-warning);
+  }
+
+  .pattern-preview {
+    display: block;
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--color-bg-muted);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      color: var(--color-text);
+    }
+  }
+
+  .pattern-error {
+    display: block;
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-danger);
+    font-weight: 500;
+  }
+
+  input.input-error {
+    border-color: var(--color-danger) !important;
   }
 
   .form-row-group {
@@ -1068,10 +1215,21 @@
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: var(--space-6);
     padding: var(--space-6) var(--space-8);
     border-top: 1px solid var(--color-border-light);
     background: var(--color-bg-subtle);
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+
+  .unsaved-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-right: auto;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: #d97706; // matches --color-warning usage in .type-warning
   }
 </style>
