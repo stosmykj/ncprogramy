@@ -146,6 +146,17 @@
     isCreating = false;
   }
 
+  function close(): void {
+    SETTINGS_VARS.formatterOpened = false;
+    onClose?.();
+  }
+
+  function handleCancel(event: Event): void {
+    // Keep the open-state in sync when the native <dialog> closes via Esc/backdrop.
+    event.preventDefault();
+    close();
+  }
+
   async function saveRule(): Promise<void> {
     try {
       const db = await getDatabase();
@@ -263,353 +274,320 @@
   }
 </script>
 
-<dialog bind:this={dialog} class="formatting-dialog">
-  <div class="formatting-rules-editor">
-    <div class="editor-header">
-      <h2>
-        <Icon name="mdiAlertCircle" size={24} color="var(--color-primary)" />
-        Pravidla formátování
-      </h2>
-      <Button
-        onClick={() => (SETTINGS_VARS.formatterOpened = false)}
-        icon="mdiClose"
-        iconSize={20}
-      />
-    </div>
-
-    <div class="editor-content">
+<dialog bind:this={dialog} class="formatting-dialog" oncancel={handleCancel}>
+  <div class="dialog-header">
+    <h2>{isEditing ? (isCreating ? 'Nové pravidlo' : 'Upravit pravidlo') : 'Pravidla formátování'}</h2>
+    <div class="header-actions">
       {#if !isEditing}
-        <!-- Rules List -->
-        <div class="rules-list">
-          <div class="list-header">
-            <h3>Definovaná pravidla</h3>
-            <Button icon="mdiAlertCircle" onClick={startCreate} primary>Nové pravidlo</Button>
-          </div>
+        <Button
+          icon="mdiPlus"
+          onClick={startCreate}
+          primary
+          style="height: 2rem; padding: 0.25rem 0.5rem;"
+        >
+          <span>Nové pravidlo</span>
+        </Button>
+      {/if}
+      <Button icon="mdiClose" onClick={close} onlyIcon />
+    </div>
+  </div>
 
-          {#if rules.length === 0}
-            <div class="empty-state">
-              <Icon name="mdiInformation" size={32} color="#ff9800" />
-              <p>Zatím nejsou definována žádná pravidla formátování</p>
-              <Button onClick={startCreate} primary style="scale: 1.3; margin-top: 20px">
-                Vytvořit první pravidlo
-              </Button>
-            </div>
-          {:else}
-            <div class="rules-table">
-              {#each rules as rule, index}
-                <div class="rule-row" class:disabled={!rule.Enabled}>
-                  <div class="rule-priority">
-                    <div class="priority-controls">
-                      <Button
-                        disabled={index === 0}
-                        icon="mdiChevronUp"
-                        onClick={() => movePriority(rule, 'up')}
-                        primary
-                        onlyIcon
-                      />
-                      <span class="priority-number">{index + 1}</span>
-                      <Button
-                        disabled={index === rules.length - 1}
-                        icon="mdiChevronDown"
-                        onClick={() => movePriority(rule, 'down')}
-                        primary
-                        onlyIcon
-                      />
-                    </div>
-                  </div>
-
-                  <div class="rule-info">
-                    <div class="rule-name">{rule.Name}</div>
-                    <div class="rule-details">
-                      <span class="badge">{rule.Target === 'row' ? 'Řádek' : 'Buňka'}</span>
-                      {#if rule.Target === 'cell' && rule.ColumnKey}
-                        <span class="column-key">{rule.ColumnKey}</span>
-                      {/if}
-                    </div>
-                  </div>
-
-                  <div class="rule-preview" style={getPreviewStyles(rule)}>Náhled</div>
-
-                  <div class="rule-actions">
-                    <Button
-                      icon={rule.Enabled ? 'mdiCheckCircle' : 'mdiCheckCircleOutline'}
-                      onClick={() => toggleEnabled(rule)}
-                      success
-                      onlyIcon
-                    />
-                    <Button
-                      icon="mdiAlertCircle"
-                      onClick={() => startEdit(rule)}
-                      primary
-                      onlyIcon
-                    />
-                    <Button
-                      icon="mdiTrashCan"
-                      onClick={() => deleteRule(rule.Id)}
-                      danger
-                      onlyIcon
-                    />
-                  </div>
-                </div>
-              {/each}
-            </div>
-          {/if}
+  <div class="dialog-body">
+    {#if !isEditing}
+      {#if rules.length === 0}
+        <div class="empty-state">
+          <Icon name="mdiInformationOutline" size={32} color="var(--color-primary)" />
+          <p>Zatím nejsou definována žádná pravidla formátování</p>
+          <Button onClick={startCreate} primary><span>Vytvořit první pravidlo</span></Button>
         </div>
       {:else}
-        <!-- Edit Form -->
-        <div class="edit-form">
-          <div class="form-header">
-            <h3>{isCreating ? 'Nové pravidlo' : 'Upravit pravidlo'}</h3>
-          </div>
+        <div class="rules-table">
+          {#each rules as rule, index}
+            <div class="rule-row" class:disabled={!rule.Enabled}>
+              <div class="rule-priority">
+                <div class="priority-controls">
+                  <Button
+                    disabled={index === 0}
+                    icon="mdiChevronUp"
+                    onClick={() => movePriority(rule, 'up')}
+                    primary
+                    onlyIcon
+                  />
+                  <span class="priority-number">{index + 1}</span>
+                  <Button
+                    disabled={index === rules.length - 1}
+                    icon="mdiChevronDown"
+                    onClick={() => movePriority(rule, 'down')}
+                    primary
+                    onlyIcon
+                  />
+                </div>
+              </div>
 
-          <div class="form-section">
+              <div class="rule-info">
+                <div class="rule-name">{rule.Name}</div>
+                <div class="rule-details">
+                  <span class="badge">{rule.Target === 'row' ? 'Řádek' : 'Buňka'}</span>
+                  {#if rule.Target === 'cell' && rule.ColumnKey}
+                    <span class="column-key">{rule.ColumnKey}</span>
+                  {/if}
+                </div>
+              </div>
+
+              <div class="rule-preview" style={getPreviewStyles(rule)}>Náhled</div>
+
+              <div class="rule-actions">
+                <Button
+                  icon={rule.Enabled ? 'mdiCheckCircle' : 'mdiCheckCircleOutline'}
+                  onClick={() => toggleEnabled(rule)}
+                  success
+                  onlyIcon
+                />
+                <Button icon="mdiPencil" onClick={() => startEdit(rule)} primary onlyIcon />
+                <Button icon="mdiTrashCan" onClick={() => deleteRule(rule.Id)} danger onlyIcon />
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    {:else}
+      <div class="edit-form">
+        <div class="form-section">
+          <label>
+            Název pravidla
+            <input
+              type="text"
+              bind:value={editForm.name}
+              class="form-input"
+              placeholder="Např. Hotové programy"
+            />
+          </label>
+        </div>
+
+        <div class="form-section">
+          <label>
+            Cíl formátování
+            <select bind:value={editForm.target} class="form-select">
+              <option value="row">Celý řádek</option>
+              <option value="cell">Konkrétní buňka</option>
+            </select>
+          </label>
+
+          {#if editForm.target === 'cell'}
             <label>
-              Název pravidla
-              <input
-                type="text"
-                bind:value={editForm.name}
-                class="form-input"
-                placeholder="Např. Hotové programy"
-              />
+              Sloupec
+              <select bind:value={editForm.columnKey} class="form-select">
+                <option value="">-- Vyberte sloupec --</option>
+                {#each availableColumns as column}
+                  <option value={column.key}>{column.label}</option>
+                {/each}
+              </select>
             </label>
-          </div>
+          {/if}
+        </div>
 
-          <div class="form-section">
+        <div class="form-section">
+          <h4>Podmínky</h4>
+          <ConditionBuilder bind:group={editForm.conditionTree} {availableColumns} />
+        </div>
+
+        <div class="form-section">
+          <h4>Styly</h4>
+          <div class="style-grid">
             <label>
-              Cíl formátování
-              <select bind:value={editForm.target} class="form-select">
-                <option value="row">Celý řádek</option>
-                <option value="cell">Konkrétní buňka</option>
+              Barva pozadí
+              <ColorPicker bind:hex={editForm.backgroundColor} isAlpha={true} label="Vybrat barvu" />
+            </label>
+
+            <label>
+              Barva textu
+              <ColorPicker bind:hex={editForm.textColor} isAlpha={true} label="Vybrat barvu" />
+            </label>
+
+            <label>
+              Tloušťka písma
+              <select bind:value={editForm.fontWeight} class="form-select">
+                <option value="normal">Normální</option>
+                <option value="bold">Tučné</option>
+                <option value="lighter">Tenké</option>
               </select>
             </label>
 
-            {#if editForm.target === 'cell'}
-              <label>
-                Sloupec
-                <select bind:value={editForm.columnKey} class="form-select">
-                  <option value="">-- Vyberte sloupec --</option>
-                  {#each availableColumns as column}
-                    <option value={column.key}>{column.label}</option>
-                  {/each}
-                </select>
-              </label>
-            {/if}
+            <label class="checkbox-label">
+              <input type="checkbox" bind:checked={editForm.enabled} />
+              Povolit pravidlo
+            </label>
           </div>
 
-          <div class="form-section">
-            <h4>Podmínky</h4>
-            <ConditionBuilder bind:group={editForm.conditionTree} {availableColumns} />
-          </div>
-
-          <div class="form-section">
-            <h4>Styly</h4>
-            <div class="style-grid">
-              <label>
-                Barva pozadí
-                <ColorPicker bind:hex={editForm.backgroundColor} isAlpha={true} />
-              </label>
-
-              <label>
-                Barva textu
-                <ColorPicker bind:hex={editForm.textColor} isAlpha={true} />
-              </label>
-
-              <label>
-                Tloušťka písma
-                <select bind:value={editForm.fontWeight} class="form-select">
-                  <option value="normal">Normální</option>
-                  <option value="bold">Tučné</option>
-                  <option value="lighter">Tenké</option>
-                </select>
-              </label>
-
-              <label class="checkbox-label">
-                <input type="checkbox" bind:checked={editForm.enabled} />
-                Povolit pravidlo
-              </label>
-            </div>
-
-            <div class="preview-box" style={previewStyles}>Náhled formátování</div>
-          </div>
-
-          <div class="form-actions">
-            <Button onClick={cancelEdit} icon="mdiClose">Zrušit</Button>
-            <Button onClick={saveRule} primary icon="mdiContentSave">Uložit pravidlo</Button>
-          </div>
+          <div class="preview-box" style={previewStyles}>Náhled formátování</div>
         </div>
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
+
+  {#if isEditing}
+    <div class="dialog-footer">
+      <Button onClick={cancelEdit}><span>Zrušit</span></Button>
+      <Button onClick={saveRule} primary><span>Uložit pravidlo</span></Button>
+    </div>
+  {/if}
 </dialog>
 
 <style lang="scss">
+  // Dialog shell — mirrors .column-manager-dialog so the two dialogs match.
   .formatting-dialog {
-    width: 920px;
-    height: 80vh;
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 0;
+    width: 820px;
+    max-width: 90vw;
+    max-height: 85vh;
+    box-shadow: var(--shadow-xl);
+
+    &::backdrop {
+      background: var(--color-bg-overlay);
+      backdrop-filter: blur(4px);
+    }
   }
 
-  .formatting-rules-editor {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .editor-header {
+  .dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--space-6) var(--space-8);
-    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 
     h2 {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
       margin: 0;
       font-size: var(--font-size-xl);
-      color: var(--color-primary-dark);
+      color: var(--color-primary);
     }
 
-  }
-
-  .editor-content {
-    flex: 1;
-    overflow: auto;
-    padding: var(--space-8);
-  }
-
-  .rules-list {
-    max-width: 1200px;
-    margin: 0 auto;
-
-    .list-header {
+    .header-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-8);
-
-      h3 {
-        margin: 0;
-        color: var(--color-primary-dark);
-      }
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2.5rem var(--space-8);
-      text-align: center;
-      color: var(--color-text-muted);
-
-      p {
-        margin: var(--space-6) 0 var(--space-8);
-        font-size: var(--font-size-md);
-      }
-    }
-
-    .rules-table {
-      display: flex;
-      flex-direction: column;
       gap: var(--space-3);
+      align-items: center;
+    }
+  }
+
+  .dialog-body {
+    padding: var(--space-6) var(--space-8);
+    overflow-y: auto;
+    max-height: calc(85vh - 200px);
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-8);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-subtle);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem var(--space-8);
+    text-align: center;
+    color: var(--color-text-muted);
+
+    p {
+      margin: var(--space-6) 0 var(--space-8);
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .rules-table {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .rule-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+
+    &:hover {
+      border-color: var(--color-primary-dark);
+      box-shadow: var(--shadow-sm);
     }
 
-    .rule-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-6);
-      padding: var(--space-4) var(--space-6);
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-base);
+    &.disabled {
+      opacity: 0.5;
+    }
 
-      &:hover {
-        border-color: var(--color-primary-dark);
-        box-shadow: var(--shadow-sm);
-      }
-
-      &.disabled {
-        opacity: 0.5;
-      }
-
-      .rule-priority {
-        .priority-controls {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-1);
-
-          .priority-number {
-            font-size: var(--font-size-xs);
-            font-weight: bold;
-            color: var(--color-primary-dark);
-          }
-        }
-      }
-
-      .rule-info {
-        flex: 1;
-
-        .rule-name {
-          font-weight: 500;
-          font-size: var(--font-size-base);
-          margin-bottom: var(--space-1);
-        }
-
-        .rule-details {
-          display: flex;
-          gap: var(--space-3);
-          font-size: var(--font-size-xs);
-
-          .badge {
-            padding: var(--space-1) var(--space-3);
-            background: var(--color-primary-dark);
-            color: var(--color-text-on-primary);
-            border-radius: var(--radius-sm);
-          }
-
-          .column-key {
-            padding: var(--space-1) var(--space-3);
-            background: var(--color-bg-muted);
-            border-radius: var(--radius-sm);
-            font-family: var(--font-mono);
-          }
-        }
-      }
-
-      .rule-preview {
-        padding: var(--space-3) var(--space-6);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        font-size: var(--font-size-sm);
-      }
-
-      .rule-actions {
+    .rule-priority {
+      .priority-controls {
         display: flex;
-        gap: var(--space-2);
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+
+        .priority-number {
+          font-size: var(--font-size-xs);
+          font-weight: bold;
+          color: var(--color-primary-dark);
+        }
       }
+    }
+
+    .rule-info {
+      flex: 1;
+
+      .rule-name {
+        font-weight: 500;
+        font-size: var(--font-size-base);
+        margin-bottom: var(--space-1);
+      }
+
+      .rule-details {
+        display: flex;
+        gap: var(--space-3);
+        font-size: var(--font-size-xs);
+
+        .badge {
+          padding: var(--space-1) var(--space-3);
+          background: var(--color-primary-dark);
+          color: var(--color-text-on-primary);
+          border-radius: var(--radius-sm);
+        }
+
+        .column-key {
+          padding: var(--space-1) var(--space-3);
+          background: var(--color-bg-muted);
+          border-radius: var(--radius-sm);
+          font-family: var(--font-mono);
+        }
+      }
+    }
+
+    .rule-preview {
+      padding: var(--space-3) var(--space-6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm);
+    }
+
+    .rule-actions {
+      display: flex;
+      gap: var(--space-2);
     }
   }
 
   .edit-form {
-    max-width: 900px;
-    margin: 0 auto;
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    padding: var(--space-8);
-
-    .form-header {
-      margin-bottom: var(--space-8);
-
-      h3 {
-        margin: 0;
-        color: var(--color-primary-dark);
-        font-size: var(--font-size-lg);
-      }
-    }
-
     .form-section {
       margin-bottom: var(--space-8);
 
@@ -670,14 +648,6 @@
         text-align: center;
         font-size: var(--font-size-base);
       }
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-4);
-      padding-top: var(--space-6);
-      border-top: 1px solid var(--color-border-lighter);
     }
   }
 </style>
