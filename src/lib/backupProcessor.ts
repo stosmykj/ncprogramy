@@ -17,7 +17,7 @@ import { File } from '../models/file';
 import { getDatabase } from './database';
 import { initTableColumns } from './tableColumnProcessor.svelte';
 import { initFormattingRules } from './formattingProcessor.svelte';
-import { markAppAsInitialized } from './settingsProcessor.svelte';
+import { markAppAsInitialized, markAppAsNotInitialized } from './settingsProcessor.svelte';
 
 const BACKUP_FOLDER = 'backups';
 
@@ -159,15 +159,77 @@ async function getAllProgramsRaw(): Promise<Record<string, unknown>[]> {
 
 async function clearAllData(): Promise<void> {
   const db = await getDatabase();
-  await db.execute('BEGIN TRANSACTION');
+  // NO manual BEGIN/COMMIT here. tauri-plugin-sql runs each db.execute() on a
+  // connection borrowed from an sqlx pool (up to 10 connections), so BEGIN,
+  // the DELETEs and COMMIT can each land on a *different* connection — the
+  // COMMIT then fails to match the BEGIN and leaves an orphaned open
+  // transaction ("cannot start a transaction within a transaction" on retry).
+  // These DELETEs are unconditional, so autocommit is correct: a partial
+  // failure just gets retried and still converges to an empty database.
+  await db.execute('DELETE FROM programs');
+  await db.execute('DELETE FROM formatting_rules');
+  await db.execute('DELETE FROM table_columns');
+}
+
+/**
+ * Count of program records currently stored. Used by the delete-database
+ * confirmation dialog to show the user how much will be lost.
+ */
+export async function getProgramCount(): Promise<number> {
   try {
-    await db.execute('DELETE FROM programs');
-    await db.execute('DELETE FROM formatting_rules');
-    await db.execute('DELETE FROM table_columns');
-    await db.execute('COMMIT');
+    const db = await getDatabase();
+    const result = await db.select<Array<{ count: number }>>(
+      'SELECT COUNT(*) as count FROM programs'
+    );
+    return result[0]?.count ?? 0;
   } catch (error) {
-    await db.execute('ROLLBACK');
-    throw error;
+    logger.error('Failed to count programs', error);
+    return 0;
+  }
+}
+
+/**
+ * Wipe all user data and return the app to its fresh-install state.
+ *
+ * Deletes programs, formatting rules and column definitions, then flips the
+ * app_initialized flag back to false so the InitialSetup wizard reappears.
+ * Other settings (zoom, backup period) are intentionally preserved.
+ *
+ * Note: dynamically-added columns on the `programs` table are left in place —
+ * `table_columns` is the source of truth and column re-creation is idempotent
+ * (ALTER TABLE is wrapped in try/catch), matching legacy-import behaviour.
+ *
+ * @param createBackupFirst when true, a silent backup is written before the
+ *   wipe; if that backup fails the wipe is aborted.
+ */
+export async function factoryResetDatabase(createBackupFirst: boolean): Promise<boolean> {
+  try {
+    if (createBackupFirst) {
+      const backedUp = await createBackup(true);
+      if (!backedUp) {
+        showError('Nepodařilo se vytvořit zálohu, mazání bylo zrušeno');
+        return false;
+      }
+    }
+
+    DATA_VARS.isImporting = true;
+    await clearAllData();
+    await markAppAsNotInitialized();
+
+    // Reload UI state without requiring an app restart
+    await initTableColumns();
+    await initFormattingRules();
+
+    DATA_VARS.isImporting = false;
+    DATA_VARS.reloadData = true;
+
+    showSuccess('Databáze byla vymazána');
+    return true;
+  } catch (error) {
+    logger.error('Failed to reset database', error);
+    DATA_VARS.isImporting = false;
+    showError('Nepodařilo se vymazat databázi');
+    return false;
   }
 }
 

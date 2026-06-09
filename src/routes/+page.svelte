@@ -9,6 +9,7 @@
   import LogManager from '../components/LogManager.svelte';
   import GCodeEditorDialog from '../components/GCodeEditorDialog.svelte';
   import SnippetsManagerDialog from '../components/SnippetsManager/SnippetsManagerDialog.svelte';
+  import DeleteDatabaseDialog from '../components/DeleteDatabaseDialog.svelte';
   import InitialSetup from '../components/InitialSetup.svelte';
   import { initTableColumns } from '$lib/tableColumnProcessor.svelte';
   import { SETTINGS_VARS, checkAppInitialized } from '$lib/settingsProcessor.svelte';
@@ -70,6 +71,7 @@
 <LogManager />
 <GCodeEditorDialog />
 <SnippetsManagerDialog />
+<DeleteDatabaseDialog />
 
 <style lang="scss">
   .container {

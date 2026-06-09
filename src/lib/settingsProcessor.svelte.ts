@@ -16,6 +16,7 @@ export const SETTINGS_VARS = $state({
   gcodeEditorProgramId: null as number | null,
   gcodeEditorColumnKey: null as string | null,
   snippetsManagerOpened: false,
+  deleteDatabaseOpened: false,
   isAppInitialized: false,
   textZoomLevel: 100, // Zoom level in percent (50-200)
 });
@@ -41,6 +42,16 @@ export async function markAppAsInitialized(): Promise<void> {
     'true',
   ]);
   SETTINGS_VARS.isAppInitialized = true;
+}
+
+export async function markAppAsNotInitialized(): Promise<void> {
+  const db = await getDatabase();
+  await db.execute('INSERT OR REPLACE INTO settings (key, type, value) VALUES (?, ?, ?)', [
+    APP_INITIALIZED_KEY,
+    'boolean',
+    'false',
+  ]);
+  SETTINGS_VARS.isAppInitialized = false;
 }
 
 export async function getSettings(): Promise<Array<Settings>> {

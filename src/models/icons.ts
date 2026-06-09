@@ -87,6 +87,7 @@ import {
   mdiViewDashboardEdit,
   mdiRestore,
   mdiCheckAll,
+  mdiDatabaseRemove,
 } from '@mdi/js';
 
 export const iconMap = {
@@ -178,6 +179,7 @@ export const iconMap = {
   mdiViewDashboardEdit,
   mdiRestore,
   mdiCheckAll,
+  mdiDatabaseRemove,
 } as const;
 
 export type IconName = keyof typeof iconMap;

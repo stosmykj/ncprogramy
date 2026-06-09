@@ -48,6 +48,11 @@
     PROGRAM_DIALOG.program = null;
     PROGRAM_DIALOG.isOpen = true;
   }
+
+  function btn_deleteDatabase() {
+    SETTINGS_VARS.menuOpened = false;
+    SETTINGS_VARS.deleteDatabaseOpened = true;
+  }
 </script>
 
 <div class="menu" class:opened={SETTINGS_VARS.menuOpened}>
@@ -76,6 +81,10 @@
   >
   <Button onClick={btn_gcodeEditor} primary icon="mdiFileCodeOutline" class="full-total"
     ><span>G-code Editor</span></Button
+  >
+  <div class="separator"></div>
+  <Button onClick={btn_deleteDatabase} danger icon="mdiDatabaseRemove" class="full-total"
+    ><span>Vymazat databázi</span></Button
   >
 </div>
 
